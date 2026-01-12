@@ -1,0 +1,78 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --jd-green: #367C2B;
+  --jd-yellow: #FFDE00;
+  --jd-dark: #1F4D1A;
+  --jd-black: #1A1A1A;
+  --jd-cream: #F4F1E8;
+  --jd-sand: #C9B06E;
+  --font-display: "Arial", "Helvetica", sans-serif;
+  --font-body: "Arial", "Helvetica", sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--jd-black);
+    background: radial-gradient(circle at 20% 10%, rgba(255, 222, 0, 0.28), transparent 50%),
+      linear-gradient(135deg, rgba(54, 124, 43, 0.06), rgba(244, 241, 232, 0.92));
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-jd-black/10 bg-white/80 shadow-soft backdrop-blur;
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between border-b border-jd-black/10 px-5 py-4;
+  }
+
+  .panel-body {
+    @apply px-5 py-4;
+  }
+
+  .table-base {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table-base th {
+    @apply text-left text-xs uppercase tracking-wide text-jd-black/60;
+  }
+
+  .table-base th, .table-base td {
+    @apply border-b border-jd-black/10 px-3 py-3;
+  }
+}
+
+@layer utilities {
+  .animate-rise {
+    animation: rise 0.6s ease-out both;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
