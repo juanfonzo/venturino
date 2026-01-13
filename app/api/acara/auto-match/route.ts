@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { loadAcara } from "@/lib/data/loadAcara";
 import { normalizeText } from "@/lib/normalize/text";
 import { findBestAcaraMatch, pickAcaraReference } from "@/lib/utils/acara";
+import type { AcaraItem } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
         return { key, match: null };
       }
       const candidates = byBrand.get(brandNorm) ?? [];
-      const best = findBestAcaraMatch(candidates, modelRaw);
+      const best = findBestAcaraMatch(candidates, modelRaw) as { item: AcaraItem; score: number } | null;
       if (!best) {
         return { key, match: null };
       }

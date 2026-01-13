@@ -23,13 +23,17 @@ function buildModelVariants(modelMatch: string) {
   return variants.filter((entry) => entry.length >= 3);
 }
 
-export function findBestAcaraMatch(items: AcaraItem[], model?: string | null) {
+export function findBestAcaraMatch(
+  items: AcaraItem[],
+  model?: string | null,
+): { item: AcaraItem; score: number } | null {
   const modelMatch = normalizeMatchText(model ?? null);
   if (!modelMatch) return null;
   const modelVariants = buildModelVariants(modelMatch);
   const tokens = modelMatch.split(" ").filter((token) => token.length >= 2);
 
-  let best: { item: AcaraItem; score: number } | null = null;
+  let bestItem: AcaraItem | null = null;
+  let bestScore = -Infinity;
 
   items.forEach((item) => {
     const descMatch = normalizeMatchText(item.description ?? null);
@@ -53,11 +57,13 @@ export function findBestAcaraMatch(items: AcaraItem[], model?: string | null) {
       score += 0.2;
     }
 
-    if (!best || score > best.score) {
-      best = { item, score };
+    if (!bestItem || score > bestScore) {
+      bestItem = item;
+      bestScore = score;
     }
   });
 
-  if (!best || best.score < 2) return null;
-  return best;
+  if (!bestItem) return null;
+  if (bestScore < 2) return null;
+  return { item: bestItem, score: bestScore };
 }

@@ -60,7 +60,16 @@ export function ChoroplethMap({
     const map = new Map<string, number>();
     data.forEach((item) => {
       const key = normalizeText(item.provincia) ?? item.provincia;
-      const value = (item as Record<string, number | null>)[metric];
+      const value: number | null =
+        metric === "acaraGapAbs"
+          ? item.acaraGapAbs ?? null
+          : metric === "count"
+            ? item.count
+            : metric === "p50"
+              ? item.p50
+              : metric === "p75"
+                ? item.p75
+                : item.missingPricePct;
       map.set(key, typeof value === "number" ? value : 0);
     });
     return map;

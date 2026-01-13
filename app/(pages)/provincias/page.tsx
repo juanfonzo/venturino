@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import type { AcaraGapResponse, StatsResponse } from "@/lib/types";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/utils/format";
 import { Select } from "@/components/ui/Select";
-import { ChoroplethMap } from "@/components/ChoroplethMap";
 import { useAcaraMappings } from "@/store/useAcaraMappings";
+
+const ChoroplethMap = dynamic(
+  () => import("@/components/ChoroplethMap").then((mod) => mod.ChoroplethMap),
+  {
+    ssr: false,
+  },
+);
 
 export default function ProvinciasPage() {
   const [stats, setStats] = useState<StatsResponse | null>(null);

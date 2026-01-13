@@ -240,7 +240,21 @@ export default function AcaraPage() {
                     className={`cursor-pointer hover:bg-jd-cream/60 ${
                       selectedItem?.id === item.id ? "bg-jd-cream/60" : ""
                     }`}
-                    onClick={() => setSelectedItem({ ...(item as AcaraItem), series: [] })}
+                    onClick={() =>
+                      setSelectedItem({
+                        id: item.id,
+                        brand: item.brand,
+                        category: item.category,
+                        description: item.description,
+                        currency: item.currency as any,
+                        page: item.page,
+                        price_date: item.price_date,
+                        brand_norm: null,
+                        description_norm: null,
+                        category_norm: null,
+                        series: [],
+                      })
+                    }
                   >
                     <td>{item.brand ?? "-"}</td>
                     <td>{item.category ?? "-"}</td>
