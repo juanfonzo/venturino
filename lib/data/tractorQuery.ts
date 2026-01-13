@@ -3,6 +3,7 @@ import type { TractorItem } from "@/lib/types";
 
 export interface TractorQuery {
   q?: string | null;
+  searchScope?: "core" | "full" | null;
   origin?: string | null;
   brand?: string | null;
   model?: string | null;
@@ -23,13 +24,13 @@ export function applyTractorFilters(rows: TractorItem[], query: TractorQuery) {
   const estadoNorm = normalizeText(query.estado ?? null);
   const provinceNorm = normalizeText(query.province ?? null);
   const yearThreshold = new Date().getFullYear() - 2;
+  const includeDescription = query.searchScope !== "core";
 
   return rows.filter((row) => {
     if (q) {
-      const haystack = [row.titulo, row.marca, row.modelo, row.descripcion]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      const haystackParts = [row.titulo, row.marca, row.modelo];
+      if (includeDescription) haystackParts.push(row.descripcion);
+      const haystack = haystackParts.filter(Boolean).join(" ").toLowerCase();
       if (!haystack.includes(q)) return false;
     }
 

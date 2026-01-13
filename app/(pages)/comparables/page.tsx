@@ -68,9 +68,12 @@ export default function ComparablesPage() {
       setListingResults([]);
       return;
     }
+    setListingResults([]);
     let cancelled = false;
     const handle = setTimeout(() => {
-      fetch(`/api/tractors?q=${encodeURIComponent(listingQuery)}&pageSize=6&hasPrice=true`)
+      fetch(
+        `/api/tractors?q=${encodeURIComponent(listingQuery)}&pageSize=6&hasPrice=true&searchScope=core`,
+      )
         .then((res) => res.json())
         .then((json) => {
           if (!cancelled) setListingResults(json.rows ?? []);
@@ -295,6 +298,14 @@ export default function ComparablesPage() {
           ) : (
             <p className="text-sm text-jd-black/60">Escribe al menos 2 letras para ver sugerencias.</p>
           )}
+          <div className="rounded-xl bg-jd-cream/70 p-3 text-xs text-jd-black/70">
+            <p className="text-xs uppercase text-jd-black/50">Como usarlo</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>Busca una publicacion y selecciona para completar marca, modelo, anio y potencia.</li>
+              <li>Solo se muestran publicaciones con precio para comparar correctamente.</li>
+              <li>Puedes ajustar el precio objetivo mas abajo si quieres simular otra oferta.</li>
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -403,6 +414,9 @@ export default function ComparablesPage() {
                 <p>Precio bajo: {formatUsd(result.p25)}</p>
                 <p>Precio de referencia: {formatUsd(result.p50)}</p>
                 <p>Precio alto: {formatUsd(result.p75)}</p>
+                <p className="text-xs text-jd-black/60">
+                  La referencia es el precio tipico del mercado con filtros actuales.
+                </p>
               </>
             ) : (
               <p className="text-jd-black/60">Completa filtros y calcula.</p>
@@ -440,6 +454,9 @@ export default function ComparablesPage() {
                   El score compara el precio objetivo contra el maximo de compra. Positivo es favorable, cerca de cero es neutro,
                   negativo indica sobreprecio.
                 </p>
+                <p className="text-xs text-jd-black/60">
+                  Verde = buena compra, Amarillo = revisar condiciones, Rojo = sobreprecio.
+                </p>
               </>
             ) : (
               <p className="text-jd-black/60">Sin datos aun.</p>
@@ -465,6 +482,9 @@ export default function ComparablesPage() {
                 ) : (
                   <p className="text-jd-black/60">No hay referencia para el anio o el valor es nulo.</p>
                 )}
+                <p className="text-xs text-jd-black/60">
+                  ACARA es el valor de referencia del sector para comparar con el mercado publicado.
+                </p>
               </>
             ) : autoMatchWithRef ? (
               <>
@@ -480,10 +500,13 @@ export default function ComparablesPage() {
                 ) : (
                   <p className="text-jd-black/60">No hay referencia para el anio o el valor es nulo.</p>
                 )}
-                    <p className="text-xs text-jd-black/60">
-                      Match automatico por similitud.{" "}
-                      <a className="underline" href="/acara">
-                        Vincula este modelo en ACARA.
+                <p className="text-xs text-jd-black/60">
+                  Revisa el vinculo sugerido y confirmalo en la seccion ACARA.
+                </p>
+                <p className="text-xs text-jd-black/60">
+                  Match automatico por similitud.{" "}
+                  <a className="underline" href="/acara">
+                    Vincula este modelo en ACARA.
                       </a>
                     </p>
               </>

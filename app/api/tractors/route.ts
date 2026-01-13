@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const query = {
       q: searchParams.get("q"),
+      searchScope: (searchParams.get("searchScope") as "core" | "full" | null) ?? null,
       origin: searchParams.get("origin"),
       brand: searchParams.get("brand"),
       model: searchParams.get("model"),
