@@ -8,15 +8,15 @@ import { normalizeText, normalizeLoose } from "@/lib/normalize/text";
 import { createStableId } from "@/lib/utils/id";
 import type { TractorItem, TractorsDataset } from "@/lib/types";
 
-const PRIMARY_PATH = path.join(process.cwd(), "tractores_unificados_v3_normalizado.csv");
-const DATA_PATH = path.join(process.cwd(), "data", "tractores_unificados_v3_normalizado.csv");
+const PRIMARY_PATH = path.join(process.cwd(), "data", "tractores_unificados_v3_normalizado.csv");
+const FALLBACK_PATH = path.join(process.cwd(), "tractores_unificados_v3_normalizado.csv");
 const LEGACY_PATH = path.join(process.cwd(), "data", "tractores_unificados_v3.csv");
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cache: TractorsDataset | null = null;
 
 async function resolveDataPath() {
-  const candidates = [PRIMARY_PATH, DATA_PATH, LEGACY_PATH];
+  const candidates = [PRIMARY_PATH, FALLBACK_PATH, LEGACY_PATH];
   for (const candidate of candidates) {
     try {
       await fs.access(candidate);
