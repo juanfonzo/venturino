@@ -133,7 +133,9 @@ export async function loadTractors(force = false): Promise<TractorsDataset> {
       monedaRaw,
       origen,
     });
-    const precio_nor_safe = precio_nor && precio_nor > 0 ? precio_nor : null;
+    const MIN_VALID_PRICE_USD = 1000;
+    const precio_nor_safe =
+      precio_nor !== null && precio_nor >= MIN_VALID_PRICE_USD ? precio_nor : null;
     const estado_norm = normalizeEstado(row.condicion);
     const ubicacion = normalizeLoose(row.ubicacion) ?? null;
     const { provincia, ciudad } = deriveLocation(ubicacion);
