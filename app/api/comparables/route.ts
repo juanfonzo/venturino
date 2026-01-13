@@ -33,15 +33,29 @@ export async function GET(request: NextRequest) {
     const hpMinParam = parseNumberParam(searchParams.get("hpMin"));
     const hpMaxParam = parseNumberParam(searchParams.get("hpMax"));
 
+    const estado = searchParams.get("estado") ?? listing?.estado_norm ?? null;
+    const currentYear = new Date().getFullYear();
+    const newYearThreshold = currentYear - 2;
+
+    let yearMin = yearMinParam ?? listing?.anio ?? null;
+    let yearMax = yearMaxParam ?? (yearMinParam ? null : listing?.anio ?? null);
+
+    if (estado === "Nuevo" && yearMinParam === null && yearMaxParam === null) {
+      if (!listing?.anio || listing.anio < newYearThreshold) {
+        yearMin = newYearThreshold;
+        yearMax = currentYear + 1;
+      }
+    }
+
     const query = {
       q: searchParams.get("q"),
       origin: searchParams.get("origin"),
       brand: searchParams.get("brand") ?? listing?.marca ?? null,
       model: searchParams.get("model") ?? listing?.modelo ?? null,
-      estado: searchParams.get("estado") ?? listing?.estado_norm ?? null,
+      estado,
       province: searchParams.get("province") ?? listing?.provincia ?? null,
-      yearMin: yearMinParam ?? listing?.anio ?? null,
-      yearMax: yearMaxParam ?? (yearMinParam ? null : listing?.anio ?? null),
+      yearMin,
+      yearMax,
       hpMin: hpMinParam ?? listing?.hp_motor ?? null,
       hpMax: hpMaxParam ?? null,
       hasPrice: true,

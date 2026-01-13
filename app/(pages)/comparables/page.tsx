@@ -70,7 +70,7 @@ export default function ComparablesPage() {
     }
     let cancelled = false;
     const handle = setTimeout(() => {
-      fetch(`/api/tractors?q=${encodeURIComponent(listingQuery)}&pageSize=6`)
+      fetch(`/api/tractors?q=${encodeURIComponent(listingQuery)}&pageSize=6&hasPrice=true`)
         .then((res) => res.json())
         .then((json) => {
           if (!cancelled) setListingResults(json.rows ?? []);
@@ -181,22 +181,23 @@ export default function ComparablesPage() {
     } catch {
       setError("No se pudo calcular comparables.");
     } finally {
-    setLoading(false);
-  }
+      setLoading(false);
+    }
   }
 
   const autoMatchSelected = mappingKey ? autoMatches[mappingKey] : null;
+  const autoMatchWithRef = autoMatchSelected && autoMatchSelected.refUsd !== null ? autoMatchSelected : null;
 
   const gap = useMemo(() => {
     if (!result?.p50) return null;
     const ref = acaraItem
       ? pickAcaraReference(acaraItem, selectedListing?.anio ?? filters.yearMin)
-      : autoMatchSelected?.refUsd ?? null;
+      : autoMatchWithRef?.refUsd ?? null;
     if (!ref) return null;
     const gapAbs = ref - result.p50;
     const gapPct = gapAbs / ref;
     return { ref, gapAbs, gapPct };
-  }, [acaraItem, result, filters.yearMin, selectedListing?.anio, autoMatchSelected]);
+  }, [acaraItem, result, filters.yearMin, selectedListing?.anio, autoMatchWithRef]);
 
   const actionLabel = useMemo(() => {
     if (!result) return "Completa los filtros para ver la recomendacion.";
@@ -465,10 +466,10 @@ export default function ComparablesPage() {
                   <p className="text-jd-black/60">No hay referencia para el anio o el valor es nulo.</p>
                 )}
               </>
-            ) : autoMatchSelected ? (
+            ) : autoMatchWithRef ? (
               <>
                 <p>
-                  {autoMatchSelected.brand ?? ""} {autoMatchSelected.description ?? ""}
+                  {autoMatchWithRef.brand ?? ""} {autoMatchWithRef.description ?? ""}
                 </p>
                 {gap ? (
                   <>
@@ -479,12 +480,12 @@ export default function ComparablesPage() {
                 ) : (
                   <p className="text-jd-black/60">No hay referencia para el anio o el valor es nulo.</p>
                 )}
-                <p className="text-xs text-jd-black/60">
-                  Match automatico por similitud.{" "}
-                  <a className="underline" href="/acara">
-                    Vincula este modelo en ACARA.
-                  </a>
-                </p>
+                    <p className="text-xs text-jd-black/60">
+                      Match automatico por similitud.{" "}
+                      <a className="underline" href="/acara">
+                        Vincula este modelo en ACARA.
+                      </a>
+                    </p>
               </>
             ) : (
               <p className="text-jd-black/60">
@@ -532,10 +533,10 @@ export default function ComparablesPage() {
                           return ref ? formatUsd(ref) : "Sin dato";
                         }
                         const autoMatch = autoMatches[key];
-                        if (autoMatch) {
+                        if (autoMatch && autoMatch.refUsd !== null) {
                           return (
                             <span className="inline-flex items-center gap-2">
-                              {autoMatch.refUsd ? formatUsd(autoMatch.refUsd) : "Sin dato"}
+                              {formatUsd(autoMatch.refUsd)}
                               <span className="text-xs text-jd-black/50">Sugerido</span>
                             </span>
                           );
@@ -557,7 +558,15 @@ export default function ComparablesPage() {
                         "-"
                       )}
                     </td>
-                    <td>{row.estado_norm ?? "-"}</td>
+                    <td>
+                      {row.estado_norm === "Nuevo" && row.flags.includes("YEAR_CONDITION_CONFLICT") ? (
+                        <span className="text-jd-black/70">
+                          Nuevo <span className="text-xs text-jd-black/50">(anio antiguo)</span>
+                        </span>
+                      ) : (
+                        row.estado_norm ?? "-"
+                      )}
+                    </td>
                     <td>{formatUsd(row.precio_nor)}</td>
                   </tr>
                 ))}

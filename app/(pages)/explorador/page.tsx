@@ -42,7 +42,6 @@ export default function ExploradorPage() {
     brand: "",
     estado: "",
     province: "",
-    hasPrice: false,
     yearMin: "",
     yearMax: "",
     hpMin: "",
@@ -75,7 +74,6 @@ export default function ExploradorPage() {
     if (query.yearMax) labels.push(`Anio max: ${query.yearMax}`);
     if (query.hpMin) labels.push(`HP min: ${query.hpMin}`);
     if (query.hpMax) labels.push(`HP max: ${query.hpMax}`);
-    if (query.hasPrice) labels.push("Solo con precio");
     return labels;
   }, [query]);
 
@@ -85,7 +83,6 @@ export default function ExploradorPage() {
     if (query.brand) params.set("brand", query.brand);
     if (query.estado) params.set("estado", query.estado);
     if (query.province) params.set("province", query.province);
-    if (query.hasPrice) params.set("hasPrice", "true");
     if (query.yearMin) params.set("yearMin", query.yearMin);
     if (query.yearMax) params.set("yearMax", query.yearMax);
     if (query.hpMin) params.set("hpMin", query.hpMin);
@@ -234,27 +231,28 @@ export default function ExploradorPage() {
   ]);
 
   const autoMatchSelected = selectedKey ? autoMatches[selectedKey] : null;
+  const autoMatchWithRef = autoMatchSelected && autoMatchSelected.refUsd !== null ? autoMatchSelected : null;
 
   const acaraReferenceDetail = useMemo(() => {
     if (!selected) return null;
     if (acaraItem) {
       return pickAcaraReferenceDetail(acaraItem, selected.anio);
     }
-    if (autoMatchSelected) {
+    if (autoMatchWithRef) {
       return {
-        value: autoMatchSelected.refUsd ?? null,
-        yearLabel: autoMatchSelected.refLabel ?? null,
+        value: autoMatchWithRef.refUsd ?? null,
+        yearLabel: autoMatchWithRef.refLabel ?? null,
       };
     }
     return null;
-  }, [acaraItem, autoMatchSelected, selected]);
+  }, [acaraItem, autoMatchWithRef, selected]);
 
   const acaraReference = useMemo(() => {
     if (!selected) return null;
     const mappedRef = pickAcaraReference(acaraItem, selected.anio);
     if (mappedRef) return mappedRef;
-    return autoMatchSelected?.refUsd ?? null;
-  }, [acaraItem, autoMatchSelected?.refUsd, selected]);
+    return autoMatchWithRef?.refUsd ?? null;
+  }, [acaraItem, autoMatchWithRef?.refUsd, selected]);
 
   const gapInfo = useMemo(() => {
     if (!selected?.precio_nor || !acaraReference) return null;
@@ -324,15 +322,6 @@ export default function ExploradorPage() {
               }}
             >
               Solo usados
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setPage(1);
-                setQuery((prev) => ({ ...prev, hasPrice: true }));
-              }}
-            >
-              Solo con precio
             </Button>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -407,17 +396,6 @@ export default function ExploradorPage() {
                 setQuery((prev) => ({ ...prev, hpMax: event.target.value }));
               }}
             />
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={query.hasPrice}
-                onChange={(event) => {
-                  setPage(1);
-                  setQuery((prev) => ({ ...prev, hasPrice: event.target.checked }));
-                }}
-              />
-              Solo con precio
-            </label>
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
@@ -427,7 +405,6 @@ export default function ExploradorPage() {
                     brand: "",
                     estado: "",
                     province: "",
-                    hasPrice: false,
                     yearMin: "",
                     yearMax: "",
                     hpMin: "",
@@ -507,10 +484,10 @@ export default function ExploradorPage() {
                           return ref ? formatUsd(ref) : "Sin dato";
                         }
                         const autoMatch = autoMatches[key];
-                        if (autoMatch) {
+                        if (autoMatch && autoMatch.refUsd !== null) {
                           return (
                             <span className="inline-flex items-center gap-2">
-                              {autoMatch.refUsd ? formatUsd(autoMatch.refUsd) : "Sin dato"}
+                              {formatUsd(autoMatch.refUsd)}
                               <span className="text-xs text-jd-black/50">Sugerido</span>
                             </span>
                           );
@@ -532,7 +509,15 @@ export default function ExploradorPage() {
                         "-"
                       )}
                     </td>
-                    <td>{row.estado_norm ?? "-"}</td>
+                    <td>
+                      {row.estado_norm === "Nuevo" && row.flags.includes("YEAR_CONDITION_CONFLICT") ? (
+                        <span className="text-jd-black/70">
+                          Nuevo <span className="text-xs text-jd-black/50">(anio antiguo)</span>
+                        </span>
+                      ) : (
+                        row.estado_norm ?? "-"
+                      )}
+                    </td>
                     <td>{formatUsd(row.precio_nor)}</td>
                   </tr>
                 ))}
@@ -619,7 +604,7 @@ export default function ExploradorPage() {
                   {acaraReference ? (
                     <>
                       <p className="text-sm">
-                        {autoMatchSelected && !acaraItem
+                        {autoMatchWithRef && !acaraItem
                           ? "Referencia sugerida: "
                           : "Referencia ACARA: "}
                         {formatUsd(acaraReference)}
@@ -627,7 +612,7 @@ export default function ExploradorPage() {
                       <p className="text-xs text-jd-black/60">
                         {acaraItem
                           ? `${acaraItem.brand ?? ""} ${acaraItem.description ?? ""}`.trim()
-                          : `${autoMatchSelected?.brand ?? ""} ${autoMatchSelected?.description ?? ""}`.trim()}
+                          : `${autoMatchWithRef?.brand ?? ""} ${autoMatchWithRef?.description ?? ""}`.trim()}
                         {acaraReferenceDetail?.yearLabel
                           ? ` | Anio tomado: ${acaraReferenceDetail.yearLabel}`
                           : ""}
@@ -640,7 +625,7 @@ export default function ExploradorPage() {
                       ) : (
                         <p className="text-jd-black/60">Sin precio en la publicacion para comparar.</p>
                       )}
-                      {autoMatchSelected && !acaraItem ? (
+                      {autoMatchWithRef && !acaraItem ? (
                         <p className="text-xs text-jd-black/60">
                           Match automatico por similitud de modelo.{" "}
                           <Link className="underline" href="/acara">

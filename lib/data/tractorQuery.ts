@@ -22,6 +22,7 @@ export function applyTractorFilters(rows: TractorItem[], query: TractorQuery) {
   const originNorm = normalizeText(query.origin ?? null);
   const estadoNorm = normalizeText(query.estado ?? null);
   const provinceNorm = normalizeText(query.province ?? null);
+  const yearThreshold = new Date().getFullYear() - 2;
 
   return rows.filter((row) => {
     if (q) {
@@ -48,6 +49,9 @@ export function applyTractorFilters(rows: TractorItem[], query: TractorQuery) {
     if (estadoNorm) {
       const rowEstado = normalizeText(row.estado_norm ?? null);
       if (rowEstado !== estadoNorm) return false;
+      if (estadoNorm === "NUEVO" && row.anio && row.anio < yearThreshold) {
+        return false;
+      }
     }
 
     if (provinceNorm) {

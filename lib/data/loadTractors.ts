@@ -49,25 +49,42 @@ async function findFallbackCsv() {
   return null;
 }
 
-function parseYear(raw?: string | null) {
-  if (!raw) return null;
+function extractYearFromText(text?: string | null) {
+  if (!text) return null;
   const currentYear = new Date().getFullYear();
-  const rawText = raw.toString();
-  const exactMatch = rawText.match(/\b(19\d{2}|20\d{2})\b/);
-  if (exactMatch) {
-    const value = Number(exactMatch[1]);
-    return value >= 1950 && value <= currentYear + 1 ? value : null;
+  const matches = text.toString().match(/\b(19\d{2}|20\d{2})\b/g);
+  if (!matches) return null;
+  const years = matches
+    .map((match) => Number(match))
+    .filter((value) => Number.isFinite(value) && value >= 1950 && value <= currentYear + 1);
+  if (years.length === 0) return null;
+  return Math.max(...years);
+}
+
+function parseYear(raw?: string | null, titulo?: string | null, descripcion?: string | null) {
+  let rawValue: number | null = null;
+  if (raw) {
+    const currentYear = new Date().getFullYear();
+    const rawText = raw.toString();
+    const exactMatch = rawText.match(/\b(19\d{2}|20\d{2})\b/);
+    if (exactMatch) {
+      const value = Number(exactMatch[1]);
+      rawValue = value >= 1950 && value <= currentYear + 1 ? value : null;
+    } else {
+      const digits = rawText.replace(/\D/g, "");
+      if (digits) {
+        let value = Number(digits);
+        if (Number.isFinite(value)) {
+          while (value > currentYear + 1 && value >= 10000) {
+            value = Math.floor(value / 10);
+          }
+          rawValue = value >= 1950 && value <= currentYear + 1 ? value : null;
+        }
+      }
+    }
   }
 
-  const digits = rawText.replace(/\D/g, "");
-  if (!digits) return null;
-  let value = Number(digits);
-  if (!Number.isFinite(value)) return null;
-  while (value > currentYear + 1 && value >= 10000) {
-    value = Math.floor(value / 10);
-  }
-  if (value < 1950 || value > currentYear + 1) return null;
-  return value;
+  return rawValue ?? extractYearFromText(titulo) ?? extractYearFromText(descripcion);
 }
 
 function parseHpValue(raw?: string | null) {
@@ -143,7 +160,7 @@ export async function loadTractors(force = false): Promise<TractorsDataset> {
     const modelo = normalizeLoose(row.modelo) ?? null;
     const marca_norm = normalizeText(marca);
     const modelo_norm = normalizeText(modelo);
-    const anio = parseYear(row.anio);
+    const anio = parseYear(row.anio, row.titulo, row.descripcion);
     const hp_motor = parseHp(row.hp_motor, row.titulo, row.descripcion);
     const flags = buildFlags({
       precio_nor: precio_nor_safe,

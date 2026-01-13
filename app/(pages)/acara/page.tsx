@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { formatNumber } from "@/lib/utils/format";
 import { useAcaraMappings } from "@/store/useAcaraMappings";
 import { AcaraSeriesChart } from "@/components/AcaraSeriesChart";
+import { normalizeText } from "@/lib/normalize/text";
 
 interface AcaraItemsResponse {
   rows: Array<{
@@ -40,6 +41,7 @@ export default function AcaraPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [comboList, setComboList] = useState<StatsResponse["topModelCombos"]>([]);
+  const [comboSearch, setComboSearch] = useState("");
   const [selectedCombo, setSelectedCombo] = useState<string | null>(null);
   const [selectedComboMeta, setSelectedComboMeta] = useState<{ brand: string; model: string } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -148,10 +150,6 @@ export default function AcaraPage() {
     };
   }, [mappings]);
 
-  const unmappedCombos = useMemo(() => {
-    return comboList.filter((combo) => !mappings[combo.key]);
-  }, [comboList, mappings]);
-
   const comboLabelMap = useMemo(() => {
     const map = new Map<string, string>();
     comboList.forEach((combo) => {
@@ -159,6 +157,15 @@ export default function AcaraPage() {
     });
     return map;
   }, [comboList]);
+
+  const comboMatches = useMemo(() => {
+    const query = normalizeText(comboSearch);
+    if (!query) return comboList;
+    return comboList.filter((combo) => {
+      const haystack = normalizeText(`${combo.marca ?? ""} ${combo.modelo ?? ""}`);
+      return haystack ? haystack.includes(query) : false;
+    });
+  }, [comboList, comboSearch]);
 
   const totalPages = items ? Math.max(1, Math.ceil(items.total / items.pageSize)) : 1;
 
@@ -358,25 +365,46 @@ export default function AcaraPage() {
               Al elegir un combo, la busqueda se ajusta automaticamente para facilitar el match.
             </p>
             <div>
-              <p className="text-xs uppercase text-jd-black/50">Modelos sin vinculo</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {unmappedCombos.slice(0, 8).map((combo) => (
-                  <button
-                    key={combo.key}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      selectedCombo === combo.key
-                        ? "bg-jd-green text-white"
-                        : "bg-jd-cream/70 text-jd-black"
-                    }`}
-                    onClick={() => {
-                      setSelectedCombo(combo.key);
-                      setSelectedComboMeta({ brand: combo.marca, model: combo.modelo });
-                      setSearch(`${combo.marca} ${combo.modelo}`.trim());
-                    }}
-                  >
-                    {combo.marca} {combo.modelo} ({formatNumber(combo.count)})
-                  </button>
-                ))}
+              <p className="text-xs uppercase text-jd-black/50">Modelos de mercado</p>
+              <div className="mt-2 space-y-2">
+                <Input
+                  placeholder="Buscar modelo de mercado"
+                  value={comboSearch}
+                  onChange={(event) => setComboSearch(event.target.value)}
+                />
+                <p className="text-xs text-jd-black/60">
+                  {comboMatches.length
+                    ? `Mostrando ${formatNumber(comboMatches.length)} de ${formatNumber(comboList.length)} modelos.`
+                    : "Sin modelos que coincidan con esta busqueda."}
+                </p>
+                <div className="flex max-h-40 flex-wrap gap-2 overflow-auto rounded-2xl border border-jd-black/10 bg-white/80 p-2">
+                  {comboMatches.map((combo) => {
+                    const isSelected = selectedCombo === combo.key;
+                    const isMapped = Boolean(mappings[combo.key]);
+                    return (
+                      <button
+                        key={combo.key}
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                          isSelected
+                            ? "bg-jd-green text-white"
+                            : isMapped
+                              ? "border border-jd-green/30 bg-white text-jd-green"
+                              : "bg-jd-cream/70 text-jd-black"
+                        }`}
+                        onClick={() => {
+                          setSelectedCombo(combo.key);
+                          setSelectedComboMeta({ brand: combo.marca, model: combo.modelo });
+                          setSearch(`${combo.marca} ${combo.modelo}`.trim());
+                        }}
+                      >
+                        <span>
+                          {combo.marca} {combo.modelo} ({formatNumber(combo.count)})
+                        </span>
+                        {isMapped ? <span className="text-[10px] uppercase">Vinculado</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
             <div>

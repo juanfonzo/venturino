@@ -39,7 +39,7 @@ export async function GET() {
       byOrigin: groupByOrigin(rows).sort((a, b) => b.count - a.count),
       byEstado: byEstado.sort((a, b) => b.count - a.count),
       topBrands: topBrands(rows, 8),
-      topModelCombos: topModelCombos(rows, 20),
+      topModelCombos: topModelCombos(rows, 200),
       topOpportunities: computeTopOpportunities(rows, 10),
       suspects: rows
         .filter((row) => row.flags.length > 0)

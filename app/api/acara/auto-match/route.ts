@@ -48,14 +48,17 @@ export async function POST(request: NextRequest) {
         return { key, match: null };
       }
       const refDetail = pickAcaraReferenceDetail(best.item, row.year ?? null);
+      if (!refDetail) {
+        return { key, match: null };
+      }
       return {
         key,
         match: {
           itemId: best.item.id,
           brand: best.item.brand,
           description: best.item.description,
-          refUsd: refDetail?.value ?? null,
-          refLabel: refDetail?.yearLabel ?? null,
+          refUsd: refDetail.value,
+          refLabel: refDetail.yearLabel,
           score: best.score,
         },
       };
