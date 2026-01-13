@@ -1,15 +1,25 @@
 import type { AcaraItem } from "@/lib/types";
 import { normalizeMatchText } from "@/lib/normalize/text";
 
-export function pickAcaraReference(item: AcaraItem | null, year?: string | number | null) {
+export function pickAcaraReferenceDetail(item: AcaraItem | null, year?: string | number | null) {
   if (!item) return null;
   const yearValue = year ? year.toString().trim() : "";
   if (yearValue) {
     const match = item.series.find((point) => point.yearLabel === yearValue);
-    if (match?.valueUsd) return match.valueUsd;
+    if (match && match.valueUsd !== null) {
+      return { value: match.valueUsd, yearLabel: match.yearLabel };
+    }
   }
   const fallback = item.series.find((point) => point.yearLabel.toLowerCase() === "0km");
-  return fallback?.valueUsd ?? null;
+  if (fallback && fallback.valueUsd !== null) {
+    return { value: fallback.valueUsd, yearLabel: fallback.yearLabel };
+  }
+  return null;
+}
+
+export function pickAcaraReference(item: AcaraItem | null, year?: string | number | null) {
+  const detail = pickAcaraReferenceDetail(item, year);
+  return detail?.value ?? null;
 }
 
 function compactText(value: string) {

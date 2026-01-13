@@ -9,7 +9,6 @@ const navItems = [
   { href: "/explorador", label: "Explorador" },
   { href: "/comparables", label: "Comparables" },
   { href: "/acara", label: "ACARA" },
-  { href: "/provincias", label: "Provincias" },
 ];
 
 export function SiteHeader() {

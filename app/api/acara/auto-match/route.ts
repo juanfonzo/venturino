@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { loadAcara } from "@/lib/data/loadAcara";
 import { normalizeText } from "@/lib/normalize/text";
-import { findBestAcaraMatch, pickAcaraReference } from "@/lib/utils/acara";
+import { findBestAcaraMatch, pickAcaraReferenceDetail } from "@/lib/utils/acara";
 import type { AcaraItem } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -47,14 +47,15 @@ export async function POST(request: NextRequest) {
       if (!best) {
         return { key, match: null };
       }
-      const refUsd = pickAcaraReference(best.item, row.year ?? null);
+      const refDetail = pickAcaraReferenceDetail(best.item, row.year ?? null);
       return {
         key,
         match: {
           itemId: best.item.id,
           brand: best.item.brand,
           description: best.item.description,
-          refUsd,
+          refUsd: refDetail?.value ?? null,
+          refLabel: refDetail?.yearLabel ?? null,
           score: best.score,
         },
       };

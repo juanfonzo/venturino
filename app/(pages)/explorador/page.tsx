@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatHp, formatNumber, formatPercent, formatUsd, formatYear } from "@/lib/utils/format";
 import { useAcaraMappings } from "@/store/useAcaraMappings";
 import { normalizeText } from "@/lib/normalize/text";
-import { pickAcaraReference } from "@/lib/utils/acara";
+import { pickAcaraReference, pickAcaraReferenceDetail } from "@/lib/utils/acara";
 import type { AcaraItem } from "@/lib/types";
 import { formatFlag } from "@/lib/utils/flags";
 
@@ -29,6 +29,7 @@ interface AutoMatchEntry {
     brand: string | null;
     description: string | null;
     refUsd: number | null;
+    refLabel: string | null;
     score: number;
   } | null;
 }
@@ -233,6 +234,20 @@ export default function ExploradorPage() {
   ]);
 
   const autoMatchSelected = selectedKey ? autoMatches[selectedKey] : null;
+
+  const acaraReferenceDetail = useMemo(() => {
+    if (!selected) return null;
+    if (acaraItem) {
+      return pickAcaraReferenceDetail(acaraItem, selected.anio);
+    }
+    if (autoMatchSelected) {
+      return {
+        value: autoMatchSelected.refUsd ?? null,
+        yearLabel: autoMatchSelected.refLabel ?? null,
+      };
+    }
+    return null;
+  }, [acaraItem, autoMatchSelected, selected]);
 
   const acaraReference = useMemo(() => {
     if (!selected) return null;
@@ -594,13 +609,28 @@ export default function ExploradorPage() {
               <div className="panel bg-white/70">
                 <div className="panel-body space-y-2 text-sm">
                   <p className="text-xs uppercase text-jd-black/50">Referencia ACARA</p>
+                  <div className="rounded-xl bg-white/60 p-3 text-xs text-jd-black/70">
+                    <p className="text-xs uppercase text-jd-black/50">Tractor evaluado</p>
+                    <p>
+                      {selected.marca ?? "-"} {selected.modelo ?? ""} | Anio{" "}
+                      {selected.anio ?? "Sin dato"} | {formatUsd(selected.precio_nor)}
+                    </p>
+                  </div>
                   {acaraReference ? (
                     <>
-                      <p>
+                      <p className="text-sm">
                         {autoMatchSelected && !acaraItem
                           ? "Referencia sugerida: "
-                          : "Precio de referencia: "}
+                          : "Referencia ACARA: "}
                         {formatUsd(acaraReference)}
+                      </p>
+                      <p className="text-xs text-jd-black/60">
+                        {acaraItem
+                          ? `${acaraItem.brand ?? ""} ${acaraItem.description ?? ""}`.trim()
+                          : `${autoMatchSelected?.brand ?? ""} ${autoMatchSelected?.description ?? ""}`.trim()}
+                        {acaraReferenceDetail?.yearLabel
+                          ? ` | Anio tomado: ${acaraReferenceDetail.yearLabel}`
+                          : ""}
                       </p>
                       {gapInfo ? (
                         <p>

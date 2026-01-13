@@ -2,7 +2,8 @@ import { getBaseUrl } from "@/lib/utils/baseUrl";
 import { formatNumber, formatPercent, formatUsd, formatYear } from "@/lib/utils/format";
 import type { StatsResponse } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
-import { AcaraCoveragePanel } from "@/components/AcaraCoveragePanel";
+import { ProvinceDistributionPanel } from "@/components/ProvinceDistributionPanel";
+import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
 
 async function fetchStats(): Promise<StatsResponse> {
   const baseUrl = getBaseUrl();
@@ -67,10 +68,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <AcaraCoveragePanel combos={stats.topModelCombos} />
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-2">
+        <AcaraTrendPanel />
         <div className="panel">
           <div className="panel-header">
             <div>
@@ -79,12 +77,15 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="panel-body">
+            <p className="mb-3 text-sm text-jd-black/70">
+              Precio referencia indica el valor tipico del mercado en cada provincia.
+            </p>
             <table className="table-base">
               <thead>
                 <tr>
                   <th>Provincia</th>
                   <th>Cant.</th>
-                  <th>Precio referencia</th>
+                  <th>Precio referencia (mercado)</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,6 +101,8 @@ export default async function DashboardPage() {
           </div>
         </div>
       </section>
+
+      <ProvinceDistributionPanel />
 
       <section className="panel">
         <div className="panel-header">

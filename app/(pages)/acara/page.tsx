@@ -22,6 +22,8 @@ interface AcaraItemsResponse {
     seriesCount: number;
   }>;
   total: number;
+  page: number;
+  pageSize: number;
 }
 
 interface AcaraSuggestion {
@@ -36,6 +38,7 @@ export default function AcaraPage() {
   const [items, setItems] = useState<AcaraItemsResponse | null>(null);
   const [selectedItem, setSelectedItem] = useState<AcaraItem | null>(null);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
   const [comboList, setComboList] = useState<StatsResponse["topModelCombos"]>([]);
   const [selectedCombo, setSelectedCombo] = useState<string | null>(null);
   const [selectedComboMeta, setSelectedComboMeta] = useState<{ brand: string; model: string } | null>(null);
@@ -55,7 +58,7 @@ export default function AcaraPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetch(`/api/acara/items?q=${encodeURIComponent(search)}`)
+    fetch(`/api/acara/items?q=${encodeURIComponent(search)}&page=${page}&pageSize=25`)
       .then((res) => res.json())
       .then((json: AcaraItemsResponse) => {
         if (!cancelled) setItems(json);
@@ -70,7 +73,7 @@ export default function AcaraPage() {
     return () => {
       cancelled = true;
     };
-  }, [search]);
+  }, [search, page]);
 
   useEffect(() => {
     if (!selectedItem?.id) return;
@@ -157,6 +160,8 @@ export default function AcaraPage() {
     return map;
   }, [comboList]);
 
+  const totalPages = items ? Math.max(1, Math.ceil(items.total / items.pageSize)) : 1;
+
   const handleAssign = () => {
     if (!selectedCombo || !selectedItem) {
       setNotice("Selecciona combo e item antes de vincular.");
@@ -214,11 +219,26 @@ export default function AcaraPage() {
             <li>Busca el item ACARA correcto en esta tabla o usa las sugerencias.</li>
             <li>Guarda el vinculo y queda disponible en Explorador y Comparables.</li>
           </ul>
-          <Input
-            placeholder="Buscar por marca, categoria o descripcion"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              placeholder="Buscar por marca, categoria o descripcion"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                setPage(1);
+              }}
+            >
+              Limpiar
+            </Button>
+          </div>
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-jd-black/60">
               <Spinner /> Buscando...
@@ -265,6 +285,29 @@ export default function AcaraPage() {
               </tbody>
             </table>
           )}
+          <div className="mt-3 flex items-center justify-between text-xs text-jd-black/60">
+            <span>
+              Pagina {items?.page ?? page} de {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -300,9 +343,17 @@ export default function AcaraPage() {
             <Badge variant="muted">{count} vinculos</Badge>
           </div>
           <div className="panel-body space-y-3 text-sm">
-            <p className="text-jd-black/70">
-              Paso 1: selecciona un modelo del mercado. Paso 2: elige el item ACARA. Paso 3: guarda el vinculo.
-            </p>
+            <div className="rounded-xl bg-jd-cream/70 p-3 text-xs text-jd-black/70">
+              <p className="text-xs uppercase text-jd-black/50">Valor del vinculo</p>
+              <p>
+                Habilita la referencia ACARA en Explorador y Comparables para comparar precios con el valor del sector.
+              </p>
+            </div>
+            <ol className="list-decimal space-y-1 pl-5 text-sm text-jd-black/70">
+              <li>Selecciona un modelo del mercado.</li>
+              <li>Elige el item ACARA correcto.</li>
+              <li>Guarda el vinculo.</li>
+            </ol>
             <p className="text-xs text-jd-black/60">
               Al elegir un combo, la busqueda se ajusta automaticamente para facilitar el match.
             </p>

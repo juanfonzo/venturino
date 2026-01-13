@@ -35,9 +35,11 @@ function buildScale(values: number[]) {
 export function ChoroplethMap({
   data,
   metric,
+  showPanel = true,
 }: {
   data: Array<ProvinceStat & { acaraGapAbs?: number | null }>;
   metric: "count" | "p50" | "p75" | "missingPricePct" | "acaraGapAbs";
+  showPanel?: boolean;
 }) {
   const [geojson, setGeojson] = useState<any>(null);
 
@@ -82,7 +84,11 @@ export function ChoroplethMap({
 
   if (!geojson) {
     return (
-      <div className="panel flex min-h-[320px] items-center justify-center text-sm text-jd-black/60">
+      <div
+        className={`${
+          showPanel ? "panel" : ""
+        } flex min-h-[320px] items-center justify-center text-sm text-jd-black/60`}
+      >
         Mapa no disponible (falta GeoJSON local)
       </div>
     );
@@ -91,10 +97,84 @@ export function ChoroplethMap({
   const features = (geojson as { features?: unknown[] }).features ?? [];
   if (!Array.isArray(features) || features.length === 0) {
     return (
-      <div className="panel flex min-h-[320px] items-center justify-center text-sm text-jd-black/60">
+      <div
+        className={`${
+          showPanel ? "panel" : ""
+        } flex min-h-[320px] items-center justify-center text-sm text-jd-black/60`}
+      >
         GeoJSON cargado pero sin provincias.
       </div>
     );
+  }
+
+  const mapContent = (
+    <div className="panel-body">
+      <MapContainer
+        center={[-38.4, -63.6]}
+        zoom={4}
+        style={{ height: 360, width: "100%" }}
+        zoomControl={false}
+        scrollWheelZoom={false}
+      >
+        <GeoJSON
+          data={geojson}
+          style={(feature) => {
+            const props = feature?.properties as {
+              name?: string;
+              provincia?: string;
+              nombre?: string;
+              NAM?: string;
+              FNA?: string;
+            };
+            const rawName =
+              props?.NAM ?? props?.name ?? props?.provincia ?? props?.nombre ?? props?.FNA ?? "";
+            const key = normalizeText(rawName) ?? rawName;
+            const value = dataMap.get(key) ?? 0;
+            const range = scale.max - scale.min || 1;
+            const t = Math.min(1, Math.max(0, (value - scale.min) / range));
+            const gapMax = Math.max(Math.abs(scale.min), Math.abs(scale.max)) || 1;
+            const gapIntensity = Math.min(1, Math.abs(value) / gapMax);
+            const gapColor =
+              value >= 0
+                ? interpolateColor("#F4F1E8", "#FFDE00", gapIntensity)
+                : interpolateColor("#F4F1E8", "#367C2B", gapIntensity);
+            return {
+              color: "#1A1A1A",
+              weight: 0.6,
+              fillColor:
+                metric === "acaraGapAbs"
+                  ? gapColor
+                  : interpolateColor("#F4F1E8", "#367C2B", t),
+              fillOpacity: 0.75,
+            };
+          }}
+          onEachFeature={(feature, layer) => {
+            const props = feature.properties as {
+              name?: string;
+              provincia?: string;
+              nombre?: string;
+              NAM?: string;
+              FNA?: string;
+            };
+            const rawName =
+              props?.NAM ?? props?.name ?? props?.provincia ?? props?.nombre ?? props?.FNA ?? "";
+            const key = normalizeText(rawName) ?? rawName;
+            const value = dataMap.get(key) ?? 0;
+            const formatted =
+              metric === "missingPricePct"
+                ? formatPercent(value, 0)
+                : metric === "count"
+                  ? formatNumber(value)
+                  : formatUsd(value);
+            layer.bindTooltip(`${rawName}: ${formatted}`);
+          }}
+        />
+      </MapContainer>
+    </div>
+  );
+
+  if (!showPanel) {
+    return <div className="overflow-hidden">{mapContent}</div>;
   }
 
   return (
@@ -105,69 +185,7 @@ export function ChoroplethMap({
           <p className="text-lg font-semibold text-jd-black">Distribucion por provincia</p>
         </div>
       </div>
-      <div className="panel-body">
-        <MapContainer
-          center={[-38.4, -63.6]}
-          zoom={4}
-          style={{ height: 360, width: "100%" }}
-          zoomControl={false}
-          scrollWheelZoom={false}
-        >
-          <GeoJSON
-            data={geojson}
-            style={(feature) => {
-              const props = feature?.properties as {
-                name?: string;
-                provincia?: string;
-                nombre?: string;
-                NAM?: string;
-                FNA?: string;
-              };
-              const rawName =
-                props?.NAM ?? props?.name ?? props?.provincia ?? props?.nombre ?? props?.FNA ?? "";
-              const key = normalizeText(rawName) ?? rawName;
-              const value = dataMap.get(key) ?? 0;
-              const range = scale.max - scale.min || 1;
-              const t = Math.min(1, Math.max(0, (value - scale.min) / range));
-              const gapMax = Math.max(Math.abs(scale.min), Math.abs(scale.max)) || 1;
-              const gapIntensity = Math.min(1, Math.abs(value) / gapMax);
-              const gapColor =
-                value >= 0
-                  ? interpolateColor("#F4F1E8", "#FFDE00", gapIntensity)
-                  : interpolateColor("#F4F1E8", "#367C2B", gapIntensity);
-              return {
-                color: "#1A1A1A",
-                weight: 0.6,
-                fillColor:
-                  metric === "acaraGapAbs"
-                    ? gapColor
-                    : interpolateColor("#F4F1E8", "#367C2B", t),
-                fillOpacity: 0.75,
-              };
-            }}
-            onEachFeature={(feature, layer) => {
-              const props = feature.properties as {
-                name?: string;
-                provincia?: string;
-                nombre?: string;
-                NAM?: string;
-                FNA?: string;
-              };
-              const rawName =
-                props?.NAM ?? props?.name ?? props?.provincia ?? props?.nombre ?? props?.FNA ?? "";
-              const key = normalizeText(rawName) ?? rawName;
-              const value = dataMap.get(key) ?? 0;
-              const formatted =
-                metric === "missingPricePct"
-                  ? formatPercent(value, 0)
-                  : metric === "count"
-                    ? formatNumber(value)
-                    : formatUsd(value);
-              layer.bindTooltip(`${rawName}: ${formatted}`);
-            }}
-          />
-        </MapContainer>
-      </div>
+      {mapContent}
     </div>
   );
 }
