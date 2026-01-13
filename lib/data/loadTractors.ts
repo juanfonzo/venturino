@@ -25,7 +25,28 @@ async function resolveDataPath() {
       // try next
     }
   }
+  const fallback = await findFallbackCsv();
+  if (fallback) return fallback;
   return PRIMARY_PATH;
+}
+
+async function findFallbackCsv() {
+  const roots = [process.cwd(), path.join(process.cwd(), "data")];
+  for (const root of roots) {
+    try {
+      const entries = await fs.readdir(root);
+      const csvFiles = entries
+        .filter((name) => name.toLowerCase().endsWith(".csv"))
+        .sort();
+      const tractorCsv = csvFiles.find((name) => name.toLowerCase().includes("tractor"));
+      if (tractorCsv) {
+        return path.join(root, tractorCsv);
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return null;
 }
 
 function parseYear(raw?: string | null) {
