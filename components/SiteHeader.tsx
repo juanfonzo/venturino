@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils/cn";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/analisis-1", label: "Análisis 1" },
+  { href: "/analisis-2", label: "Análisis 2" },
   { href: "/explorador", label: "Explorador" },
-  { href: "/comparables", label: "Comparables" },
   { href: "/acara", label: "ACARA" },
 ];
 
@@ -23,7 +24,7 @@ export function SiteHeader() {
           </p>
           <h1 className="text-2xl font-semibold text-jd-black">Radar de Mercado - Tractores</h1>
           <p className="mt-1 text-sm text-jd-black/60">
-            Comparables, oportunidades y referencias de precios para decidir compras y ventas.
+            Explorador y referencias de precios para decidir compras y ventas.
           </p>
         </div>
         <nav className="flex flex-wrap gap-2">

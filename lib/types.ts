@@ -11,6 +11,8 @@ export interface TractorRowRaw {
   modelo?: string;
   hp_motor?: string;
   anio?: string;
+  horas_uso?: string;
+  horas?: string;
   formas_pago?: string;
   ubicacion?: string;
   condicion?: string;
@@ -20,6 +22,7 @@ export interface TractorRowRaw {
 export interface TractorItem {
   id: string;
   origen: string | null;
+  empresa: string | null;
   url: string | null;
   titulo: string | null;
   precio_raw: string | null;
@@ -28,6 +31,7 @@ export interface TractorItem {
   modelo: string | null;
   hp_motor: number | null;
   anio: number | null;
+  horas_uso: number | null;
   formas_pago: string | null;
   ubicacion: string | null;
   condicion: string | null;
