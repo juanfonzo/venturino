@@ -1,0 +1,102 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: algorym2424/algorym       # Repo en Docker Hub
+      SERVICE:    venturino             # Nombre del contenedor en el VPS
+      WEB_NETWORK: nginxproxymanager_default # Red donde se conecta el proxy NGINX
+      DB_NETWORK:  venturino-backend            # Red donde vive la base de datos
+
+    steps:
+      # 1) Checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3) Set up tag (branch-timestamp)
+      - name: Set up tag
+        id: tag
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BRANCH_TAG=$(echo "${GITHUB_REF#refs/heads/}" | tr '/' '-')
+          echo "full_tag=${BRANCH_TAG}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+
+      # 4) Build & Push image
+      - name: Build image
+        run: |
+          docker build \
+            --no-cache \
+            -t $IMAGE_NAME:${{ steps.tag.outputs.full_tag }} .
+
+      - name: Push image
+        run: |
+          docker push $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}
+
+      # 5) Configure SSH
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/algorym.key
+          chmod 600 ~/.ssh/algorym.key
+          cat > ~/.ssh/config <<EOF
+          Host algorym
+            HostName ${{ secrets.SERVER_HOST }}
+            User ${{ secrets.SERVER_USER }}
+            IdentityFile ~/.ssh/algorym.key
+            StrictHostKeyChecking no
+          EOF
+
+      # 6) Deploy container
+      - name: Deploy container
+        run: |
+          set -e
+
+          # Helper para escapar apóstrofes
+          esc() { printf '%s' "$1" | sed "s/'/'\\''/g"; }
+
+          # 6.1) Login remoto a Docker Hub
+          printf '%s' "${{ secrets.DOCKERHUB_TOKEN }}" | \
+            ssh algorym "docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin"
+
+          # 6.1.1) Pull remoto de la imagen
+          ssh algorym \
+            "docker pull $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
+
+          # 6.2) Detener y remover contenedor previo
+          ssh algorym \
+            "docker stop $SERVICE || true && docker rm $SERVICE || true"
+
+          # 6.3) Construir flags de entorno
+          ENV_FLAGS=""
+          add() { ENV_FLAGS="$ENV_FLAGS -e $1='$(esc "$2")'"; }         
+
+          # 6.4) Ejecutar nuevo contenedor y conectar redes
+          ssh algorym "docker run -d \
+            --name $SERVICE \
+            --network $WEB_NETWORK \
+            --network-alias $SERVICE \
+            --restart unless-stopped \
+            $ENV_FLAGS \
+            $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
+
+          # Conectar a la red de base de datos (no se puede pasar 2 --network en docker run)
+          ssh algorym "docker network connect $DB_NETWORK $SERVICE || true"
+
+      # 6.5) Apply database changes
+      - name: Apply database changes
+        run: |
+          echo "Skipping database changes"
