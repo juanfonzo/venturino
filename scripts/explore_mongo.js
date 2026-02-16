@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-const uri = 'mongodb+srv://algorym:hJuvkDr1CcvgFjWI@cluster0.nubsnfm.mongodb.net/algorym?retryWrites=true&w=majority';
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+const uri = process.env.MONGODB_URI;
+if (!uri) { console.error('MONGODB_URI no definida en .env'); process.exit(1); }
 const OUTPUT_PATH = path.join(__dirname, '..', 'data', 'mongo_export.json');
 
 async function main() {
