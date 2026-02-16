@@ -54,4 +54,4 @@ COPY --from=builder /app/package.json ./
 EXPOSE 3000
 
 # Comando de arranque: levantar el servidor
-CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"]
+CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"] 
