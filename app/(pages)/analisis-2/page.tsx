@@ -8,22 +8,33 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/utils/format";
 
+type CategoryBreakdown = {
+  categoria: string;
+  count: number;
+  capitalUsd: number;
+};
+
+type CompanyItemRow = {
+  id: string;
+  origen: string | null;
+  categoria: string | null;
+  empresa: string;
+  url: string | null;
+  titulo: string | null;
+  marca: string | null;
+  modelo: string | null;
+  anio: number | null;
+  horas_uso: number | null;
+  hp_motor: number | null;
+  provincia: string | null;
+  precio_nor: number | null;
+  isDupCrossPortal: boolean;
+};
+
 type CompanyItemsResponse = {
   empresa: string;
-  rows: {
-    id: string;
-    origen: string | null;
-    empresa: string;
-    url: string | null;
-    titulo: string | null;
-    marca: string | null;
-    modelo: string | null;
-    anio: number | null;
-    horas_uso: number | null;
-    hp_motor: number | null;
-    provincia: string | null;
-    precio_nor: number | null;
-  }[];
+  categoryBreakdown: CategoryBreakdown[];
+  rows: CompanyItemRow[];
 };
 
 function parseCompaniesInput(value: string) {
@@ -43,6 +54,13 @@ function safeListTop<T>(items: T[], n: number) {
   return items.slice(0, n);
 }
 
+const CATEGORIAS = [
+  { value: "Tractores", label: "Tractores" },
+  { value: "Sembradoras", label: "Sembradoras" },
+  { value: "Cosechadoras", label: "Cosechadoras" },
+  { value: "Pulverizadoras", label: "Pulverizadoras" },
+];
+
 export default function Analisis2Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,15 +73,16 @@ export default function Analisis2Page() {
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [itemsData, setItemsData] = useState<CompanyItemsResponse | null>(null);
+  const [modalCategoria, setModalCategoria] = useState<string | null>(null);
 
   const selectedCompanies = useMemo(() => parseCompaniesInput(companiesInput), [companiesInput]);
 
-  const fetchData = async (nextCompanies?: string[]) => {
+  const fetchData = async (opts?: { nextCompanies?: string[] }) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
-      const companies = nextCompanies ?? selectedCompanies;
+      const companies = opts?.nextCompanies ?? selectedCompanies;
       if (companies.length > 0) {
         params.set("companies", companies.join(","));
       }
@@ -83,7 +102,7 @@ export default function Analisis2Page() {
   };
 
   useEffect(() => {
-    void fetchData([]);
+    void fetchData({ nextCompanies: [] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -123,10 +142,11 @@ export default function Analisis2Page() {
     setItemsLoading(true);
     setItemsError(null);
     setItemsData(null);
+    setModalCategoria(null);
     try {
       const params = new URLSearchParams();
       params.set("empresa", empresa);
-      params.set("limit", "250");
+      params.set("limit", "500");
       const res = await fetch(`/api/analisis-2/items?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("No se pudieron cargar publicaciones");
       const json = (await res.json()) as CompanyItemsResponse;
@@ -142,69 +162,58 @@ export default function Analisis2Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="panel">
-        <div className="panel-header">
-          <div>
+        <div className="panel-header flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Análisis 2</p>
-            <h2 className="text-lg font-semibold text-jd-black">Stock de competidores (usados)</h2>
-            <p className="mt-1 text-sm text-jd-black/60">
-              Volumen, composición, antigüedad y capital inmovilizado estimado (solo items con precio).
-            </p>
+            <h2 className="text-lg font-semibold text-jd-black">Stock de competidores</h2>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="flex flex-col gap-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-jd-black/50">Filtros</div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  placeholder="Empresas (separadas por coma). Vacío = todas"
-                  value={companiesInput}
-                  onChange={(e) => setCompaniesInput(e.target.value)}
-                  className="sm:w-[420px]"
-                />
-              </div>
-              <div className="text-xs text-jd-black/60">
-                Ejemplos: {topExampleCompanies.length ? topExampleCompanies.join(" · ") : "(cargando...)"}
-              </div>
-              {topExampleCompanies.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {topExampleCompanies.map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => {
-                        setCompaniesInput(name);
-                        void fetchData([name]);
-                      }}
-                      className="rounded-full bg-jd-cream/70 px-3 py-1 text-xs font-semibold text-jd-black hover:bg-jd-yellow/60"
-                    >
-                      {name}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCompaniesInput("");
-                      void fetchData([]);
-                    }}
-                    className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-jd-black/70 hover:bg-jd-cream/70"
-                  >
-                    Ver todas
-                  </button>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-jd-black/50">Acción</div>
-              <Button
-                onClick={() => void fetchData()}
-                disabled={loading}
-              >
-                {loading ? "Cargando..." : "Actualizar"}
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Filtrar empresas (separar con coma)"
+              value={companiesInput}
+              onChange={(e) => setCompaniesInput(e.target.value)}
+              className="w-[280px]"
+            />
+            <Button
+              onClick={() => void fetchData()}
+              disabled={loading}
+              size="sm"
+            >
+              {loading ? "..." : "Actualizar"}
+            </Button>
           </div>
         </div>
+        {topExampleCompanies.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 px-6 pb-4">
+            <span className="text-xs text-jd-black/50">Top:</span>
+            {topExampleCompanies.map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => {
+                  setCompaniesInput(name);
+                  void fetchData({ nextCompanies: [name] });
+                }}
+                className="rounded-full bg-jd-cream/70 px-2.5 py-0.5 text-xs font-medium text-jd-black hover:bg-jd-yellow/60"
+              >
+                {name}
+              </button>
+            ))}
+            {companiesInput && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCompaniesInput("");
+                  void fetchData({ nextCompanies: [] });
+                }}
+                className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-jd-black/60 hover:bg-jd-cream/70"
+              >
+                Ver todas
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="panel-body">
           {error ? (
@@ -222,19 +231,19 @@ export default function Analisis2Page() {
             <div className="flex flex-col gap-6">
               <section className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Unidades</div>
-                  <div className="mt-2 text-2xl font-semibold text-jd-black">{formatNumber(data.kpis.totalUnits)}</div>
-                  <div className="mt-1 text-sm text-jd-black/60">Deduplicadas por URL/ID</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Unidades únicas</div>
+                  <div className="mt-2 text-2xl font-semibold text-jd-black">{formatNumber(data.kpis.totalUniqueUnits)}</div>
+                  {data.meta.crossPortalDedupCount > 0 && (
+                    <div className="mt-1 text-xs text-jd-black/40">{formatNumber(data.meta.crossPortalDedupCount)} dups excluidos</div>
+                  )}
                 </div>
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
                   <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Capital inmovilizado</div>
                   <div className="mt-2 text-2xl font-semibold text-jd-black">{formatUsd(data.kpis.totalCapitalUsd)}</div>
-                  <div className="mt-1 text-sm text-jd-black/60">Solo items con precio</div>
                 </div>
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
                   <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Sin precio</div>
                   <div className="mt-2 text-2xl font-semibold text-jd-black">{formatPercent(data.kpis.totalMissingPricePct, 0)}</div>
-                  <div className="mt-1 text-sm text-jd-black/60">% del stock total</div>
                 </div>
               </section>
 
@@ -242,9 +251,6 @@ export default function Analisis2Page() {
                 <div className="panel-header">
                   <div>
                     <h3 className="text-base font-semibold text-jd-black">Stock por competidor</h3>
-                    <p className="mt-1 text-sm text-jd-black/60">
-                      Unidades, capital estimado, calidad (sin precio) y señales de composición.
-                    </p>
                   </div>
                   <div className="text-sm text-jd-black/60">
                     {formatNumber(filteredCompanies.length)} empresas
@@ -283,7 +289,14 @@ export default function Analisis2Page() {
                                     {c.empresa}
                                   </button>
                                 </td>
-                                <td>{formatNumber(c.countTotal)}</td>
+                                <td>
+                                  <span>{formatNumber(c.countUniqueUnits)}</span>
+                                  {c.crossPortalDups > 0 ? (
+                                    <span className="ml-1 text-xs text-jd-black/40" title={`${c.crossPortalDups} duplicados cross-portal`}>
+                                      (+{c.crossPortalDups})
+                                    </span>
+                                  ) : null}
+                                </td>
                                 <td>{formatUsd(c.capitalUsd)}</td>
                                 <td>
                                   <div className="flex items-center gap-2">
@@ -377,8 +390,8 @@ export default function Analisis2Page() {
                 </div>
               </section>
 
-              <div className="text-xs text-jd-black/50">
-                Deduplicación: URL (si existe) y luego ID. Antigüedad: solo con año. Capital: solo con precio.
+              <div className="text-xs text-jd-black/40">
+                Dedup: URL/ID + cross-portal (empresa+marca+modelo+año). Capital: solo con precio.
               </div>
             </div>
           ) : null}
@@ -470,19 +483,21 @@ export default function Analisis2Page() {
             className="absolute inset-0 bg-black/40"
             onClick={() => setItemsModalEmpresa(null)}
           />
-          <div className="absolute left-1/2 top-1/2 z-[120] w-[min(1000px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-jd-black/10 px-6 py-5">
+          <div className="absolute left-1/2 top-1/2 z-[120] flex max-h-[90vh] w-[min(1100px,95vw)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl bg-white shadow-2xl">
+            <div className="flex shrink-0 items-start justify-between gap-4 border-b border-jd-black/10 px-6 py-5">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Publicaciones</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle por categoría</p>
                 <h3 className="text-lg font-semibold text-jd-black">{itemsModalEmpresa}</h3>
-                <p className="mt-1 text-sm text-jd-black/60">Listado deduplicado (top 250), ordenado por precio desc.</p>
+                <p className="mt-1 text-sm text-jd-black/60">
+                  Capital inmovilizado por categoría y publicaciones asociadas.
+                </p>
               </div>
               <Button variant="outline" onClick={() => setItemsModalEmpresa(null)}>
                 Cerrar
               </Button>
             </div>
 
-            <div className="max-h-[70vh] overflow-auto px-6 py-5">
+            <div className="flex-1 overflow-auto px-6 py-5">
               {itemsError ? (
                 <div className="rounded-xl border border-red-500/20 bg-red-50 px-4 py-3 text-sm text-red-700">{itemsError}</div>
               ) : null}
@@ -499,46 +514,146 @@ export default function Analisis2Page() {
               ) : null}
 
               {!itemsLoading && itemsData && itemsData.rows.length > 0 ? (
-                <div className="overflow-auto rounded-xl border border-jd-black/10">
-                  <table className="table-base">
-                    <thead>
-                      <tr>
-                        <th>Título</th>
-                        <th>Marca</th>
-                        <th>Modelo</th>
-                        <th>Año</th>
-                        <th>Provincia</th>
-                        <th>Precio</th>
-                        <th>Origen</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {itemsData.rows.map((r) => (
-                        <tr key={r.id}>
-                          <td className="max-w-[520px]">
-                            {r.url ? (
-                              <a
-                                href={r.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="font-semibold text-jd-black hover:underline"
-                              >
-                                {(r.titulo ?? r.url).toString()}
-                              </a>
-                            ) : (
-                              <span className="font-semibold">{(r.titulo ?? "-").toString()}</span>
-                            )}
-                          </td>
-                          <td>{r.marca ?? "-"}</td>
-                          <td>{r.modelo ?? "-"}</td>
-                          <td>{r.anio ?? "-"}</td>
-                          <td>{r.provincia ?? "-"}</td>
-                          <td>{r.precio_nor !== null ? formatUsd(r.precio_nor) : "-"}</td>
-                          <td className="text-sm text-jd-black/70">{r.origen ?? "-"}</td>
+                <div className="flex flex-col gap-5">
+                  <div className="overflow-auto rounded-xl border border-jd-black/10">
+                    <table className="table-base">
+                      <thead>
+                        <tr>
+                          <th>Categoría</th>
+                          <th>Unidades</th>
+                          <th>Capital (USD)</th>
+                          <th>% del total</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const totalCap = itemsData.categoryBreakdown.reduce((s, c) => s + c.capitalUsd, 0);
+                          return itemsData.categoryBreakdown.map((cb) => (
+                            <tr
+                              key={cb.categoria}
+                              onClick={() => setModalCategoria(modalCategoria === cb.categoria ? null : cb.categoria)}
+                              className={`cursor-pointer transition hover:bg-jd-cream/50 ${modalCategoria === cb.categoria ? "bg-jd-green/10" : ""}`}
+                            >
+                              <td className="font-semibold">{cb.categoria}</td>
+                              <td>{formatNumber(cb.count)}</td>
+                              <td>{formatUsd(cb.capitalUsd)}</td>
+                              <td>{totalCap > 0 ? formatPercent(cb.capitalUsd / totalCap, 0) : "-"}</td>
+                            </tr>
+                          ));
+                        })()}
+                        <tr className="border-t-2 border-jd-black/20 font-semibold">
+                          <td>Total</td>
+                          <td>{formatNumber(itemsData.categoryBreakdown.reduce((s, c) => s + c.count, 0))}</td>
+                          <td>{formatUsd(itemsData.categoryBreakdown.reduce((s, c) => s + c.capitalUsd, 0))}</td>
+                          <td>100%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setModalCategoria(null)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                        modalCategoria === null
+                          ? "bg-jd-green text-white"
+                          : "bg-jd-black/5 text-jd-black/70 hover:bg-jd-black/10"
+                      }`}
+                    >
+                      Todas
+                    </button>
+                    {CATEGORIAS.map((cat) => {
+                      const bd = itemsData.categoryBreakdown.find((c) => c.categoria === cat.value);
+                      if (!bd || bd.count === 0) return null;
+                      return (
+                        <button
+                          key={cat.value}
+                          type="button"
+                          onClick={() => setModalCategoria(modalCategoria === cat.value ? null : cat.value)}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                            modalCategoria === cat.value
+                              ? "bg-jd-green text-white"
+                              : "bg-jd-black/5 text-jd-black/70 hover:bg-jd-black/10"
+                          }`}
+                        >
+                          {cat.label} ({bd.count})
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {(() => {
+                    const visibleRows = modalCategoria
+                      ? itemsData.rows.filter((r) => r.categoria === modalCategoria)
+                      : itemsData.rows;
+                    const uniqueVisible = visibleRows.filter((r) => !r.isDupCrossPortal);
+                    const dupCount = visibleRows.length - uniqueVisible.length;
+                    const visibleCapital = uniqueVisible.reduce((s, r) => s + (r.precio_nor ?? 0), 0);
+                    return (
+                      <div>
+                        <div className="mb-2 flex items-baseline gap-3">
+                          <span className="text-sm font-semibold text-jd-black">
+                            {modalCategoria ?? "Todas las categorías"}
+                          </span>
+                          <span className="text-xs text-jd-black/60">
+                            {formatNumber(uniqueVisible.length)} unidades · {formatUsd(visibleCapital)}
+                            {dupCount > 0 ? ` · ${dupCount} duplicados cross-portal` : ""}
+                          </span>
+                        </div>
+                        {visibleRows.length === 0 ? (
+                          <p className="text-sm text-jd-black/60">Sin publicaciones en esta categoría.</p>
+                        ) : (
+                          <div className="overflow-auto rounded-xl border border-jd-black/10">
+                            <table className="table-base">
+                              <thead>
+                                <tr>
+                                  <th>Publicación</th>
+                                  <th>Marca</th>
+                                  <th>Modelo</th>
+                                  <th>Año</th>
+                                  <th>Precio</th>
+                                  {!modalCategoria ? <th>Categoría</th> : null}
+                                  <th>Origen</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {visibleRows.map((r) => (
+                                  <tr key={r.id} className={r.isDupCrossPortal ? "opacity-40" : ""}>
+                                    <td className="max-w-[420px]">
+                                      <div className="flex items-center gap-2">
+                                        {r.isDupCrossPortal ? (
+                                          <Badge variant="muted">Dup</Badge>
+                                        ) : null}
+                                        {r.url ? (
+                                          <a
+                                            href={r.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="font-semibold text-jd-green hover:underline"
+                                          >
+                                            {(r.titulo ?? r.url).toString().substring(0, 80)}
+                                          </a>
+                                        ) : (
+                                          <span className="font-semibold">{(r.titulo ?? "-").toString().substring(0, 80)}</span>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td>{r.marca ?? "-"}</td>
+                                    <td>{r.modelo ?? "-"}</td>
+                                    <td>{r.anio ?? "-"}</td>
+                                    <td>{r.precio_nor !== null ? formatUsd(r.precio_nor) : "-"}</td>
+                                    {!modalCategoria ? <td className="text-xs text-jd-black/70">{r.categoria ?? "-"}</td> : null}
+                                    <td className="text-sm text-jd-black/70">{r.origen ?? "-"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : null}
             </div>

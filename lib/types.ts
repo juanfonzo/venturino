@@ -22,6 +22,7 @@ export interface TractorRowRaw {
 export interface TractorItem {
   id: string;
   origen: string | null;
+  categoria: string | null;
   empresa: string | null;
   url: string | null;
   titulo: string | null;

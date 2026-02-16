@@ -1,0 +1,349 @@
+=== NORMALIZATION AUDIT (10852 listings) ===
+
+=== 1. MARCA_NORM VARIANTS (top 40) ===
+  JOHN DEERE: 1306
+  MASSEY FERGUSON: 586
+  PAUNY: 557
+  AGROMETAL: 552
+  NEW HOLLAND: 545
+  CASE: 458
+  CRUCIANELLI: 445
+  PLA: 401
+  ZANELLO: 372
+  FIAT: 337
+  METALFOR: 318
+  CHERY: 283
+  VALTRA: 252
+  DEUTZ: 211
+  HANOMAG: 194
+  (null): 176
+  AGCO ALLIS: 170
+  LOVOL: 141
+  CASE IH: 136
+  FERCAM: 136
+  VASSALLI: 131
+  PIEROBON: 129
+  GHERARDI: 124
+  APACHE: 113
+  ERCA: 108
+  DON ROQUE: 103
+  BERTINI: 90
+  DEUTZ- FAHR: 87
+  PRABA: 84
+  GIORGI: 83
+  DEUTZ FAHR: 82
+  JOHN: 80
+  TEDESCHI: 79
+  MASSEY: 77
+  ROLAND H: 76
+  CAIMAN: 72
+  TANZI: 67
+  ASCANELLI: 67
+  CLAAS: 64
+  SUPER WALTER: 54
+
+=== 1b. POTENTIAL BRAND DUPLICATES ===
+  "JOHN DEERE" (1306) <-> "JOHN" (80) [contains]
+  "MASSEY FERGUSON" (586) <-> "MASSEY" (77) [contains]
+  "AGROMETAL" (552) <-> "AGROMETAL TX" (39) [contains]
+  "AGROMETAL" (552) <-> "AGROMETAL MX" (9) [contains]
+  "AGROMETAL" (552) <-> "AGROMETAL TX 20 LINEAS A 35" (1) [contains]
+  "AGROMETAL" (552) <-> "AGROMETAL MXY 2, KIT DE GRUESO, MONITOR." (1) [contains]
+  "AGROMETAL" (552) <-> "AGROMETAL GX" (1) [contains]
+  "NEW HOLLAND" (545) <-> "NEW" (53) [contains]
+  "CASE" (458) <-> "CASE IH" (136) [contains]
+  "CRUCIANELLI" (445) <-> "CRUCIANELLI V" (1) [contains]
+  "PLA" (401) <-> "TEMPLAR" (5) [contains]
+  "PLA" (401) <-> "PLACCI" (1) [contains]
+  "PLA" (401) <-> "PLA 20" (1) [contains]
+  "PLA" (401) <-> "PLA 3" (1) [contains]
+  "ZANELLO" (372) <-> "ZANELLO UP" (6) [contains]
+  "ZANELLO" (372) <-> "TRACTOR ZANELLO 160 HP" (1) [contains]
+  "FIAT" (337) <-> "FIAT 60" (1) [contains]
+  "FIAT" (337) <-> "FIATAGRI" (1) [contains]
+  "FIAT" (337) <-> "FIAT SOMECA" (1) [contains]
+  "FIAT" (337) <-> "FIAT 700 E" (1) [contains]
+  "FIAT" (337) <-> "TRACTOR FIAT CON PALA" (1) [contains]
+  "METALFOR" (318) <-> "METALFOR SE 3200" (1) [contains]
+  "CHERY" (283) <-> "CHERY RK" (12) [contains]
+  "CHERY" (283) <-> "CHERY RD" (6) [contains]
+  "CHERY" (283) <-> "CHERY RS" (5) [contains]
+  "CHERY" (283) <-> "CHERY RC" (4) [contains]
+  "CHERY" (283) <-> "CHERY RA" (2) [contains]
+  "CHERY" (283) <-> "CHERY WORLD" (1) [contains]
+  "CHERY" (283) <-> "CHERY WORD 904 92 HP" (1) [contains]
+  "CHERY" (283) <-> "AGROCHERY" (1) [contains]
+  "VALTRA" (252) <-> "VALTRA - VALMET" (6) [contains]
+  "VALTRA" (252) <-> "VALTRA BH" (3) [contains]
+  "VALTRA" (252) <-> "VALTRA AR" (1) [contains]
+  "VALTRA" (252) <-> "VALTRA BT" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ- FAHR" (87) [contains]
+  "DEUTZ" (211) <-> "DEUTZ FAHR" (82) [contains]
+  "DEUTZ" (211) <-> "DEUTZ 85" (2) [contains]
+  "DEUTZ" (211) <-> "DEUTZ FAHR AX 80 F CON PALA" (1) [contains]
+  "DEUTZ" (211) <-> "TRACTOR DEUTZ FAHR" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ_FAHR" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ 55" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ 90" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ AX" (1) [contains]
+  "DEUTZ" (211) <-> "DEUTZ A" (1) [contains]
+  "HANOMAG" (194) <-> "HANOMAG STARK 500/4" (1) [contains]
+  "HANOMAG" (194) <-> "HANOMAG R40" (1) [contains]
+  "HANOMAG" (194) <-> "HANOMAG 68" (1) [contains]
+  "AGCO ALLIS" (170) <-> "AGCO" (24) [contains]
+  "FERCAM" (136) <-> "ERCA" (108) [contains]
+  "VASSALLI" (131) <-> "VASSALLI AX" (3) [contains]
+  "VASSALLI" (131) <-> "VASSALI" (2) [similar prefix]
+  "ERCA" (108) <-> "ERCA 14 A 52 CM" (1) [contains]
+  "ERCA" (108) <-> "ERCA VF" (1) [contains]
+  "DON ROQUE" (103) <-> "DON" (13) [contains]
+  "DEUTZ- FAHR" (87) <-> "FAHR" (35) [contains]
+  "PRABA" (84) <-> "PRABA AR" (7) [contains]
+  "DEUTZ FAHR" (82) <-> "FAHR" (35) [contains]
+  "DEUTZ FAHR" (82) <-> "DEUTZ FAHR AX 80 F CON PALA" (1) [contains]
+  "DEUTZ FAHR" (82) <-> "TRACTOR DEUTZ FAHR" (1) [contains]
+  "JOHN" (80) <-> "BIG JOHN" (1) [contains]
+  "TEDESCHI" (79) <-> "TEDESCHI 99" (1) [contains]
+  "CAIMAN" (72) <-> "CAIMAN SP" (4) [contains]
+  "ASCANELLI" (67) <-> "ASCANELLI RS" (2) [contains]
+  "SUPER WALTER" (54) <-> "SUPER" (1) [contains]
+  "NEW" (53) <-> "VALMET NEW HOLLAS" (1) [contains]
+  "DUMAIRE" (53) <-> "DUMAIRE DM" (1) [contains]
+  "MONUMENTAL" (48) <-> "MONUMENTAL AD" (1) [contains]
+  "CHALLENGER" (41) <-> "CHALLENGER MT" (1) [contains]
+  "AGROMETAL TX" (39) <-> "AGROMETAL TX 20 LINEAS A 35" (1) [contains]
+  "VALMET" (36) <-> "VALTRA - VALMET" (6) [contains]
+  "VALMET" (36) <-> "VALMET NEW HOLLAS" (1) [contains]
+  "FAHR" (35) <-> "DEUTZ FAHR AX 80 F CON PALA" (1) [contains]
+  "FAHR" (35) <-> "TRACTOR DEUTZ FAHR" (1) [contains]
+  "FAHR" (35) <-> "DEUTZ_FAHR" (1) [contains]
+  "FAHR" (35) <-> "FAHR 86" (1) [contains]
+  "FAHR" (35) <-> "FAHR 85" (1) [contains]
+  "KUBOTA" (24) <-> "KUBOTA MX" (1) [contains]
+  "AGCO" (24) <-> "AGCOALLIS" (1) [contains]
+  "HUSQVARNA" (19) <-> "HUSQ" (1) [contains]
+  "HUSQVARNA" (19) <-> "HUSQVARNA TS" (1) [contains]
+  "AGRINAR" (17) <-> "AGRIN" (1) [contains]
+  "DON" (13) <-> "DOLBI" (9) [similar prefix]
+  "DON" (13) <-> "DONGFENG" (1) [contains]
+  "DON" (13) <-> "GOLDONI" (1) [contains]
+  "DON" (13) <-> "DON BENVENUTO" (1) [contains]
+  "CHERY RK" (12) <-> "CHERY RD" (6) [similar prefix]
+  "CHERY RK" (12) <-> "CHERY RS" (5) [similar prefix]
+  "CHERY RK" (12) <-> "CHERY RC" (4) [similar prefix]
+  "CHERY RK" (12) <-> "CHERY RA" (2) [similar prefix]
+  "RELEYCO" (11) <-> "RELEYCO R" (1) [contains]
+  "GOLONDRIN" (10) <-> "FUMIGADOR AUTOPROPULSADO GOLONDRIN" (1) [contains]
+  "DOLBI" (9) <-> "DOLBI AX" (2) [contains]
+  "AGROMETAL MX" (9) <-> "AGROMETAL MXY 2, KIT DE GRUESO, MONITOR." (1) [contains]
+  "CINAL-FOR" (8) <-> "CINAL" (1) [contains]
+  "CINAL FOR" (7) <-> "CINAL" (1) [contains]
+  "SOMECA" (7) <-> "SOMECA 45" (2) [contains]
+  "SOMECA" (7) <-> "FIAT SOMECA" (1) [contains]
+  "CHERY RD" (6) <-> "CHERY RS" (5) [similar prefix]
+  "CHERY RD" (6) <-> "CHERY RC" (4) [similar prefix]
+  "CHERY RD" (6) <-> "CHERY RA" (2) [similar prefix]
+  "CHERY RS" (5) <-> "CHERY RC" (4) [similar prefix]
+  "CHERY RS" (5) <-> "CHERY RA" (2) [similar prefix]
+  "MTD" (4) <-> "MTD YATE MACHINES" (1) [contains]
+  "NOVA TECNICA" (4) <-> "NOVA TECNICA AGRICULTURA" (1) [contains]
+  "DUAM" (4) <-> "DUAMETAL" (1) [contains]
+  "CHERY RC" (4) <-> "CHERY RA" (2) [similar prefix]
+  "VALTRA BH" (3) <-> "VALTRA BT" (1) [similar prefix]
+  "POULAN" (2) <-> "POULAN PRO" (2) [contains]
+  "POULAN" (2) <-> "POULAN XT" (1) [contains]
+  "DEUTZ 85" (2) <-> "DEUTZ A" (1) [similar prefix]
+  "TATU" (2) <-> "TATU MARCHESAN" (1) [contains]
+  "HUSQ" (1) <-> "HUSQVARNA TS" (1) [contains]
+  "BALTHON" (1) <-> "BALTHOM" (1) [similar prefix]
+  "UNIVERSAL (UTB)" (1) <-> "UNIVERSAL" (1) [contains]
+  "FAHR 86" (1) <-> "FAHR 85" (1) [similar prefix]
+  "METALURGICA DIEGO CANALIS" (1) <-> "CANALIS" (1) [contains]
+  "DEUTZ 55" (1) <-> "DEUTZ A" (1) [similar prefix]
+  "PLA 20" (1) <-> "PLA 3" (1) [similar prefix]
+  "DEUTZ 90" (1) <-> "DEUTZ A" (1) [similar prefix]
+  "DEUTZ AX" (1) <-> "DEUTZ A" (1) [contains]
+
+=== 1c. KNOWN BRAND MERGE CANDIDATES ===
+  CASE: 458 | CASE IH: 136
+  DEUTZ: 211 | DEUTZ FAHR: 82
+  AGCO: 24 | AGCO ALLIS: 170
+  CHERY: 283 | CHERY BYLION: 0
+  JOHN DEERE: 1306 | JD: 0
+
+=== 2. MODELO_NORM QUALITY ===
+  Without modelo_norm: 350 (3.2%)
+    agrofy: 196
+    agroads: 140
+    rastroagro: 13
+    ml: 1
+
+  Top 30 modelo_norm:
+    TX MEGA: 172
+    1175: 72
+    MULTIPLE3200: 60
+    1550: 57
+    MX: 54
+    MULTIPLE2800: 47
+    A85: 47
+    EVO280 A: 46
+    2388: 44
+    GRINGA V: 41
+    MXY II: 41
+    EVO 250A: 40
+    NUEVA PIONERA: 40
+    F440: 39
+    500: 38
+    220: 37
+    PRECISA8000: 36
+    BRAVO540 C: 36
+    4200: 34
+    EVO500 C: 33
+    MAP3 3300: 32
+    MAP II3250: 32
+    GRINGA: 32
+    G300: 31
+    SERIE30 3530: 30
+    TC57: 29
+    540: 28
+    710: 28
+    32000: 28
+    TC59: 28
+
+=== 3. PRICE ANALYSIS ===
+  Count with price: 10844
+  p5=5100, p25=22624, p50=49000, p75=91670, p95=260000
+  Min=0, Max=75840000
+
+  Suspicious LOW (<$500 USD): 124
+    agronorteusados | John Deere 6415 | $47 | moneda=USD | raw="47" monedaRaw="USD"
+    ml | NOVA TECNICA GAUCHA GG NEUMATICA | $74.07 | moneda=ARS | raw="111.111" monedaRaw="$"
+    ml | Fahr D 400 | $46.67 | moneda=ARS | raw="70.000" monedaRaw="$"
+    ml | Metalfor 2800 | $82.3 | moneda=ARS | raw="123.456" monedaRaw="$"
+    agroads | null null | $420 | moneda=USD | raw="420" monedaRaw="USD"
+    agroads | John Deere S550 | $420 | moneda=USD | raw="420" monedaRaw="USD"
+    agroads | Ochetti null | $348.33 | moneda=ARS | raw="522500" monedaRaw="ARS"
+    agroads | null null | $400 | moneda=ARS | raw="600000" monedaRaw="ARS"
+    agroads | Apache null | $400 | moneda=USD | raw="400" monedaRaw="USD"
+    agroads | null null | $273.91 | moneda=ARS | raw="410863,6" monedaRaw="ARS"
+
+  Suspicious HIGH (>$800k USD): 8
+    agroads | MONUMENTAL MONUMENTAL › 8300 | $23750000 | moneda=USD | raw="23750000" monedaRaw="USD"
+    agroads | Pauny BRAVO › 540 C | $75840000 | moneda=USD | raw="75840000" monedaRaw="USD"
+    agroads | Deutz null | $27500000 | moneda=USD | raw="27500000" monedaRaw="USD"
+    agrofy | Massey Ferguson null | $1324896 | moneda=USD | raw="1324896.0000" monedaRaw="USD"
+    agrofy | Valtra null | $1324896 | moneda=USD | raw="1324896.0000" monedaRaw="USD"
+    agrofy | New Holland null | $1324896 | moneda=USD | raw="1324896.0000" monedaRaw="USD"
+    agrofy | CLAAS null | $900000 | moneda=USD | raw="900000.0000" monedaRaw="USD"
+    agrofy | Case IH null | $1100000 | moneda=USD | raw="1100000.0000" monedaRaw="USD"
+
+  Price by category (median USD):
+    Tractores: n=5442, median=$39500, min=$0.03, max=$75840000
+    Cosechadoras: n=1498, median=$100000, min=$0, max=$1100000
+    Sembradoras: n=2723, median=$51500, min=$0, max=$23750000
+    Pulverizadoras: n=1181, median=$75000, min=$0, max=$621690
+
+=== 4. YEAR ANALYSIS ===
+  With year: 10181, Without: 671
+    agroads: 572
+    rastroagro: 98
+    machinefinder: 1
+
+  Year distribution by decade:
+    1950s: 5
+    1960s: 66
+    1970s: 255
+    1980s: 350
+    1990s: 1321
+    2000s: 2792
+    2010s: 3100
+    2020s: 2292
+
+  Suspicious years (<1970 or >2026): 71
+    agronorteusados | Deutz 50 | year=1960 | raw="1960"
+    ml | Fiat 411 T | year=1960 | raw="1960"
+    ml | Fiat 60 1963 | year=1963 | raw="1963"
+    ml | Fiat 411R | year=1963 | raw="1963"
+    ml | Fahr D 400 | year=1964 | raw="1964"
+    ml | Deutz A30 | year=1966 | raw="1966"
+    ml | Fiat U25 | year=1960 | raw="1960"
+    ml | Deutz 55 | year=1961 | raw="1961"
+    ml | Fiat U25 | year=1960 | raw="1960"
+    ml | Fhar D400S | year=1968 | raw="1968"
+
+=== 5. PROVINCE COVERAGE ===
+  Buenos Aires: 3971
+  Córdoba: 2839
+  Santa Fe: 2189
+  La Pampa: 529
+  Entre Ríos: 518
+  Chaco: 223
+  Buenos Aires Interior: 156
+  Mendoza: 79
+  Santiago del Estero: 60
+  Salta: 49
+  Corrientes: 38
+  Río Negro: 30
+  (null): 27
+  Tucumán: 26
+  San Luis: 22
+  San Juan: 17
+  Ciudad Autónoma de Buenos Aires: 17
+  Formosa: 13
+  Misiones: 11
+  Chubut: 10
+  Catamarca: 5
+  Neuquén: 4
+  Departamento de Misiones: 4
+  Jujuy: 3
+  L: 1
+  Santa Cruz: 1
+  Sinsacate: 1
+  Elena: 1
+  Colón: 1
+  Jovita: 1
+  Cañada de Gomez: 1
+  Trenque Lauquen: 1
+  Venado Tuerto: 1
+  Tandil: 1
+  Las Lajitas: 1
+  San Francisco: 1
+
+=== 6. CONDITION ANALYSIS ===
+  Usado: 9127
+  Nuevo: 1712
+  (null): 13
+
+  Null condition samples:
+    ml | Hanomag 300A | year=2024 | condRaw="not_specified"
+    ml | Hanomag TR115 | year=2025 | condRaw="not_specified"
+    ml | Kubota L3800 Turf | year=2024 | condRaw="not_specified"
+    ml | Kubota L3800 | year=2025 | condRaw="not_specified"
+    ml | Kubota MX5100 | year=2025 | condRaw="not_specified"
+    ml | Kubota B2401 Farm | year=2025 | condRaw="not_specified"
+    ml | Kubota B2401 Turf | year=2025 | condRaw="not_specified"
+    ml | NOVA TECNICA SEMBRADORAS HORTALIZAS (CEBOLLA, ZANAHORIA, ETC.) | year=2025 | condRaw="not_specified"
+    ml | NOVA TECNICA CRIOLLA | year=2025 | condRaw="not_specified"
+    ml | Nova Tecnica ZAPALLERA - sembradora zapallo neumatica | year=2025 | condRaw="not_specified"
+
+=== 7. DUPLICATE DETECTION ===
+  Duplicate URLs: 0
+
+  Cross-origin potential duplicates (same marca+modelo+year+vendedor):
+  Cross-origin groups: 132
+    NEW HOLLAND|CR5 85|2020|acoplados cordoba: ml($330000), agroads($330000)
+    NEW HOLLAND|TM150|2010|acoplados cordoba: ml($57750), agroads($57750)
+    FERCAM|F440|2019|cignoli hnos: ml($75000), agroads($75600)
+    HANOMAG|STARK500 4|2025|cignoli hnos: ml($15300), ml($18200), agroads($17280)
+    BERTINI|28000|2007|acoplados cordoba: ml($32000), agroads($32000)
+
+=== 8. HP ANALYSIS ===
+  With HP: 6921
+  Range: 1 - 980
+  Median: 125
+  HP < 10: 243
+    ml | Alser Anca TC800 | hp=9 | raw="null"
+    ml | CLASSEN SC18 | hp=5.5 | raw="null"
+    ml | Husqvarna TF545DE | hp=8.8 | raw="null"
+    agroads | Metalfor MULTIPLE 2800 | hp=1 | raw="1"
+    agroads | null null | hp=1 | raw="1"

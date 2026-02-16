@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ScrapingRun {
+  id             Int       @id @default(autoincrement())
+  runDate        DateTime  @map("run_date") @db.Date
+  sourceFile     String?   @map("source_file")
+  sourceCount    Int       @map("source_count")
+  filteredCount  Int       @map("filtered_count")
+  processedCount Int       @map("processed_count")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  listings       Listing[]
+
+  @@map("scraping_runs")
+}
+
+model Listing {
+  id        Int    @id @default(autoincrement())
+  mongoId   String @unique @map("mongo_id")
+
+  // Origen y URLs
+  origen    String
+  url       String
+  titulo    String?
+  descripcion String? @db.Text
+
+  // Categoría normalizada
+  categoriaRaw  String?  @map("categoria_raw")
+  categoria     String   // Tractores | Cosechadoras | Sembradoras | Pulverizadoras
+
+  // Marca y modelo
+  marca         String?
+  marcaNorm     String?  @map("marca_norm")
+  modelo        String?
+  modeloNorm    String?  @map("modelo_norm")
+
+  // Atributos técnicos
+  anio          Int?
+  anioRaw       String?  @map("anio_raw")
+  hp            Decimal? @db.Decimal(10, 2)
+  hpRaw         String?  @map("hp_raw")
+  horas         Decimal? @db.Decimal(10, 2)
+  horasRaw      String?  @map("horas_raw")
+
+  // Condición
+  condicionRaw  String?  @map("condicion_raw")
+  condicion     String?  // Nuevo | Usado
+
+  // Precio
+  precioRaw     String?  @map("precio_raw")
+  monedaRaw     String?  @map("moneda_raw")
+  monedaNorm    String?  @map("moneda_norm")  // USD | ARS
+  precioUsd     Decimal? @map("precio_usd") @db.Decimal(14, 2)
+
+  // Ubicación
+  ubicacionRaw  String?  @map("ubicacion_raw")
+  provincia     String?
+  ciudad        String?
+
+  // Vendedor / empresa
+  vendedor      String?
+  tipoVendedor  String?  @map("tipo_vendedor")
+
+  // Competidor directo (Análisis 2)
+  esCompetidor      Boolean @default(false) @map("es_competidor")
+  competidorNombre  String? @map("competidor_nombre")
+
+  // Financiación e IVA
+  iva           String?
+  financiacion  String?  @db.Text
+
+  // Metadata
+  fechaScraping    DateTime? @map("fecha_scraping") @db.Date
+  fechaPublicacion String?   @map("fecha_publicacion")
+
+  // Calidad
+  flags         String[]  @default([])
+
+  // Relación con run
+  scrapingRunId Int?      @map("scraping_run_id")
+  scrapingRun   ScrapingRun? @relation(fields: [scrapingRunId], references: [id])
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([origen])
+  @@index([categoria])
+  @@index([marcaNorm])
+  @@index([condicion])
+  @@index([provincia])
+  @@index([precioUsd])
+  @@index([esCompetidor])
+  @@index([scrapingRunId])
+  @@map("listings")
+}

@@ -1,5 +1,4 @@
-import { loadTractors } from "@/lib/data/loadTractors";
-import { loadVenturino } from "@/lib/data/loadVenturino";
+import { loadAllListings, loadVenturinoListings } from "@/lib/data/loadListings";
 import type { TractorItem } from "@/lib/types";
 
 export type Analisis1Equivalent = {
@@ -41,6 +40,7 @@ export type Analisis1ModelRanking = {
 export type Analisis1Response = {
   meta: {
     generatedAt: number;
+    categoria: string | null;
     venturinoCount: number;
     competitorsCount: number;
     params: {
@@ -108,6 +108,26 @@ function tokenIntersectionSize(a: string[], b: Set<string>) {
   return count;
 }
 
+// Extract the core numeric part from a model token (e.g. "5065ES" → "5065", "7230R" → "7230")
+function extractNumericCore(token: string) {
+  const match = token.match(/^([A-Z]*)(\d+)([A-Z]*)$/);
+  if (!match) return null;
+  return { prefix: match[1], digits: match[2], suffix: match[3], full: token };
+}
+
+// Check if two model strings are suffix-variants of each other
+// e.g. "5065ES" vs "5065E", "5045DS" vs "5045D", "MAXXUM150" vs "MXM150"
+function isSuffixVariant(a: string, b: string) {
+  const aParts = extractNumericCore(a);
+  const bParts = extractNumericCore(b);
+  if (!aParts || !bParts) return false;
+  // Same digits and same prefix (or one prefix contains the other)
+  if (aParts.digits !== bParts.digits) return false;
+  if (aParts.prefix === bParts.prefix) return true;
+  if (aParts.prefix.includes(bParts.prefix) || bParts.prefix.includes(aParts.prefix)) return true;
+  return false;
+}
+
 function fuzzyModelMatch(ventModelNorm: string, candidateModelNorm: string, level: number) {
   if (level <= 0) return false;
   if (ventModelNorm === candidateModelNorm) return true;
@@ -118,8 +138,19 @@ function fuzzyModelMatch(ventModelNorm: string, candidateModelNorm: string, leve
 
   const vTokens = extractTokens(v);
   const cTokens = new Set(extractTokens(c));
+  const cTokensArr = extractTokens(c);
 
   if (vTokens.length === 0 || cTokens.size === 0) return false;
+
+  // Suffix-variant matching: "5065ES" vs "5065E", "5045DS" vs "5045D"
+  // If both have exactly one alphanumeric token with digits, compare cores
+  const vAlphaNum = vTokens.filter((t) => /\d/.test(t));
+  const cAlphaNum = cTokensArr.filter((t) => /\d/.test(t));
+  if (vAlphaNum.length === 1 && cAlphaNum.length >= 1) {
+    for (const ct of cAlphaNum) {
+      if (isSuffixVariant(vAlphaNum[0], ct)) return true;
+    }
+  }
 
   if (vTokens.length === 1 && isDigitsOnly(vTokens[0])) {
     return cTokens.has(vTokens[0]);
@@ -147,6 +178,7 @@ function hoursWithinTolerance(base: number, candidate: number, tolerancePct: num
 }
 
 export async function computeAnalisis1(params?: {
+  categoria?: string | null;
   brandNorm?: string | null;
   modelNorm?: string | null;
   maxVenturinoRows?: number;
@@ -157,6 +189,7 @@ export async function computeAnalisis1(params?: {
   compareYear?: boolean;
   compareHours?: boolean;
 }): Promise<Analisis1Response> {
+  const categoria = params?.categoria ?? null;
   const brandNorm = params?.brandNorm ?? null;
   const modelNorm = params?.modelNorm ?? null;
   const maxVenturinoRows = params?.maxVenturinoRows ?? 250;
@@ -170,7 +203,10 @@ export async function computeAnalisis1(params?: {
   const yearTolerance = Math.max(0, Math.min(yearToleranceRaw, 10));
   const fuzzyLevel = Math.max(0, Math.min(fuzzyLevelRaw, 3));
 
-  const [venturinoDataset, competitorsDataset] = await Promise.all([loadVenturino(), loadTractors()]);
+  const [venturinoDataset, competitorsDataset] = await Promise.all([
+    loadVenturinoListings(categoria),
+    loadAllListings(categoria),
+  ]);
 
   const allCompetitors = competitorsDataset.rows;
   const competitorsMissingKey = allCompetitors.filter((r) => !r.marca_norm || !r.modelo_norm).length;
@@ -360,6 +396,7 @@ export async function computeAnalisis1(params?: {
   return {
     meta: {
       generatedAt: Date.now(),
+      categoria,
       venturinoCount: venturinoDataset.rows.length,
       competitorsCount: competitorsDataset.rows.length,
       params: {

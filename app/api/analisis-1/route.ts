@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const categoria = searchParams.get("categoria") ?? null;
     const brandNorm = normalizeText(searchParams.get("brand") ?? null);
     const modelNorm = normalizeText(searchParams.get("model") ?? null);
 
@@ -47,6 +48,7 @@ export async function GET(request: NextRequest) {
     const compareHours = parseBoolParam(searchParams.get("compareHours"), true);
 
     const data = await computeAnalisis1({
+      categoria,
       brandNorm,
       modelNorm,
       maxVenturinoRows,

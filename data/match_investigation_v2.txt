@@ -1,0 +1,152 @@
+=== POST-FIX INVESTIGATION: Model matching improvements ===
+
+
+======================================================================
+TARGET: JOHN DEERE | raw="7230r" → modeloNorm="7230R"
+======================================================================
+  EXACT match (marcaNorm="JOHN DEERE", modeloNorm="7230R"): 5
+  CONTAINS "7230" (brand=JOHN DEERE): 8 total
+    "7230R": 5 ✓ EXACT
+    "7230J": 3 ✓ FUZZY
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 8
+  Matching modeloNorm variants: 7230J, 7230R
+
+======================================================================
+TARGET: CASE IH | raw="Puma 225" → modeloNorm="PUMA225"
+======================================================================
+  EXACT match (marcaNorm="CASE IH", modeloNorm="PUMA225"): 3
+  CONTAINS "225" (brand=CASE IH): 16 total
+    "225": 11 ✓ FUZZY
+    "PUMA225": 3 ✓ EXACT
+    "PUMA225 CON PILOTO": 2 ✓ FUZZY
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 16
+  Matching modeloNorm variants: PUMA225, 225, PUMA225 CON PILOTO
+
+======================================================================
+TARGET: JOHN DEERE | raw="6100d" → modeloNorm="6100D"
+======================================================================
+  EXACT match (marcaNorm="JOHN DEERE", modeloNorm="6100D"): 3
+  CONTAINS "6100" (brand=JOHN DEERE): 7 total
+    "6100D": 3 ✓ EXACT
+    "6100E": 3 ✓ FUZZY
+    "6100D CON TRES PUNTOS": 1 ✓ FUZZY
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 7
+  Matching modeloNorm variants: 6100D, 6100E, 6100D CON TRES PUNTOS
+
+======================================================================
+TARGET: JOHN DEERE | raw="5065ES" → modeloNorm="5065ES"
+======================================================================
+  EXACT match (marcaNorm="JOHN DEERE", modeloNorm="5065ES"): 1
+  CONTAINS "5065" (brand=JOHN DEERE): 12 total
+    "5065E": 10 ✓ FUZZY
+    "5065": 1 ✓ FUZZY
+    "5065ES": 1 ✓ EXACT
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 12
+  Matching modeloNorm variants: 5065E, 5065, 5065ES
+
+======================================================================
+TARGET: JOHN DEERE | raw="7210J" → modeloNorm="7210J"
+======================================================================
+  EXACT match (marcaNorm="JOHN DEERE", modeloNorm="7210J"): 3
+  CONTAINS "7210" (brand=JOHN DEERE): 6 total
+    "7210J": 3 ✓ EXACT
+    "7210R": 2 ✓ FUZZY
+    "J7210": 1 ✓ FUZZY
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 6
+  Matching modeloNorm variants: 7210J, J7210, 7210R
+
+======================================================================
+TARGET: JOHN DEERE | raw="5045Ds" → modeloNorm="5045DS"
+======================================================================
+  EXACT match (marcaNorm="JOHN DEERE", modeloNorm="5045DS"): 0
+  CONTAINS "5045" (brand=JOHN DEERE): 3 total
+    "5045D": 3 ✓ FUZZY
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 3
+  Matching modeloNorm variants: 5045D
+
+======================================================================
+TARGET: CASE IH | raw="MXM150" → modeloNorm="MXM150"
+======================================================================
+  EXACT match (marcaNorm="CASE IH", modeloNorm="MXM150"): 0
+  CONTAINS "150" (brand=CASE IH): 26 total
+    "150": 11 ✓ FUZZY
+    "7150": 5
+    "5150": 4
+    "MAXXUM150": 3
+    "5150 30PIES": 1
+    "6150 35PIES": 1
+    "COSECHADORA6150": 1
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 11
+  Matching modeloNorm variants: 150
+
+======================================================================
+TARGET: CASE IH | raw="CIH MAGNUM 315" → modeloNorm="MAGNUM315"
+======================================================================
+  EXACT match (marcaNorm="CASE IH", modeloNorm="MAGNUM315"): 2
+  CONTAINS "315" (brand=CASE IH): 5 total
+    "315": 3 ✓ FUZZY
+    "MAGNUM315": 2 ✓ EXACT
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 5
+  Matching modeloNorm variants: MAGNUM315, 315
+
+======================================================================
+TARGET: NEW HOLLAND | raw="T8 295" → modeloNorm="T8"
+======================================================================
+  EXACT match (marcaNorm="NEW HOLLAND", modeloNorm="T8"): 0
+  CONTAINS "8" (brand=NEW HOLLAND): 111 total
+    "8030": 13
+    "CR6080": 8
+    "CR5 85": 6
+    "CR9080": 6
+    "T8 320": 6 ✓ FUZZY
+    "180 90": 5
+    "T7 180": 4
+    "CR8090": 4
+    "TL85 EXITUS": 4
+    "180": 3
+    "8055": 3
+    "TM180": 3
+    "TD5 80": 3
+    "CR8 90": 3
+    "CR6 80": 3
+    "TL85E": 2
+    "TT3840": 2
+    "T8 380": 2 ✓ FUZZY
+    "TD 85F": 2
+    "TT3840STD": 2
+    "T8 295 270": 2 ✓ FUZZY
+    "HOLLAND T7 180": 2
+    "9080": 1
+    "HOLLAND TL85E": 1
+    "CR5080": 1
+    "COSECHADORA CR8090": 1
+    "T8 430": 1 ✓ FUZZY
+    "T8355": 1 ✓ FUZZY
+    "T8 350": 1 ✓ FUZZY
+    "9482ARTICULADO": 1
+    "TD85F": 1
+    "T8325": 1 ✓ FUZZY
+    "VENDO8970": 1
+    "T6080": 1
+    "TT3840F": 1
+    "T8 325CON PILOTO": 1 ✓ FUZZY
+    "T8 325 280": 1 ✓ FUZZY
+    "8030LEVANTE DE": 1
+    "T8 320CON DUALES": 1 ✓ FUZZY
+    "CR6089 35PIES CARACOL": 1
+    "TC59 28PIES": 1
+    "TC59 CON 28PIES": 1
+    "HOLLAND CR6080": 1
+    "HOLLAND TT3840": 1
+    "HOLLAND8870": 1
+
+  TOTAL potential matches (exact+fuzzy+suffix-variant): 17
+  Matching modeloNorm variants: T8 380, T8 430, T8355, T8 320, T8 350, T8 295 270, T8325, T8 325CON PILOTO, T8 325 280, T8 320CON DUALES

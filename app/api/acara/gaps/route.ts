@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { loadTractors } from "@/lib/data/loadTractors";
+import { loadAllListings } from "@/lib/data/loadListings";
 import { loadAcara } from "@/lib/data/loadAcara";
 import { pickAcaraReference } from "@/lib/utils/acara";
 import type { AcaraMappings } from "@/lib/types";
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const mappings = isRecord(body?.mappings) ? (body.mappings as AcaraMappings) : {};
 
-    const [tractors, acara] = await Promise.all([loadTractors(), loadAcara()]);
+    const [tractors, acara] = await Promise.all([loadAllListings(), loadAcara()]);
     const acaraById = new Map(acara.items.map((item) => [item.id, item]));
 
     let count = 0;

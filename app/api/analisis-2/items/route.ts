@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
+    const categoria = searchParams.get("categoria") ?? null;
     const empresa = (searchParams.get("empresa") ?? "").toString().trim();
     if (!empresa) {
       return NextResponse.json({ error: "Falta parametro empresa" }, { status: 400 });
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
     const limit = parseIntParam(searchParams.get("limit"), 200);
 
-    const data = await listAnalisis2Items({ empresa, limit });
+    const data = await listAnalisis2Items({ categoria, empresa, limit });
 
     return NextResponse.json(data);
   } catch (error) {

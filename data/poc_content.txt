@@ -1,0 +1,198 @@
+POC: Análisis de precios y stock de maquinaria agrícola publicada online
+
+1. Contexto
+
+El presente proyecto tiene como objetivo analizar el posicionamiento de precios y el estado del inventario de maquinaria agrícola publicada en sitios web propios y de competidores directos, a partir de información pública disponible online.
+
+La investigación se apoya en técnicas de recolección automatizada de datos (web scraping) y análisis comparativo, con foco en máquinas usadas.
+
+2. Objetivos generales
+
+Obtener una visión comparativa y objetiva del mercado online de maquinaria agrícola usada.
+
+Identificar oportunidades de ajuste de precios y rotación de stock.
+
+Analizar comportamientos de precios y niveles de inmovilización de capital en competidores.
+
+3. Alcance del proyecto
+
+El proyecto se divide en dos análisis independientes y complementarios, con metodologías y entregables diferenciados:
+
+Análisis 1: Comparación de máquinas equivalentes y evolución de precios.
+
+Análisis 2: Análisis de stock, antigüedad e inmovilizado de competidores directos.
+
+
+
+ANÁLISIS 1
+
+Comparación de máquinas equivalentes y evolución de precios
+
+3.1 Objetivo específico
+
+Comparar las máquinas publicadas en el sitio propio con máquinas equivalentes publicadas en sitios de terceros, evaluando precios, empresas oferentes y variaciones de precios a lo largo del tiempo.
+
+3.2 Fuente base
+
+Catálogo propio:https://ricardoventurino.com.ar/catalogo/
+
+3.3 Datos a relevar del sitio propio
+
+Para cada máquina publicada:
+
+Marca
+
+Modelo
+
+Año
+
+Horas de uso (aproximadas)
+
+Precio publicado
+
+URL de la publicación
+
+Este inventario funcionará como dataset de referencia para la comparación.
+
+3.4 Búsqueda de máquinas equivalentes
+
+Se deberá identificar maquinaria equivalente según los siguientes criterios:
+
+Misma marca y modelo
+
+Año igual o con una diferencia máxima de ±1 año
+
+Horas de uso dentro de un rango aproximado (±15%)
+
+Webs:
+
+https://www.agroads.com.ar/seccion.asp?subcat=10
+
+https://www.agroads.com.ar/seccion.asp?subcat=11
+
+https://www.agroads.com.ar/seccion.asp?subcat=12
+
+https://www.agroads.com.ar/seccion.asp?subcat=13
+
+https://www.agrofy.com.ar/tractores
+
+https://www.agrofy.com.ar/sembradoras
+
+https://www.agrofy.com.ar/cosechadoras
+
+https://www.agrofy.com.ar/pulverizadoras
+
+https://rastroagro.com/pulverizadoras
+
+https://rastroagro.com/tractores
+
+https://rastroagro.com/cosechadoras
+
+https://rastroagro.com/sembradoras
+
+https://vehiculos.mercadolibre.com.ar/maquinaria-agricola/
+
+3.5 Datos a capturar en webs externas
+
+Por cada máquina equivalente encontrada:
+
+Empresa / razón social
+
+URL de la publicación
+
+Marca, modelo, año, horas
+
+Precio publicado
+
+Fecha de captura del dato
+
+3.6 Resultados esperados – Análisis 1
+
+Comparación de precios por máquina entre sitio propio y competidores
+
+Identificación de diferencias porcentuales de precio
+
+Detección de aumentos, bajas o estabilidad de precios durante el mes
+
+Ranking de precios por modelo y por empresa
+
+
+
+ANÁLISIS 2
+
+Análisis de stock, antigüedad e inmovilizado de competidores
+
+4.1 Objetivo específico
+
+Analizar el volumen de stock publicado por competidores directos, su composición, antigüedad y el capital estimado inmovilizado en maquinaria agrícola.
+
+4.2 Alcance
+
+El análisis se realizará exclusivamente sobre las webs:
+
+- https://usados.semtraco.com.ar/
+
+- https://www.criolani.com.ar/usados-seleccionados
+
+- https://www.agroads.com.ar/e/grosso-tractores-sa/
+
+- https://agronorteusados.com/usados/
+
+- https://www.agroads.com.ar/e/boglich/
+
+- https://www.machinefinder.com.ar/ww/es-AR/dealer-organizations/diesel-lange-s-r-l-R3CF282552
+
+https://www.agroads.com.ar/e/conci-sa/
+
+
+
+
+
+4.3 Clasificación de maquinaria
+
+Las unidades publicadas deberán clasificarse en las siguientes categorías:
+
+Tractores
+
+Cosechadoras
+
+Pulverizadores
+
+Sembradoras
+
+4.4 Indicadores de stock
+
+A partir de los datos recolectados, se deberá calcular:
+
+Cantidad total de unidades por categoría
+
+Cantidad total de unidades por competidor
+
+Precio promedio por categoría
+
+Precio total acumulado por categoría (USD inmovilizados)
+
+4.5 Antigüedad del inventario
+
+Cuando la información esté disponible, se deberá estimar:
+
+Antigüedad promedio de las máquinas por categoría
+
+Antigüedad promedio de las publicaciones
+
+Identificación de stock de lenta rotación (publicaciones antiguas)
+
+4.6 Resultados esperados – Análisis 2
+
+Mapa de stock por competidor
+
+Estimación de capital inmovilizado por categoría
+
+Comparación del nivel de carga de stock entre competidores
+
+Identificación de competidores con sobrestock o inventario envejecido
+
+
+
+Requerimientos nuestros para avanzar:- Definir categorías.
+

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { loadTractors } from "@/lib/data/loadTractors";
-import { applyTractorFilters, sortTractors } from "@/lib/data/tractorQuery";
+import { loadListings } from "@/lib/data/loadListings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +14,9 @@ function parseNumberParam(value: string | null) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = {
+
+    const result = await loadListings({
+      categoria: searchParams.get("categoria") ?? undefined,
       q: searchParams.get("q"),
       searchScope: (searchParams.get("searchScope") as "core" | "full" | null) ?? null,
       origin: searchParams.get("origin"),
@@ -30,32 +31,23 @@ export async function GET(request: NextRequest) {
       hasPrice: searchParams.get("hasPrice")
         ? searchParams.get("hasPrice") === "true"
         : null,
-    };
-
-    const pageParam = parseNumberParam(searchParams.get("page")) ?? 1;
-    const pageSizeParam = parseNumberParam(searchParams.get("pageSize")) ?? 25;
-    const page = Math.max(1, pageParam);
-    const pageSize = Math.min(100, Math.max(1, pageSizeParam));
-    const sortBy = searchParams.get("sortBy");
-    const sortDir = searchParams.get("sortDir");
-
-    const dataset = await loadTractors();
-    const filtered = applyTractorFilters(dataset.rows, query);
-    const sorted = sortTractors(filtered, sortBy, sortDir);
-
-    const start = (page - 1) * pageSize;
-    const paginated = sorted.slice(start, start + pageSize);
+      page: parseNumberParam(searchParams.get("page")) ?? 1,
+      pageSize: parseNumberParam(searchParams.get("pageSize")) ?? 25,
+      sortBy: searchParams.get("sortBy"),
+      sortDir: searchParams.get("sortDir"),
+    });
 
     return NextResponse.json({
-      rows: paginated,
-      total: sorted.length,
-      page,
-      pageSize,
-      meta: dataset.meta,
+      rows: result.rows,
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+      meta: { loadedAt: Date.now(), fileMtimeMs: null, delimiter: "postgres" },
     });
   } catch (error) {
+    console.error("Error loading listings:", error);
     return NextResponse.json(
-      { error: "No se pudo cargar el CSV de tractores." },
+      { error: "No se pudieron cargar las publicaciones." },
       { status: 500 },
     );
   }

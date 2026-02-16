@@ -1,0 +1,241 @@
+=== INVESTIGATION: Low-match models in Análisis 1 ===
+
+--- STEP 1: How do these models appear in Venturino CSV? ---
+
+Venturino CSV loaded: 14 rows
+
+============================================================
+TARGET: JOHN DEERE 7230R
+============================================================
+
+  Venturino CSV matches: 1
+    marca="John Deere" modelo="7230r" anio="2018" hp="230" precio="210.000"
+
+  PostgreSQL EXACT match (marcaNorm="JOHN DEERE", modeloNorm="7230R"): 0
+
+  PostgreSQL CONTAINS "7230R" (brand=JOHN DEERE): 5
+    modeloNorm="7R 7230R": 4 listings
+      agroads | marca="John Deere" modelo="7R › 7230R" | year=2018
+      agroads | marca="John Deere" modelo="7R › 7230R" | year=2018
+      agroads | marca="John Deere" modelo="7R › 7230R" | year=2021
+    modeloNorm="7230R 230": 1 listings
+      agrofy | marca="John Deere" modelo="null" | year=2018
+
+  Broader search brand="JOHN DEERE" + numeric "7230" in modelo/modeloNorm: 8
+    JOHN DEERE|7R 7230R: 4
+    JOHN DEERE|7J 7230J: 2
+    JOHN DEERE|7230J: 1
+    JOHN DEERE|7230R 230: 1
+
+============================================================
+TARGET: CASE IH PUMA225
+============================================================
+
+  Venturino CSV matches: 1
+    marca="Case IH" modelo="Puma 225" anio="2017" hp="225" precio="110.000"
+
+  PostgreSQL EXACT match (marcaNorm="CASE IH", modeloNorm="PUMA225"): 1
+    agrofy | marca="Case IH" modelo="null" | norm="CASE IH|PUMA225" | year=2017 hp=225 $110000
+
+  PostgreSQL CONTAINS "PUMA225" (brand=CASE IH): 3
+    modeloNorm="PUMA225 CON PILOTO": 2 listings
+      agrofy | marca="Case IH" modelo="null" | year=2019
+      agrofy | marca="Case IH" modelo="null" | year=2017
+    modeloNorm="PUMA225": 1 listings
+      agrofy | marca="Case IH" modelo="null" | year=2017
+
+  PostgreSQL brand="CASE" + CONTAINS "PUMA225": 12
+    modeloNorm="PUMA225": 12 listings
+
+  Broader search brand="CASE IH" + numeric "225" in modelo/modeloNorm: 4
+    CASE IH|PUMA225 CON PILOTO: 2
+    CASE IH|PUMA225: 1
+    CASE IH|225: 1
+
+  Broader search brand="CASE" + numeric "225" in modelo/modeloNorm: 12
+    CASE|PUMA225: 12
+
+============================================================
+TARGET: JOHN DEERE 6100D
+============================================================
+
+  Venturino CSV matches: 1
+    marca="John Deere" modelo="6100d" anio="2011" hp="100" precio="50.000"
+
+  PostgreSQL EXACT match (marcaNorm="JOHN DEERE", modeloNorm="6100D"): 1
+    agrofy | marca="John Deere" modelo="null" | norm="JOHN DEERE|6100D" | year=2011 hp=100 $50000
+
+  PostgreSQL CONTAINS "6100D" (brand=JOHN DEERE): 4
+    modeloNorm="6D 6100D": 2 listings
+      agroads | marca="John Deere" modelo="6D › 6100D" | year=2012
+      agroads | marca="John Deere" modelo="6D › 6100D" | year=2011
+    modeloNorm="6100D": 1 listings
+      agrofy | marca="John Deere" modelo="null" | year=2011
+    modeloNorm="6100D CON TRES PUNTOS": 1 listings
+      agrofy | marca="John Deere" modelo="null" | year=2012
+
+  Broader search brand="JOHN DEERE" + numeric "6100" in modelo/modeloNorm: 7
+    JOHN DEERE|6D 6100D: 2
+    JOHN DEERE|6E 6100E: 2
+    JOHN DEERE|6100D: 1
+    JOHN DEERE|6100E: 1
+    JOHN DEERE|6100D CON TRES PUNTOS: 1
+
+============================================================
+TARGET: JOHN DEERE 5065ES
+============================================================
+
+  Venturino CSV matches: 1
+    marca="John Deere" modelo="5065ES" anio="2013" hp="65" precio="29.000"
+
+  PostgreSQL EXACT match (marcaNorm="JOHN DEERE", modeloNorm="5065ES"): 0
+
+  PostgreSQL CONTAINS "5065ES" (brand=JOHN DEERE): 1
+    modeloNorm="5065ES 65": 1 listings
+      agrofy | marca="John Deere" modelo="null" | year=2013
+
+  Broader search brand="JOHN DEERE" + numeric "5065" in modelo/modeloNorm: 12
+    JOHN DEERE|5E 5065E: 7
+    JOHN DEERE|JHON5065 E: 1
+    JOHN DEERE|5065E: 1
+    JOHN DEERE|5065: 1
+    JOHN DEERE|5065ES 65: 1
+    JOHN DEERE|JHON 5065E: 1
+
+============================================================
+TARGET: JOHN DEERE 7210J
+============================================================
+
+  Venturino CSV matches: 1
+    marca="John Deere" modelo="7210J" anio="2013" hp="210" precio="140.000"
+
+  PostgreSQL EXACT match (marcaNorm="JOHN DEERE", modeloNorm="7210J"): 1
+    agrofy | marca="John Deere" modelo="null" | norm="JOHN DEERE|7210J" | year=2013 hp=210 $140000
+
+  PostgreSQL CONTAINS "7210J" (brand=JOHN DEERE): 3
+    modeloNorm="7J 7210J": 1 listings
+      agroads | marca="John Deere" modelo="7J › 7210J" | year=2013
+    modeloNorm="7210J": 1 listings
+      agrofy | marca="John Deere" modelo="null" | year=2013
+    modeloNorm="DEERE 7210J": 1 listings
+      rastroagro | marca="John" modelo="Deere 7210J" | year=2020
+
+  Broader search brand="JOHN DEERE" + numeric "7210" in modelo/modeloNorm: 6
+    JOHN DEERE|7210R: 2
+    JOHN DEERE|7J 7210J: 1
+    JOHN DEERE|J7210: 1
+    JOHN DEERE|7210J: 1
+    JOHN DEERE|DEERE 7210J: 1
+
+============================================================
+TARGET: JOHN DEERE 5045DS
+============================================================
+
+  Venturino CSV matches: 1
+    marca="John Deere" modelo="5045Ds" anio="2013" hp="45" precio="23.000"
+
+  PostgreSQL EXACT match (marcaNorm="JOHN DEERE", modeloNorm="5045DS"): 0
+
+  PostgreSQL CONTAINS "5045DS" (brand=JOHN DEERE): 0
+
+  Broader search brand="JOHN DEERE" + numeric "5045" in modelo/modeloNorm: 3
+    JOHN DEERE|5D 5045D: 2
+    JOHN DEERE|5045D: 1
+
+============================================================
+TARGET: CASE IH MXM150
+============================================================
+
+  Venturino CSV matches: 1
+    marca="Case IH" modelo="MXM150" anio="2009" hp="150" precio="60.000"
+
+  PostgreSQL EXACT match (marcaNorm="CASE IH", modeloNorm="MXM150"): 1
+    agrofy | marca="Case IH" modelo="null" | norm="CASE IH|MXM150" | year=2008 hp=150 $72000
+
+  PostgreSQL CONTAINS "MXM150" (brand=CASE IH): 1
+    modeloNorm="MXM150": 1 listings
+      agrofy | marca="Case IH" modelo="null" | year=2008
+
+  PostgreSQL brand="CASE" + CONTAINS "MXM150": 0
+
+  Broader search brand="CASE IH" + numeric "150" in modelo/modeloNorm: 7
+    CASE IH|MAXXUM150: 2
+    CASE IH|MXM150: 1
+    CASE IH|7150 35: 1
+    CASE IH|CASEIH5150 30PIES: 1
+    CASE IH|CASEIH6150 35PIES: 1
+    CASE IH|COSECHADORA6150: 1
+
+  Broader search brand="CASE" + numeric "150" in modelo/modeloNorm: 19
+    CASE|MAXXUM150: 11
+    CASE|5150: 4
+    CASE|7150: 4
+
+============================================================
+TARGET: CASE IH CIH MAGNUM315
+============================================================
+
+  Venturino CSV matches: 1
+    marca="Case IH" modelo="CIH MAGNUM 315" anio="2017" hp="315" precio="190.000"
+
+  PostgreSQL EXACT match (marcaNorm="CASE IH", modeloNorm="CIH MAGNUM315"): 0
+
+  PostgreSQL CONTAINS "MAGNUM315" (brand=CASE IH): 2
+    modeloNorm="MAGNUM315": 2 listings
+      machinefinder | marca="Case IH" modelo="magnum 315" | year=2018
+      agrofy | marca="Case IH" modelo="null" | year=2017
+
+  PostgreSQL brand="CASE" + CONTAINS "MAGNUM315": 3
+    modeloNorm="MAGNUM315": 3 listings
+
+  Broader search brand="CASE IH" + numeric "315" in modelo/modeloNorm: 2
+    CASE IH|MAGNUM315: 2
+
+  Broader search brand="CASE" + numeric "315" in modelo/modeloNorm: 3
+    CASE|MAGNUM315: 3
+
+============================================================
+TARGET: NEW HOLLAND T8 295
+============================================================
+
+  Venturino CSV matches: 0
+
+  PostgreSQL EXACT match (marcaNorm="NEW HOLLAND", modeloNorm="T8 295"): 0
+
+  PostgreSQL CONTAINS "T8" (brand=NEW HOLLAND): 17
+    modeloNorm="T8 320": 6 listings
+      agroads | marca="New Holland" modelo="T8.320" | year=2020
+      agroads | marca="New Holland" modelo="T8.320" | year=2012
+      agroads | marca="New Holland" modelo="T8.320" | year=2012
+    modeloNorm="T8 380": 2 listings
+      machinefinder | marca="New Holland" modelo="T8.380" | year=2020
+      agrofy | marca="New Holland" modelo="null" | year=2017
+    modeloNorm="T8 295 270": 2 listings
+      agroads | marca="New Holland" modelo="null" | year=2016
+      agrofy | marca="New Holland" modelo="null" | year=2016
+    modeloNorm="T8 430": 1 listings
+      agroads | marca="New Holland" modelo="null" | year=2024
+    modeloNorm="T8 T8355": 1 listings
+      agroads | marca="New Holland" modelo="T8 › T8355" | year=2012
+    modeloNorm="T8 350": 1 listings
+      agroads | marca="New Holland" modelo="T8.350" | year=2019
+    modeloNorm="T8 T8325": 1 listings
+      agroads | marca="New Holland" modelo="T8 › T8325" | year=2020
+    modeloNorm="T8 325CON PILOTO": 1 listings
+      agrofy | marca="New Holland" modelo="null" | year=2012
+    modeloNorm="T8 325 280": 1 listings
+      agrofy | marca="New Holland" modelo="null" | year=2012
+    modeloNorm="T8 320CON DUALES": 1 listings
+      agrofy | marca="New Holland" modelo="null" | year=2020
+
+  Broader search brand="NEW HOLLAND" + numeric "8" in modelo/modeloNorm: 112
+    NEW HOLLAND|SERIE30 8030: 11
+    NEW HOLLAND|CR9600 CR6080: 8
+    NEW HOLLAND|TM180: 6
+    NEW HOLLAND|CR5 85: 6
+    NEW HOLLAND|T8 320: 6
+    NEW HOLLAND|180 90: 5
+    NEW HOLLAND|CR9000 CR9080: 5
+    NEW HOLLAND|T7 180: 4
+    NEW HOLLAND|CR8090: 4
+    NEW HOLLAND|TL EXITUS TL85 EXITUS: 4

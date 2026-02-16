@@ -4,13 +4,26 @@ const BRAND_EQUIVALENCES: Record<string, string> = {
   "JD": "JOHN DEERE",
   "JOHNDEERE": "JOHN DEERE",
   "JOHN DEERE": "JOHN DEERE",
+  "JOHN": "JOHN DEERE",
   "CASEIH": "CASE IH",
   "CASE IH": "CASE IH",
+  "CASE": "CASE IH",
   "NEW HOLLAND": "NEW HOLLAND",
+  "NEW": "NEW HOLLAND",
+  "NEWHOLLAND": "NEW HOLLAND",
   "MASSEYFERGUSON": "MASSEY FERGUSON",
   "MASSEY FERGUSON": "MASSEY FERGUSON",
+  "MASSEY FERGUSSON": "MASSEY FERGUSON",
+  "MASSEYFERGUSSON": "MASSEY FERGUSON",
+  "MASSEY": "MASSEY FERGUSON",
   "DEUTZFAHR": "DEUTZ FAHR",
   "DEUTZ FAHR": "DEUTZ FAHR",
+  "DEUTZ- FAHR": "DEUTZ FAHR",
+  "FAHR": "DEUTZ FAHR",
+  "AGCO": "AGCO ALLIS",
+  "AGCOALLIS": "AGCO ALLIS",
+  "VALTRA - VALMET": "VALTRA",
+  "VALMET": "VALTRA",
 };
 
 const MODEL_SUFFIX_TOKENS = new Set([
@@ -47,21 +60,61 @@ function normalizeBrandCore(value?: string | null) {
   return BRAND_EQUIVALENCES[raw] ?? BRAND_EQUIVALENCES[compact] ?? raw;
 }
 
+const MODEL_STRIP_PREFIXES = new Set(["CIH", "CASEIH", "JHON", "DEERE"]);
+
+const MODEL_SYNONYMS: Record<string, string> = {
+  "MXM": "MAXXUM",
+  "MAXXUM": "MAXXUM",
+};
+
 function normalizeModelCore(value?: string | null) {
   const match = normalizeMatchText(value ?? null);
   if (!match) return null;
-  const tokens = match.split(" ").filter((t) => t.length > 0);
+  let tokens = match.split(" ").filter((t) => t.length > 0);
+
+  // Strip brand-leak prefixes from model (e.g. "CIH MAGNUM 315" → "MAGNUM 315")
+  while (tokens.length > 1 && MODEL_STRIP_PREFIXES.has(tokens[0])) {
+    tokens.shift();
+  }
+
   const filtered = tokens.filter((token) => {
     if (MODEL_SUFFIX_TOKENS.has(token)) return false;
     if (/^\d{2,3}HP$/.test(token)) return false;
     return true;
   });
+
+  // Remove trailing pure-number tokens that look like HP values
+  // e.g. "7230R 230" → "7230R", "5065ES 65" → "5065ES"
+  // BUT: don't strip if preceding token is a short series prefix (T8, T7, CR, etc.)
+  while (filtered.length > 1) {
+    const last = filtered[filtered.length - 1];
+    if (/^\d{2,3}$/.test(last)) {
+      const prev = filtered[filtered.length - 2];
+      // If prev is a short series prefix, the number IS the model
+      if (/^[A-Z]{1,3}\d{0,2}$/.test(prev) && prev.length <= 3) break;
+      // Only strip if there's already a token with a substantial model number (4+ digits)
+      const hasModelNum = filtered.slice(0, -1).some((t) => /\d{4,}/.test(t));
+      if (hasModelNum) {
+        filtered.pop();
+        continue;
+      }
+    }
+    break;
+  }
+
+  // Apply model synonyms (e.g. MXM → MAXXUM)
+  if (filtered.length > 0 && MODEL_SYNONYMS[filtered[0]]) {
+    filtered[0] = MODEL_SYNONYMS[filtered[0]];
+  }
+
   const joined = filtered.join(" ");
   if (!joined) return null;
 
   const tightened = joined
     .replace(/\b([A-Z]+)\s+(\d+)\b/g, "$1$2")
     .replace(/\b(\d+)\s+([A-Z]+)\b/g, "$1$2")
+    // Glue alphanumeric prefix + trailing digits: "CR7 90" → "CR790"
+    .replace(/\b([A-Z]+\d+)\s+(\d+)\b/g, "$1$2")
     .replace(/\s+/g, " ")
     .trim();
 

@@ -1,0 +1,561 @@
+=== TOTAL DOCUMENTS ===
+Count: 11758
+
+=== FIELD FREQUENCY ===
+  _id: 11758 (100.0%)
+  url: 11758 (100.0%)
+  categoria: 11758 (100.0%)
+  fecha_scraping: 11758 (100.0%)
+  marca: 11758 (100.0%)
+  moneda: 11758 (100.0%)
+  origen: 11758 (100.0%)
+  precio: 11758 (100.0%)
+  descripcion: 11616 (98.8%)
+  condicion: 11533 (98.1%)
+  hp: 11533 (98.1%)
+  titulo: 11391 (96.9%)
+  modelo: 9263 (78.8%)
+  vendedor: 9110 (77.5%)
+  clasificado_condicion_principal: 6615 (56.3%)
+  clasificado_descuento: 6615 (56.3%)
+  localidad: 6615 (56.3%)
+  precio_anterior: 6615 (56.3%)
+  provincia: 6615 (56.3%)
+  ultima_actualizacion: 6615 (56.3%)
+  usuario_tipo_empresa_nombre: 6615 (56.3%)
+  anio: 5143 (43.7%)
+  horas: 5143 (43.7%)
+  ubicacion: 5143 (43.7%)
+  financiacion: 2495 (21.2%)
+  paymentMethod: 2495 (21.2%)
+  fecha_publicacion: 1230 (10.5%)
+  seller_name: 1230 (10.5%)
+  iva: 1051 (8.9%)
+  formas_de_pago: 1051 (8.9%)
+  caracteristicas: 142 (1.2%)
+
+=== DISTINCT VALUES ===
+
+"origen" (6 distinct, 0 null/empty):
+  "agroads": 6615
+  "agrofy": 2495
+  "ml": 1230
+  "rastroagro": 1051
+  "agronorteusados": 225
+  "machinefinder": 142
+
+"categoria" (66 distinct, 6 null/empty):
+  "Tractores": 3539
+  "Sembradoras": 1824
+  "tractores": 1745
+  "Cosechadoras": 998
+  "sembradoras": 882
+  "Pulverizadoras": 707
+  "cosechadoras": 469
+  "pulverizadoras": 450
+  "Palas Cargadoras": 336
+  "Otras Maquinarias": 242
+  "Tractor": 105
+  "Desmalezadoras": 78
+  "Tolvas": 42
+  "Tractores medianos (de 100 a 190 hp)": 35
+  "Cosechadora": 32
+  "Forraje": 30
+  "Rotoenfardadoras": 16
+  "Tractores de 50 a 100 hp": 16
+  "Fertilizadoras": 16
+  "Pulverizadoras autopropulsadas": 13
+  "Mixers": 13
+  "Picadoras de forraje": 13
+  "Pulverizadora": 12
+  "Cabezales": 11
+  "Sembradora": 10
+  "Excavadoras": 10
+  "Sembradoras: De tiro": 8
+  "Pala Cargadora": 7
+  "Retroexcavadoras": 7
+  "Cosechadoras de forraje autopropulsadas": 7
+  "Retroexcavadora": 6
+  "Plataforma": 5
+  "Tractores Grandes (más de 190 hp)": 5
+  "Picadores de forraje de arrastre": 5
+  "Cabezal": 4
+  "Excavadora": 4
+  "Minicargadora": 4
+  "Cargadora sobre Rueda": 4
+  "Motoniveladora": 3
+  "Rastras": 3
+  "Acoplados": 3
+  "Tractores menores de 50 hp": 2
+  "Cabezales para picadoras de forraje autopropulsadas: Tambores rotativos": 2
+  "Tracked Carriers": 2
+  "Rolos": 2
+  "Segadoras": 2
+  "Rastrillos": 2
+  "Palas": 2
+  "Cortahileradoras": 2
+  "Miniexcavadora": 1
+  "Tolva": 1
+  "Otros": 1
+  "Cabezales para maíz y cultivos de hileras": 1
+  "Remolques y tolvas de descarga por gravedad": 1
+  "Motoniveladoras": 1
+  "Minicargadoras": 1
+  "Retroexcavadoras para tractores": 1
+  "Subsoladoras": 1
+  "Autoelevadores": 1
+  "Carpidores": 1
+  "Estercoleras": 1
+  "Acondicionador de suelos": 1
+  "Trailers": 1
+  "Drones": 1
+  "Moledoras / Quebradoras": 1
+  "Picadora de rollos": 1
+
+"condicion" (7 distinct, 231 null/empty):
+  "usado": 5951
+  "Usado": 2075
+  "nuevo": 1857
+  "used": 581
+  "new": 533
+  "Nuevo": 420
+  "not_specified": 110
+
+"moneda" (2 distinct, 7 null/empty):
+  "USD": 10725
+  "ARS": 1026
+
+"clasificado_condicion_principal" (65 distinct, 5889 null/empty):
+  "Entrega Inmediata": 1672
+  "Acepta Canje Usados": 605
+  "Financiación 2 años": 575
+  "Financiación 3 años": 515
+  "Financiación 4 años": 282
+  "Financiación 1 años": 269
+  "30% Entrega + Financiación": 243
+  "50% Entrega + Financiación": 168
+  "12 cheques sin interés": 167
+  "Financiación 5 años": 151
+  "40% Entrega + Financiación": 123
+  "6 cheques sin interés": 102
+  "10 cheques sin interés": 98
+  "Tasa 0% en Dólares": 80
+  "4 cheques sin interés": 66
+  "17% Entrega + Financiación": 65
+  "Financiación de fábrica": 62
+  "5 cheques sin interés": 60
+  "Cuotas sin interés": 51
+  "3 cheques sin interés": 50
+  "25% Entrega + Financiación": 48
+  "35% Entrega + Financiación": 40
+  "34% Entrega + Financiación": 40
+  "Acepta Canje Cereal": 39
+  "9 cheques sin interés": 34
+  "8 cheques sin interés": 31
+  "10% Entrega + Financiación": 24
+  "13 cheques sin interés": 23
+  "Financiación 6 años": 21
+  "7 cheques sin interés": 18
+  "Envío Incluido a todo el país": 18
+  "15% Entrega + Financiación": 17
+  "20% Entrega + Financiación": 14
+  "11 cheques sin interés": 14
+  "60% Entrega + Financiación": 11
+  "Tasa 0% en Pesos": 6
+  "2 cheques sin interés": 5
+  "Tasa 15% en Pesos": 5
+  "Envío Incluido hasta 300 km": 5
+  "Financiación 0 años": 4
+  "0% Entrega + Financiación": 4
+  "Envío Incluido hasta 100 km": 4
+  "Tasa 9% en Dólares": 4
+  "Tasa 0,5% en Dólares": 3
+  "33% Entrega + Financiación": 3
+  "5% Entrega + Financiación": 2
+  "0 cheques sin interés": 2
+  "Envío Incluido hasta 200 km": 2
+  "1 cheques sin interés": 2
+  "18 cheques sin interés": 2
+  "55% Entrega + Financiación": 2
+  "00 cheques sin interés": 2
+  "Envío Incluido hasta 150 km": 2
+  "70% Entrega + Financiación": 2
+  "45% Entrega + Financiación": 2
+  "Financiación 8 años": 1
+  "16 cheques sin interés": 1
+  "30 cheques sin interés": 1
+  "24 cheques sin interés": 1
+  "15 cheques sin interés": 1
+  "Financiación 50 años": 1
+  "Tasa 8,5% en Dólares": 1
+  "16% Entrega + Financiación": 1
+  "Envío Incluido hasta 30 km": 1
+  "Tasa 2% en Pesos": 1
+
+"iva" (2 distinct, 10707 null/empty):
+  "+ iva": 990
+  "iva incluido": 61
+
+=== CROSS-TAB: origen x categoria ===
+  agroads | Tractores: 3122
+  agroads | Sembradoras: 1776
+  agrofy | tractores: 1217
+  agroads | Cosechadoras: 964
+  agroads | Pulverizadoras: 687
+  agrofy | sembradoras: 610
+  rastroagro | tractores: 528
+  ml | Tractores: 417
+  agrofy | cosechadoras: 340
+  ml | Palas Cargadoras: 336
+  agrofy | pulverizadoras: 328
+  rastroagro | sembradoras: 272
+  ml | Otras Maquinarias: 242
+  rastroagro | cosechadoras: 129
+  rastroagro | pulverizadoras: 122
+  agronorteusados | Tractor: 105
+  ml | Desmalezadoras: 77
+  ml | Sembradoras: 48
+  machinefinder | Tractores medianos (de 100 a 190 hp): 35
+  ml | Tolvas: 35
+  agronorteusados | Cosechadora: 32
+  agronorteusados | Forraje: 30
+  ml | Cosechadoras: 21
+  ml | Pulverizadoras: 20
+  machinefinder | Tractores de 50 a 100 hp: 16
+  ml | Fertilizadoras: 16
+  machinefinder | Cosechadoras: 13
+  machinefinder | Pulverizadoras autopropulsadas: 13
+  agroads | Picadoras de forraje: 13
+  agronorteusados | Pulverizadora: 12
+  ml | Mixers: 12
+  agroads | Cabezales: 11
+  agronorteusados | Sembradora: 10
+  machinefinder | Excavadoras: 10
+  machinefinder | Sembradoras: De tiro: 8
+  machinefinder | Rotoenfardadoras: 8
+  agroads | Rotoenfardadoras: 8
+  agronorteusados | Pala Cargadora: 7
+  machinefinder | Retroexcavadoras: 7
+  machinefinder | Cosechadoras de forraje autopropulsadas: 7
+  agroads | Tolvas: 7
+  agronorteusados | Retroexcavadora: 6
+  ml | (null): 6
+  agronorteusados | Plataforma: 5
+  machinefinder | Tractores Grandes (más de 190 hp): 5
+  machinefinder | Picadores de forraje de arrastre: 5
+  agronorteusados | Cabezal: 4
+  agronorteusados | Excavadora: 4
+  agronorteusados | Minicargadora: 4
+  machinefinder | Cargadora sobre Rueda: 4
+  agronorteusados | Motoniveladora: 3
+  agroads | Rastras: 3
+  agroads | Acoplados: 3
+  machinefinder | Tractores menores de 50 hp: 2
+  machinefinder | Cabezales para picadoras de forraje autopropulsadas: Tambores rotativos: 2
+  machinefinder | Tracked Carriers: 2
+  agroads | Rolos: 2
+  agroads | Segadoras: 2
+  agroads | Rastrillos: 2
+  agroads | Palas: 2
+  agroads | Cortahileradoras: 2
+  agronorteusados | Miniexcavadora: 1
+  agronorteusados | Tolva: 1
+  agronorteusados | Otros: 1
+  machinefinder | Cabezales para maíz y cultivos de hileras: 1
+  machinefinder | Remolques y tolvas de descarga por gravedad: 1
+  machinefinder | Motoniveladoras: 1
+  machinefinder | Minicargadoras: 1
+  machinefinder | Retroexcavadoras para tractores: 1
+  agroads | Mixers: 1
+  agroads | Subsoladoras: 1
+  agroads | Autoelevadores: 1
+  agroads | Carpidores: 1
+  agroads | Estercoleras: 1
+  agroads | Acondicionador de suelos: 1
+  agroads | Trailers: 1
+  agroads | Drones: 1
+  agroads | Moledoras / Quebradoras: 1
+  agroads | Picadora de rollos: 1
+  agroads | Desmalezadoras: 1
+
+=== PRICE ANALYSIS BY ORIGEN ===
+
+"agronorteusados" (225 docs):
+  numeric: 0, string: 225, null: 0
+  string samples: ["435000","118000","127000","55000","260000","28000","94000","172000"]
+
+"machinefinder" (142 docs):
+  numeric: 142, string: 0, null: 0
+  numeric range: 10500 - 755000
+  numeric samples: [10500,16000,18000,20000,20000]
+
+"ml" (1230 docs):
+  numeric: 1224, string: 0, null: 6
+  numeric range: 100 - 162242000
+  numeric samples: [100,261,402,700,800]
+
+"agroads" (6615 docs):
+  numeric: 0, string: 6615, null: 0
+  string samples: ["6500","15000","240000","13569","157000","195000","14000","243000"]
+
+"agrofy" (2495 docs):
+  numeric: 0, string: 2495, null: 0
+  string samples: ["9000.0000","117500.0000","90000.0000","55000.0000","11000.0000","102000.0000","33600.0000","150000.0000"]
+
+"rastroagro" (1051 docs):
+  numeric: 0, string: 1051, null: 0
+  string samples: ["231750","206000","283250","401700","360500","319300","386250","386250"]
+
+=== MONEDA BY ORIGEN ===
+
+"agronorteusados":
+  "USD": 225
+
+"machinefinder":
+  "USD": 142
+
+"ml":
+  "USD": 900
+  "ARS": 324
+  "(null)": 6
+
+"agroads":
+  "USD": 6159
+  "ARS": 455
+  "(null)": 1
+
+"agrofy":
+  "USD": 2285
+  "ARS": 210
+
+"rastroagro":
+  "USD": 1014
+  "ARS": 37
+
+=== LOCATION FIELDS BY ORIGEN ===
+
+Field: "ubicacion"
+  "agronorteusados": 225/225 (100.0%) | ["Paraná (Entre Ríos)","Ceres (Santa Fe)","Morteros (Córdoba)"]
+  "machinefinder": 142/142 (100.0%) | ["Laboulaye, Córdoba","Trenque Lauquen, Buenos Aires","Realicó, La Pampa"]
+  "ml": 1224/1230 (99.5%) | ["Plottier, Neuquén","Escobar, Bs.As. G.B.A. Norte","Garupá, Misiones"]
+  "agroads": 0/6615 (0.0%) | []
+  "agrofy": 2495/2495 (100.0%) | ["Marcos Juárez, Córdoba","Don Torcuato, Buenos Aires","Venado Tuerto, Santa Fe"]
+  "rastroagro": 1051/1051 (100.0%) | ["Santa Fe","Buenos Aires","Cordoba"]
+
+Field: "localidad"
+  "agronorteusados": 0/225 (0.0%) | []
+  "machinefinder": 0/142 (0.0%) | []
+  "ml": 0/1230 (0.0%) | []
+  "agroads": 6615/6615 (100.0%) | ["Capitán Sarmiento","Saladillo","General Villegas"]
+  "agrofy": 0/2495 (0.0%) | []
+  "rastroagro": 0/1051 (0.0%) | []
+
+Field: "provincia"
+  "agronorteusados": 0/225 (0.0%) | []
+  "machinefinder": 0/142 (0.0%) | []
+  "ml": 0/1230 (0.0%) | []
+  "agroads": 6590/6615 (99.6%) | ["Buenos Aires","Córdoba","Santa Fe"]
+  "agrofy": 0/2495 (0.0%) | []
+  "rastroagro": 0/1051 (0.0%) | []
+
+=== SELLER FIELDS BY ORIGEN ===
+
+Field: "seller_name"
+  "ml": 1224/1230 (99.5%), 281 unique | ["Rentaltrucksnqn","Sinomach","Maquinar","Martinoagrimaquinarias","Ekkon Expertos"]
+
+Field: "vendedor"
+  "agroads": 6615/6615 (100.0%), 1326 unique | ["surita maquinaria","envios de campo","trayken s.a.","scaramuzza maquinarias","ratto hnos"]
+  "agrofy": 2495/2495 (100.0%), 310 unique | ["Tienda Agro","AgroChery","Venturino","Tzadik.Argentina","G y V Maquinarias"]
+
+Field: "usuario_tipo_empresa_nombre"
+  "agroads": 5343/6615 (80.8%), 7 unique | ["Concesionaria","Fabricante","Comercio","Particular","Inmobiliaria"]
+
+=== YEAR (anio) BY ORIGEN ===
+
+"agronorteusados": 225/225 filled
+  types: {"string":225}
+  range: 1960 - 2025
+
+"machinefinder": 141/142 filled
+  types: {"number":141}
+  range: 1989 - 2023
+
+"ml": 1230/1230 filled
+  types: {"string":1230}
+  range: 1900 - 2026
+
+"agroads": 0/6615 filled
+  types: {}
+
+"agrofy": 2495/2495 filled
+  types: {"string":2495}
+  range: 1990 - 2026
+
+"rastroagro": 1051/1051 filled
+  types: {"string":1051}
+  range: 68 - 2026
+
+=== HP BY ORIGEN ===
+
+"agronorteusados": 0/225 filled (0 "No especifica")
+  types: {}
+
+"machinefinder": 55/142 filled (0 "No especifica")
+  types: {"string":55}
+  range: 60 - 350
+
+"ml": 570/1230 filled (0 "No especifica")
+  types: {"string":570}
+  range: 10 - 750
+
+"agroads": 6615/6615 filled (0 "No especifica")
+  types: {"number":6615}
+  range: 0 - 11111111
+
+"agrofy": 1507/2495 filled (0 "No especifica")
+  types: {"string":1507}
+  range: 1 - 980
+
+"rastroagro": 572/1051 filled (155 "No especifica")
+  types: {"string":572}
+  range: 10 - 460
+
+=== HORAS BY ORIGEN ===
+
+"agronorteusados": 130/225 filled (0 "No especifica")
+
+"machinefinder": 114/142 filled (0 "No especifica")
+
+"ml": 174/1230 filled (0 "No especifica")
+
+"agroads": 0/6615 filled (0 "No especifica")
+
+"agrofy": 487/2495 filled (0 "No especifica")
+
+"rastroagro": 223/1051 filled (61 "No especifica")
+
+=== CONDICION BY ORIGEN ===
+
+"agronorteusados":
+  "(null)": 225
+
+"machinefinder":
+  "usado": 142
+
+"ml":
+  "used": 581
+  "new": 533
+  "not_specified": 110
+  "(null)": 6
+
+"agroads":
+  "usado": 5685
+  "nuevo": 930
+
+"agrofy":
+  "Usado": 2075
+  "Nuevo": 420
+
+"rastroagro":
+  "nuevo": 927
+  "usado": 124
+
+=== CATEGORIA DISTINCT VALUES ===
+  "Tractores": 3539
+  "Sembradoras": 1824
+  "tractores": 1745
+  "Cosechadoras": 998
+  "sembradoras": 882
+  "Pulverizadoras": 707
+  "cosechadoras": 469
+  "pulverizadoras": 450
+  "Palas Cargadoras": 336
+  "Otras Maquinarias": 242
+  "Tractor": 105
+  "Desmalezadoras": 78
+  "Tolvas": 42
+  "Tractores medianos (de 100 a 190 hp)": 35
+  "Cosechadora": 32
+  "Forraje": 30
+  "Rotoenfardadoras": 16
+  "Tractores de 50 a 100 hp": 16
+  "Fertilizadoras": 16
+  "Pulverizadoras autopropulsadas": 13
+  "Mixers": 13
+  "Picadoras de forraje": 13
+  "Pulverizadora": 12
+  "Cabezales": 11
+  "Sembradora": 10
+  "Excavadoras": 10
+  "Sembradoras: De tiro": 8
+  "Pala Cargadora": 7
+  "Retroexcavadoras": 7
+  "Cosechadoras de forraje autopropulsadas": 7
+  "Retroexcavadora": 6
+  "Plataforma": 5
+  "Tractores Grandes (más de 190 hp)": 5
+  "Picadores de forraje de arrastre": 5
+  "Cabezal": 4
+  "Excavadora": 4
+  "Minicargadora": 4
+  "Cargadora sobre Rueda": 4
+  "Motoniveladora": 3
+  "Rastras": 3
+  "Acoplados": 3
+  "Tractores menores de 50 hp": 2
+  "Cabezales para picadoras de forraje autopropulsadas: Tambores rotativos": 2
+  "Tracked Carriers": 2
+  "Rolos": 2
+  "Segadoras": 2
+  "Rastrillos": 2
+  "Palas": 2
+  "Cortahileradoras": 2
+  "Miniexcavadora": 1
+  "Tolva": 1
+  "Otros": 1
+  "Cabezales para maíz y cultivos de hileras": 1
+  "Remolques y tolvas de descarga por gravedad": 1
+  "Motoniveladoras": 1
+  "Minicargadoras": 1
+  "Retroexcavadoras para tractores": 1
+  "Subsoladoras": 1
+  "Autoelevadores": 1
+  "Carpidores": 1
+  "Estercoleras": 1
+  "Acondicionador de suelos": 1
+  "Trailers": 1
+  "Drones": 1
+  "Moledoras / Quebradoras": 1
+  "Picadora de rollos": 1
+
+=== TOP 30 MARCA x CATEGORIA ===
+  John Deere | Tractores: 543
+  Agrometal | Sembradoras: 379
+  Massey Ferguson | Tractores: 374
+  Pauny | Tractores: 362
+  John Deere | Cosechadoras: 318
+  Crucianelli | Sembradoras: 307
+  New Holland | Tractores: 265
+  Zanello | Tractores: 251
+  Fiat | Tractores: 229
+  Case | Tractores: 202
+  Chery Bylion | Tractores: 184
+  Metalfor | Pulverizadoras: 180
+  John Deere | tractores: 179
+  Pauny | tractores: 178
+  PLA | Pulverizadoras: 177
+  Deutz | Tractores: 160
+  Agrometal | sembradoras: 158
+  Case | Cosechadoras: 154
+  Hanomag | Tractores: 145
+  Crucianelli | sembradoras: 136
+  New Holland | Cosechadoras: 127
+  Metalfor | pulverizadoras: 124
+  Massey Ferguson | tractores: 121
+  Zanello | tractores: 119
+  Valtra | Tractores: 118
+  Valtra | tractores: 117
+  John Deere | cosechadoras: 116
+  Fiat | tractores: 104
+  Fercam | Sembradoras: 98
+  Chery | tractores: 95

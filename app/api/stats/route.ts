@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { loadTractors } from "@/lib/data/loadTractors";
+import type { NextRequest } from "next/server";
+import { loadAllListings } from "@/lib/data/loadListings";
 import { getPercentiles } from "@/lib/stats/percentiles";
 import { groupByOrigin, groupByProvince, topBrands, topModelCombos } from "@/lib/stats/aggregations";
 import { computeTopOpportunities } from "@/lib/stats/opportunities";
@@ -7,9 +8,11 @@ import { computeTopOpportunities } from "@/lib/stats/opportunities";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const dataset = await loadTractors();
+    const { searchParams } = new URL(request.url);
+    const categoria = searchParams.get("categoria") ?? undefined;
+    const dataset = await loadAllListings(categoria);
     const rows = dataset.rows;
 
     const prices = rows.map((row) => row.precio_nor).filter((v): v is number => v !== null);

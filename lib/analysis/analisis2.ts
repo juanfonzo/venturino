@@ -1,10 +1,12 @@
-import { loadTractors } from "@/lib/data/loadTractors";
+import { loadAllListings } from "@/lib/data/loadListings";
 import { getPercentiles } from "@/lib/stats/percentiles";
 import type { TractorItem } from "@/lib/types";
 
 export type Analisis2CompanyRow = {
   empresa: string;
   countTotal: number;
+  countUniqueUnits: number;
+  crossPortalDups: number;
   countWithPrice: number;
   missingPriceCount: number;
   missingPricePct: number;
@@ -34,6 +36,7 @@ export type Analisis2ProvinceRow = {
 export type Analisis2ItemRow = {
   id: string;
   origen: string | null;
+  categoria: string | null;
   empresa: string;
   url: string | null;
   titulo: string | null;
@@ -44,19 +47,23 @@ export type Analisis2ItemRow = {
   hp_motor: number | null;
   provincia: string | null;
   precio_nor: number | null;
+  isDupCrossPortal: boolean;
 };
 
 export type Analisis2Response = {
   meta: {
     generatedAt: number;
+    categoria: string | null;
     totalUnique: number;
     filteredUnique: number;
     competitorsUnique: number;
+    crossPortalDedupCount: number;
     companies: number;
     selectedCompanies: string[];
   };
   kpis: {
     totalUnits: number;
+    totalUniqueUnits: number;
     totalCapitalUsd: number;
     totalMissingPricePct: number;
   };
@@ -77,6 +84,17 @@ function isSelfCompany(empresa: string | null) {
   return norm.includes("VENTURINO");
 }
 
+// Marketplaces where the "empresa" is actually the platform name, not a real seller
+const MARKETPLACE_ORIGINS = new Set(["rastroagro"]);
+
+function isMarketplaceRow(row: Pick<TractorItem, "empresa" | "origen">) {
+  const origen = (row.origen ?? "").toString().trim().toLowerCase();
+  if (!MARKETPLACE_ORIGINS.has(origen)) return false;
+  // Only exclude if there's no real empresa (empresa is null/empty or equals the origen)
+  const empresa = (row.empresa ?? "").toString().trim().toLowerCase();
+  return !empresa || empresa === origen;
+}
+
 function uniqKey(row: Pick<TractorItem, "url" | "id">) {
   const url = (row.url ?? "").toString().trim();
   if (url) return `url:${url}`;
@@ -85,7 +103,7 @@ function uniqKey(row: Pick<TractorItem, "url" | "id">) {
 
 function safeEmpresa(row: Pick<TractorItem, "empresa" | "origen">) {
   const base = (row.empresa ?? row.origen ?? "Sin empresa").toString().trim();
-  return base || "Sin empresa";
+  return (base || "Sin empresa").toUpperCase();
 }
 
 function safeProvince(value: string | null) {
@@ -121,10 +139,14 @@ function topNCounts(map: Map<string, number>, n: number) {
     .slice(0, n);
 }
 
-function getCompetitorsDedup(rows: TractorItem[]) {
+// Extended TractorItem with cross-portal dup flag (runtime only, not persisted)
+type TractorItemWithDup = TractorItem & { _isDupCrossPortal?: boolean };
+
+function getCompetitorsDedup(rows: TractorItem[]): { competitorsOnly: TractorItem[]; deduped: TractorItemWithDup[] } {
   const competitorsOnly = rows.filter((row) => {
     if ((row.origen ?? "").toString().toLowerCase() === "venturino") return false;
     if (isSelfCompany(row.empresa ?? null)) return false;
+    if (isMarketplaceRow(row)) return false;
     return true;
   });
 
@@ -134,14 +156,72 @@ function getCompetitorsDedup(rows: TractorItem[]) {
     if (!dedup.has(key)) dedup.set(key, row);
   });
 
-  return { competitorsOnly, deduped: Array.from(dedup.values()) };
+  const dedupedArr: TractorItemWithDup[] = Array.from(dedup.values());
+  markCrossPortalDups(dedupedArr);
+  return { competitorsOnly, deduped: dedupedArr };
 }
 
-export async function computeAnalisis2(params?: { selectedCompanies?: string[] | null }): Promise<Analisis2Response> {
+/**
+ * Cross-portal dedup: For each (empresa, marca_norm, modelo_norm, anio) group,
+ * if items come from multiple origins, keep ONE per origin-group as primary
+ * and mark the rest as cross-portal duplicates.
+ *
+ * Strategy: within each group, pick the origin with the most items as "primary".
+ * All items from other origins in that group are marked as dups.
+ * This preserves multiple units within the same portal (likely real inventory)
+ * while flagging cross-portal republications.
+ */
+function markCrossPortalDups(rows: TractorItemWithDup[]): void {
+  // Build groups: empresa|marca_norm|modelo_norm|anio
+  const groups = new Map<string, TractorItemWithDup[]>();
+  rows.forEach((r) => {
+    const empresa = safeEmpresa(r);
+    const marca = (r.marca_norm ?? r.marca ?? "").toString().trim().toUpperCase();
+    const modelo = (r.modelo_norm ?? r.modelo ?? "").toString().trim().toUpperCase();
+    const anio = r.anio ?? 0;
+    if (!marca || !modelo || !anio) return; // can't dedup without these
+    const key = `${empresa}|${marca}|${modelo}|${anio}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(r);
+  });
+
+  groups.forEach((items) => {
+    // Group by origen
+    const byOrigen = new Map<string, TractorItemWithDup[]>();
+    items.forEach((r) => {
+      const o = (r.origen ?? "unknown").toString().trim().toLowerCase();
+      if (!byOrigen.has(o)) byOrigen.set(o, []);
+      byOrigen.get(o)!.push(r);
+    });
+
+    if (byOrigen.size <= 1) return; // single origin, no cross-portal dups
+
+    // Pick the origin with the most items as primary
+    let primaryOrigen = "";
+    let primaryCount = 0;
+    byOrigen.forEach((origenItems, origen) => {
+      if (origenItems.length > primaryCount) {
+        primaryCount = origenItems.length;
+        primaryOrigen = origen;
+      }
+    });
+
+    // Mark items from non-primary origins as dups
+    byOrigen.forEach((origenItems, origen) => {
+      if (origen === primaryOrigen) return;
+      origenItems.forEach((r) => {
+        r._isDupCrossPortal = true;
+      });
+    });
+  });
+}
+
+export async function computeAnalisis2(params?: { categoria?: string | null; selectedCompanies?: string[] | null }): Promise<Analisis2Response> {
+  const categoria = params?.categoria ?? null;
   const selectedCompanies = (params?.selectedCompanies ?? []).filter((x) => x && x.trim().length > 0);
   const selectedSet = new Set(selectedCompanies.map((s) => s.trim()));
 
-  const dataset = await loadTractors();
+  const dataset = await loadAllListings(categoria);
   const raw = dataset.rows;
 
   const { competitorsOnly, deduped: rows } = getCompetitorsDedup(raw);
@@ -152,7 +232,7 @@ export async function computeAnalisis2(params?: { selectedCompanies?: string[] |
 
   const currentYear = new Date().getFullYear();
 
-  const byEmpresa = new Map<string, TractorItem[]>();
+  const byEmpresa = new Map<string, TractorItemWithDup[]>();
   workingRows.forEach((row) => {
     const empresa = safeEmpresa(row);
     if (!byEmpresa.has(empresa)) byEmpresa.set(empresa, []);
@@ -160,15 +240,17 @@ export async function computeAnalisis2(params?: { selectedCompanies?: string[] |
   });
 
   const companies: Analisis2CompanyRow[] = Array.from(byEmpresa.entries()).map(([empresa, items]) => {
-    const prices = items.map((x) => x.precio_nor).filter((v): v is number => v !== null);
-    const ages = items
+    const uniqueItems = items.filter((x) => !x._isDupCrossPortal);
+    const crossPortalDups = items.length - uniqueItems.length;
+    const prices = uniqueItems.map((x) => x.precio_nor).filter((v): v is number => v !== null);
+    const ages = uniqueItems
       .map((x) => (isFiniteNumber(x.anio) ? toAge(x.anio, currentYear) : null))
       .filter((v): v is number => v !== null);
 
     const capitalUsd = prices.reduce((acc, v) => acc + v, 0);
 
-    const missingPriceCount = items.length - prices.length;
-    const missingPricePct = items.length ? missingPriceCount / items.length : 0;
+    const missingPriceCount = uniqueItems.length - prices.length;
+    const missingPricePct = uniqueItems.length ? missingPriceCount / uniqueItems.length : 0;
 
     const priceP = getPercentiles(prices);
     const ageP = getPercentiles(ages);
@@ -178,7 +260,7 @@ export async function computeAnalisis2(params?: { selectedCompanies?: string[] |
     const ageCounts = new Map<string, number>();
     const provCounts = new Map<string, number>();
 
-    items.forEach((x) => {
+    uniqueItems.forEach((x) => {
       const brand = (x.marca_norm ?? x.marca ?? "Sin marca").toString().trim() || "Sin marca";
       brandCounts.set(brand, (brandCounts.get(brand) ?? 0) + 1);
 
@@ -207,6 +289,8 @@ export async function computeAnalisis2(params?: { selectedCompanies?: string[] |
     return {
       empresa,
       countTotal: items.length,
+      countUniqueUnits: uniqueItems.length,
+      crossPortalDups,
       countWithPrice: prices.length,
       missingPriceCount,
       missingPricePct,
@@ -268,38 +352,78 @@ export async function computeAnalisis2(params?: { selectedCompanies?: string[] |
 
   const totalCapitalUsd = companies.reduce((acc, c) => acc + c.capitalUsd, 0);
   const totalUnits = workingRows.length;
-  const totalMissing = workingRows.reduce((acc, r) => acc + (r.precio_nor === null ? 1 : 0), 0);
+  const totalCrossPortalDups = workingRows.filter((r) => r._isDupCrossPortal).length;
+  const uniqueWorkingRows = workingRows.filter((r) => !r._isDupCrossPortal);
+  const totalUniqueUnits = uniqueWorkingRows.length;
+  const totalMissing = uniqueWorkingRows.reduce((acc, r) => acc + (r.precio_nor === null ? 1 : 0), 0);
 
   return {
     meta: {
       generatedAt: Date.now(),
+      categoria,
       totalUnique: rows.length,
       filteredUnique: workingRows.length,
       competitorsUnique: competitorsOnly.length,
+      crossPortalDedupCount: totalCrossPortalDups,
       companies: companies.length,
       selectedCompanies,
     },
     kpis: {
       totalUnits,
+      totalUniqueUnits,
       totalCapitalUsd,
-      totalMissingPricePct: totalUnits ? totalMissing / totalUnits : 0,
+      totalMissingPricePct: totalUniqueUnits ? totalMissing / totalUniqueUnits : 0,
     },
     companies,
     byProvince,
   };
 }
 
-export async function listAnalisis2Items(params: { empresa: string; limit?: number }): Promise<{ empresa: string; rows: Analisis2ItemRow[] }> {
-  const empresa = params.empresa.trim();
-  const limitRaw = params.limit ?? 200;
-  const limit = Math.max(1, Math.min(limitRaw, 500));
+export type Analisis2CategoryBreakdown = {
+  categoria: string;
+  count: number;
+  capitalUsd: number;
+};
 
-  const dataset = await loadTractors();
+export type Analisis2ItemsResponse = {
+  empresa: string;
+  categoryBreakdown: Analisis2CategoryBreakdown[];
+  rows: Analisis2ItemRow[];
+};
+
+export async function listAnalisis2Items(params: { categoria?: string | null; empresa: string; limit?: number }): Promise<Analisis2ItemsResponse> {
+  const empresa = params.empresa.trim();
+  const limitRaw = params.limit ?? 500;
+  const limit = Math.max(1, Math.min(limitRaw, 1000));
+
+  // Always load ALL categories to show the full breakdown per company
+  const dataset = await loadAllListings(null);
   const { deduped } = getCompetitorsDedup(dataset.rows);
 
   const filtered = deduped.filter((r) => safeEmpresa(r) === empresa);
 
+  // Category breakdown (only unique items count toward capital)
+  const catMap = new Map<string, { count: number; countUnique: number; capitalUsd: number }>();
+  filtered.forEach((r) => {
+    const cat = r.categoria ?? "Sin categoría";
+    if (!catMap.has(cat)) catMap.set(cat, { count: 0, countUnique: 0, capitalUsd: 0 });
+    const entry = catMap.get(cat)!;
+    entry.count += 1;
+    const isDup = !!(r as TractorItemWithDup)._isDupCrossPortal;
+    if (!isDup) {
+      entry.countUnique += 1;
+      if (r.precio_nor !== null) entry.capitalUsd += r.precio_nor;
+    }
+  });
+  const categoryBreakdown: Analisis2CategoryBreakdown[] = Array.from(catMap.entries())
+    .map(([categoria, v]) => ({ categoria, count: v.count, capitalUsd: v.capitalUsd }))
+    .sort((a, b) => b.capitalUsd - a.capitalUsd);
+
+  // Sort by categoria then price desc
   filtered.sort((a, b) => {
+    const catA = a.categoria ?? "";
+    const catB = b.categoria ?? "";
+    if (catA !== catB) return catA.localeCompare(catB);
     const ap = a.precio_nor;
     const bp = b.precio_nor;
     if (ap === null && bp === null) return 0;
@@ -308,9 +432,10 @@ export async function listAnalisis2Items(params: { empresa: string; limit?: numb
     return bp - ap;
   });
 
-  const rows = filtered.slice(0, limit).map((r) => ({
+  const rows: Analisis2ItemRow[] = filtered.slice(0, limit).map((r) => ({
     id: r.id,
     origen: r.origen,
+    categoria: r.categoria,
     empresa: safeEmpresa(r),
     url: r.url,
     titulo: r.titulo,
@@ -321,7 +446,8 @@ export async function listAnalisis2Items(params: { empresa: string; limit?: numb
     hp_motor: r.hp_motor,
     provincia: r.provincia,
     precio_nor: r.precio_nor,
+    isDupCrossPortal: !!(r as TractorItemWithDup)._isDupCrossPortal,
   }));
 
-  return { empresa, rows };
+  return { empresa, categoryBreakdown, rows };
 }

@@ -30,7 +30,15 @@ export default function Analisis1Page() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<Analisis1Response | null>(null);
 
+  const CATEGORIAS = [
+    { value: "Tractores", label: "Tractores" },
+    { value: "Sembradoras", label: "Sembradoras" },
+    { value: "Cosechadoras", label: "Cosechadoras" },
+    { value: "Pulverizadoras", label: "Pulverizadoras" },
+  ];
+
   const [filters, setFilters] = useState({
+    categoria: "Tractores",
     brand: "",
     model: "",
     modelSearch: "",
@@ -46,11 +54,13 @@ export default function Analisis1Page() {
 
   const [activeModelKey, setActiveModelKey] = useState<string | null>(null);
 
-  const fetchData = async (next?: { brand?: string; model?: string }) => {
+  const fetchData = async (next?: { brand?: string; model?: string; categoria?: string }) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
+      const cat = next?.categoria ?? filters.categoria;
+      if (cat) params.set("categoria", cat);
       const brand = next?.brand ?? filters.brand;
       const model = next?.model ?? filters.model;
       if (brand) params.set("brand", brand);
@@ -124,6 +134,20 @@ export default function Analisis1Page() {
             <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Análisis 1</p>
             <h2 className="text-lg font-semibold text-jd-black">Venturino vs competencia</h2>
             <p className="mt-1 text-sm text-jd-black/60">Matching por marca + modelo (opcional: año/horas).</p>
+            <div className="mt-2">
+              <select
+                value={filters.categoria}
+                onChange={(e) => {
+                  setFilters((p) => ({ ...p, categoria: e.target.value }));
+                  void fetchData({ categoria: e.target.value });
+                }}
+                className="rounded-xl border border-jd-black/15 bg-white/80 px-3 py-2 text-sm font-semibold outline-none transition focus:border-jd-green"
+              >
+                {CATEGORIAS.map((cat) => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="w-full max-w-[860px]">
             <div className="rounded-2xl border border-jd-black/10 bg-white/60 p-4">
@@ -259,24 +283,6 @@ export default function Analisis1Page() {
                     <p className="text-sm text-jd-black/60">No hay suficientes datos para rankings.</p>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <div className="rounded-xl border border-jd-black/10 bg-white/70 p-3 text-xs text-jd-black/60">
-                        <div className="font-semibold text-jd-black">Diagnóstico rápido</div>
-                        <div className="mt-1 grid gap-1">
-                          <div>
-                            Competencia total: {formatNumber(data.meta.competitorsCount)} | Con marca+modelo+año (post filtros): {formatNumber(data.meta.debug.competitorsWithKey)}
-                          </div>
-                          <div>
-                            Competencia sin marca/modelo: {formatNumber(data.meta.debug.competitorsMissingKey)} | Sin año: {formatNumber(data.meta.debug.competitorsMissingYear)}
-                          </div>
-                          <div>
-                            Excluidos por Venturino (en marketplaces): {formatNumber(data.meta.debug.competitorsExcludedVenturino)}
-                          </div>
-                          <div>
-                            Keys Venturino: {formatNumber(data.meta.debug.venturinoKeys)} | Keys competencia: {formatNumber(data.meta.debug.competitorKeys)} | Keys compartidas: {formatNumber(data.meta.debug.sharedKeys)}
-                          </div>
-                        </div>
-                      </div>
-
                       <div className="flex items-center gap-2">
                         <Input
                           placeholder="Filtrar modelos (busca en marca/modelo)"
@@ -372,7 +378,7 @@ export default function Analisis1Page() {
               <section className="panel">
                 <div className="panel-header">
                   <div>
-                    <h3 className="text-base font-semibold text-jd-black">Tractores Venturino</h3>
+                    <h3 className="text-base font-semibold text-jd-black">{filters.categoria} Venturino</h3>
                     <p className="mt-1 text-sm text-jd-black/60">
                       Click en una fila para ver equivalentes (competencia) y brechas.
                     </p>
@@ -455,7 +461,7 @@ export default function Analisis1Page() {
             }}
           />
 
-          <aside className="relative z-10 ml-auto flex h-full w-full max-w-2xl flex-col bg-white shadow-xl">
+          <aside className="relative z-10 ml-auto flex h-full w-full max-w-[50vw] flex-col bg-white shadow-xl">
             <div className="flex shrink-0 items-start justify-between border-b border-jd-black/10 p-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>

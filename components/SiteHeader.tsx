@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 
 const navItems = [
@@ -14,6 +14,13 @@ const navItems = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <header className="border-b border-jd-black/10 bg-white/70 backdrop-blur">
@@ -22,30 +29,36 @@ export function SiteHeader() {
           <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">
             Ricardo Venturino S.A. | John Deere
           </p>
-          <h1 className="text-2xl font-semibold text-jd-black">Radar de Mercado - Tractores</h1>
-          <p className="mt-1 text-sm text-jd-black/60">
-            Explorador y referencias de precios para decidir compras y ventas.
-          </p>
+          <h1 className="text-2xl font-semibold text-jd-black">Radar de Mercado</h1>
         </div>
-        <nav className="flex flex-wrap gap-2">
-          {navItems.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-full px-4 py-2 text-sm font-semibold transition",
-                  active
-                    ? "bg-jd-green text-white shadow-soft"
-                    : "bg-jd-cream/70 text-jd-black hover:bg-jd-yellow/60",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex flex-col items-end gap-2">
+          <nav className="flex flex-wrap gap-2">
+            {navItems.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "rounded-full px-4 py-2 text-sm font-semibold transition",
+                    active
+                      ? "bg-jd-green text-white shadow-soft"
+                      : "bg-jd-cream/70 text-jd-black hover:bg-jd-yellow/60",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-xs font-medium text-jd-black/40 transition hover:text-jd-black/70"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
     </header>
   );
