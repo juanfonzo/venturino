@@ -52,8 +52,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(stats);
   } catch (error) {
+    console.error("[api/stats] Failed to compute stats", error);
+    const detail = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "No se pudo calcular estadisticas." },
+      { error: "No se pudo calcular estadisticas.", detail },
       { status: 500 },
     );
   }

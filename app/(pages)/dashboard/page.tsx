@@ -2,12 +2,27 @@ import { getBaseUrl } from "@/lib/utils/baseUrl";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
 import type { StatsResponse } from "@/lib/types";
 import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
+import { headers } from "next/headers";
 
 async function fetchStats(): Promise<StatsResponse> {
   const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/stats`, { cache: "no-store" });
+  const cookie = headers().get("cookie");
+  const res = await fetch(`${baseUrl}/api/stats`, {
+    cache: "no-store",
+    headers: {
+      accept: "application/json",
+      ...(cookie ? { cookie } : {}),
+    },
+  });
+
+  const contentType = res.headers.get("content-type") ?? "";
   if (!res.ok) {
-    throw new Error("No stats");
+    const body = (await res.text()).slice(0, 300);
+    throw new Error(`No stats (${res.status} ${res.statusText}): ${body}`);
+  }
+  if (!contentType.includes("application/json")) {
+    const body = (await res.text()).slice(0, 300);
+    throw new Error(`Stats response is not JSON: ${body}`);
   }
   return res.json();
 }
