@@ -40,6 +40,7 @@ jobs:
         run: |
           docker build \
             --no-cache \
+            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             -t $IMAGE_NAME:${{ steps.tag.outputs.full_tag }} .
 
       - name: Push image
@@ -82,7 +83,12 @@ jobs:
 
           # 6.3) Construir flags de entorno
           ENV_FLAGS=""
-          add() { ENV_FLAGS="$ENV_FLAGS -e $1='$(esc "$2")'"; }         
+          add() { ENV_FLAGS="$ENV_FLAGS -e $1='$(esc "$2")'"; }
+          add DATABASE_URL "${{ secrets.DATABASE_URL }}"
+          add MONGODB_URI "${{ secrets.MONGODB_URI }}"
+          add AUTH_USER "${{ secrets.AUTH_USER }}"
+          add AUTH_PASSWORD "${{ secrets.AUTH_PASSWORD }}"
+          add JWT_SECRET "${{ secrets.JWT_SECRET }}"
 
           # 6.4) Ejecutar nuevo contenedor y conectar redes
           ssh algorym "docker run -d \
@@ -99,4 +105,4 @@ jobs:
       # 6.5) Apply database changes
       - name: Apply database changes
         run: |
-          echo "Skipping database changes"
+          ssh algorym "docker exec $SERVICE npx prisma db push"

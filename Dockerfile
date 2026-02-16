@@ -8,6 +8,9 @@ RUN apk add --no-cache openssl libc6-compat
 # Establecer el directorio de trabajo
 WORKDIR /app
 
+# DATABASE_URL para comandos de Prisma durante el build
+ARG DATABASE_URL
+
 # Copiar archivos de manifiesto
 COPY package*.json ./
 
