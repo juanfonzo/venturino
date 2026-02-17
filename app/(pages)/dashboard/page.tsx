@@ -1,19 +1,11 @@
-import { getBaseUrl } from "@/lib/utils/baseUrl";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
-import type { StatsResponse } from "@/lib/types";
 import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
+import { buildStats } from "@/lib/stats/buildStats";
 
-async function fetchStats(): Promise<StatsResponse> {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/stats`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error("No stats");
-  }
-  return res.json();
-}
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const stats = await fetchStats();
+  const stats = await buildStats();
 
   return (
     <div className="flex flex-col gap-6">

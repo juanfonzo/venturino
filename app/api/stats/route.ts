@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { loadAllListings } from "@/lib/data/loadListings";
-import { getPercentiles } from "@/lib/stats/percentiles";
-import { groupByOrigin, groupByProvince, topBrands, topModelCombos } from "@/lib/stats/aggregations";
-import { computeTopOpportunities } from "@/lib/stats/opportunities";
+import { buildStats } from "@/lib/stats/buildStats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,48 +9,14 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categoria = searchParams.get("categoria") ?? undefined;
-    const dataset = await loadAllListings(categoria);
-    const rows = dataset.rows;
-
-    const prices = rows.map((row) => row.precio_nor).filter((v): v is number => v !== null);
-    const { p25, p50, p75 } = getPercentiles(prices);
-    const withPriceCount = prices.length;
-    const estadoCounts = rows.reduce((acc, row) => {
-      const key = row.estado_norm ?? "Sin estado";
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const byEstado = Object.entries(estadoCounts).map(([estado, count]) => ({
-      estado,
-      count,
-      pct: rows.length ? count / rows.length : 0,
-    }));
-
-    const stats = {
-      kpis: {
-        total: rows.length,
-        withPriceCount,
-        withPricePct: rows.length ? withPriceCount / rows.length : 0,
-        p25,
-        p50,
-        p75,
-      },
-      byProvince: groupByProvince(rows).sort((a, b) => b.count - a.count),
-      byOrigin: groupByOrigin(rows).sort((a, b) => b.count - a.count),
-      byEstado: byEstado.sort((a, b) => b.count - a.count),
-      topBrands: topBrands(rows, 8),
-      topModelCombos: topModelCombos(rows, 200),
-      topOpportunities: computeTopOpportunities(rows, 10),
-      suspects: rows
-        .filter((row) => row.flags.length > 0)
-        .sort((a, b) => b.flags.length - a.flags.length)
-        .slice(0, 50),
-    };
+    const stats = await buildStats(categoria);
 
     return NextResponse.json(stats);
   } catch (error) {
+    console.error("[api/stats] Failed to compute stats", error);
+    const detail = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "No se pudo calcular estadisticas." },
+      { error: "No se pudo calcular estadisticas.", detail },
       { status: 500 },
     );
   }

@@ -8,6 +8,9 @@ RUN apk add --no-cache openssl libc6-compat
 # Establecer el directorio de trabajo
 WORKDIR /app
 
+# DATABASE_URL para comandos de Prisma durante el build
+ARG DATABASE_URL
+
 # Copiar archivos de manifiesto
 COPY package*.json ./
 
@@ -54,4 +57,4 @@ COPY --from=builder /app/package.json ./
 EXPOSE 3000
 
 # Comando de arranque: levantar el servidor
-CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"]
+CMD ["npm", "run", "start", "--", "-p", "3000", "-H", "0.0.0.0"] 
