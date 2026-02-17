@@ -14,19 +14,23 @@ model ScrapingRun {
   sourceCount    Int       @map("source_count")
   filteredCount  Int       @map("filtered_count")
   processedCount Int       @map("processed_count")
+  upsertedCount  Int       @default(0) @map("upserted_count")
+  newCount       Int       @default(0) @map("new_count")
+  updatedCount   Int       @default(0) @map("updated_count")
+  deactivatedCount Int     @default(0) @map("deactivated_count")
   createdAt      DateTime  @default(now()) @map("created_at")
   listings       Listing[]
+  priceHistory   PriceHistory[]
 
   @@map("scraping_runs")
 }
 
 model Listing {
   id        Int    @id @default(autoincrement())
-  mongoId   String @unique @map("mongo_id")
 
   // Origen y URLs
   origen    String
-  url       String
+  url       String @unique
   titulo    String?
   descripcion String? @db.Text
 
@@ -79,12 +83,20 @@ model Listing {
   fechaScraping    DateTime? @map("fecha_scraping") @db.Date
   fechaPublicacion String?   @map("fecha_publicacion")
 
+  // Estado de la publicación (activa = vista en el último scraping)
+  active        Boolean   @default(true)
+  firstSeenAt   DateTime  @default(now()) @map("first_seen_at")
+  lastSeenAt    DateTime  @default(now()) @map("last_seen_at")
+
   // Calidad
   flags         String[]  @default([])
 
   // Relación con run
   scrapingRunId Int?      @map("scraping_run_id")
   scrapingRun   ScrapingRun? @relation(fields: [scrapingRunId], references: [id])
+
+  // Historial de precios
+  priceHistory  PriceHistory[]
 
   createdAt     DateTime  @default(now()) @map("created_at")
 
@@ -96,5 +108,28 @@ model Listing {
   @@index([precioUsd])
   @@index([esCompetidor])
   @@index([scrapingRunId])
+  @@index([active])
   @@map("listings")
+}
+
+model PriceHistory {
+  id          Int       @id @default(autoincrement())
+  listingId   Int       @map("listing_id")
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  precioUsd   Decimal?  @map("precio_usd") @db.Decimal(14, 2)
+  monedaNorm  String?   @map("moneda_norm")
+  precioRaw   String?   @map("precio_raw")
+
+  // Qué run capturó este snapshot
+  scrapingRunId Int     @map("scraping_run_id")
+  scrapingRun   ScrapingRun @relation(fields: [scrapingRunId], references: [id])
+
+  snapshotDate  DateTime @map("snapshot_date") @db.Date
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([listingId])
+  @@index([snapshotDate])
+  @@index([scrapingRunId])
+  @@map("price_history")
 }

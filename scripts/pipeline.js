@@ -841,10 +841,12 @@ async function main() {
     const fechaScraping = parseFechaScraping(doc.fecha_scraping);
     const fechaPublicacion = doc.fecha_publicacion || null;
 
+    const url = (doc.url || '').toString().trim();
+    if (!url) continue; // skip docs without URL
+
     const record = {
-      mongoId: doc._id.toString(),
       origen,
-      url: doc.url || '',
+      url,
       titulo,
       descripcion,
       categoriaRaw: doc.categoria || null,
@@ -939,10 +941,13 @@ async function main() {
     });
     console.log(`  Created scraping run #${run.id}`);
 
-    // Clear existing listings (full replace strategy)
+    // Clear existing listings and price history (full replace strategy for initial load)
+    const deletedHistory = await prisma.priceHistory.deleteMany({});
+    console.log(`  Cleared ${deletedHistory.count} price history records`);
     const deleted = await prisma.listing.deleteMany({});
     console.log(`  Cleared ${deleted.count} existing listings`);
 
+    const now = new Date();
     // Insert in batches
     let inserted = 0;
     for (let i = 0; i < processed.length; i += BATCH_SIZE) {
@@ -951,6 +956,9 @@ async function main() {
         data: batch.map(r => ({
           ...r,
           scrapingRunId: run.id,
+          active: true,
+          firstSeenAt: now,
+          lastSeenAt: now,
         })),
         skipDuplicates: true,
       });

@@ -10,7 +10,7 @@ type Listing = NonNullable<Awaited<ReturnType<typeof prisma.listing.findFirst>>>
  */
 function listingToTractorItem(row: Listing): TractorItem {
   return {
-    id: row.mongoId,
+    id: row.url,
     origen: row.origen,
     categoria: row.categoria,
     empresa: row.vendedor,
@@ -98,7 +98,8 @@ export async function loadListings(query: ListingQuery = {}): Promise<{
 export async function loadAllListings(
   categoria?: string | null,
 ): Promise<TractorsDataset> {
-  const where = categoria ? { categoria } : {};
+  const where: Record<string, unknown> = { active: true };
+  if (categoria) where.categoria = categoria;
   const rows = await prisma.listing.findMany({ where });
 
   return {
@@ -115,7 +116,8 @@ export async function loadAllListings(
  * Get distinct values for filter dropdowns.
  */
 export async function getDistinctValues(categoria?: string | null) {
-  const where = categoria ? { categoria } : {};
+  const where: Record<string, unknown> = { active: true };
+  if (categoria) where.categoria = categoria;
 
   const [origins, brands, provinces, categorias] = await Promise.all([
     prisma.listing.findMany({
@@ -158,7 +160,7 @@ export async function getDistinctValues(categoria?: string | null) {
 export async function loadVenturinoListings(
   categoria?: string | null,
 ): Promise<TractorsDataset> {
-  const where: Record<string, unknown> = { origen: "venturino" };
+  const where: Record<string, unknown> = { origen: "venturino", active: true };
   if (categoria) where.categoria = categoria;
 
   const rows = await prisma.listing.findMany({ where });
@@ -274,7 +276,9 @@ function buildWhere(query: ListingQuery) {
     conditions.push({ precioUsd: null });
   }
 
-  if (conditions.length === 0) return {};
+  // Always filter to active listings only
+  conditions.push({ active: true });
+
   if (conditions.length === 1) return conditions[0];
   return { AND: conditions };
 }
