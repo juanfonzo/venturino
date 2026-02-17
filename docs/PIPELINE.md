@@ -51,7 +51,7 @@ La app corre con Dockerfile (no Docker Compose). Reemplazar `<container>` con el
 
 ### Opción A: Script wrapper
 ```bash
-docker exec -it <container> bash scripts/run-pipeline.sh
+docker exec -it <container> sh scripts/run-pipeline.sh
 ```
 
 ### Opción B: Comando directo
@@ -74,7 +74,7 @@ docker exec -it <container> node scripts/pipeline-live.js
    ```
 3. **Ejecutar pipeline**:
    ```bash
-   docker exec -it <container> bash scripts/run-pipeline.sh
+   docker exec -it <container> sh scripts/run-pipeline.sh
    ```
 4. **Verificar** en la app web que los datos se actualizaron
 

@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 # =============================================================================
 # run-pipeline.sh — Execute the live pipeline inside the Docker container
 #
 # Usage (from host — Dockerfile-based container):
-#   docker exec -it <container_name> bash scripts/run-pipeline.sh
-#   docker exec -it <container_name> bash scripts/run-pipeline.sh --dry-run
-#   docker exec -it <container_name> bash scripts/run-pipeline.sh --since 2026-03-01
+#   docker exec -it <container_name> sh scripts/run-pipeline.sh
+#   docker exec -it <container_name> sh scripts/run-pipeline.sh --dry-run
+#   docker exec -it <container_name> sh scripts/run-pipeline.sh --since 2026-03-01
 #
 # Or directly inside the container:
-#   bash scripts/run-pipeline.sh
+#   sh scripts/run-pipeline.sh
 #
 # Prerequisites:
 #   - MONGODB_URI and DATABASE_URL must be set in .env (or container env)
@@ -16,7 +16,7 @@
 #   - Prisma client generated: npx prisma generate
 # =============================================================================
 
-set -euo pipefail
+set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
