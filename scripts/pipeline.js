@@ -967,6 +967,31 @@ async function main() {
     }
     console.log(`\n  Done! ${inserted} listings inserted.`);
 
+    // Seed price history snapshots for traceability
+    console.log(`  Seeding price history snapshots...`);
+    const snapshotDate = new Date(new Date().toISOString().split('T')[0]);
+    const listings = await prisma.listing.findMany({
+      select: { id: true, precioUsd: true, monedaNorm: true, precioRaw: true },
+    });
+
+    let historyInserted = 0;
+    for (let i = 0; i < listings.length; i += BATCH_SIZE) {
+      const batch = listings.slice(i, i + BATCH_SIZE);
+      const res = await prisma.priceHistory.createMany({
+        data: batch.map(l => ({
+          listingId: l.id,
+          precioUsd: l.precioUsd,
+          monedaNorm: l.monedaNorm,
+          precioRaw: l.precioRaw,
+          scrapingRunId: run.id,
+          snapshotDate,
+        })),
+      });
+      historyInserted += res.count;
+      process.stdout.write(`\r  PriceHistory: ${historyInserted}/${listings.length}`);
+    }
+    console.log(`\n  Done! ${historyInserted} price history snapshots inserted.`);
+
     // Verify
     const count = await prisma.listing.count();
     console.log(`  Verification: ${count} listings in database`);

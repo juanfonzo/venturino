@@ -53,6 +53,9 @@ COPY --from=builder /app/scripts ./scripts
 # Directorio para outputs del pipeline (ej. sample dry-run)
 RUN mkdir -p /app/data
 
+# Copiar archivos de datos (ACARA CSV, etc.)
+COPY --from=builder /app/data ./data
+
 # Copiar el schema de Prisma y las migraciones
 COPY --from=builder /app/prisma ./prisma
 
