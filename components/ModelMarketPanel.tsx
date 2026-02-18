@@ -331,7 +331,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
               </Button>
             </div>
 
-            <div className="mt-4 grid gap-6 lg:grid-cols-2">
+            <div className="mt-4 space-y-6">
               <div>
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-jd-black">Evolución de mercado (p25/p50/p75)</h3>
@@ -343,18 +343,11 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                 </div>
                 {estado === "Usado" && marketSeries?.length ? (
                   <p className="mt-1 text-xs text-jd-black/60">
-                    Mostrando mediana (p50) segmentada por rangos de años.
+                    Mediana (p50) por rango de año de fabricación.
                   </p>
                 ) : null}
                 <div className="mt-2">
                   <MarketEvolutionChart points={market ?? []} series={marketSeries} />
-                </div>
-                <div className="mt-3 rounded-2xl border border-jd-black/10 bg-white/70 p-3 text-xs text-jd-black/70">
-                  <p className="text-xs uppercase text-jd-black/50">Nota</p>
-                  <p>
-                    La evolución se calcula desde <code>price_history</code>. Si todavía no hay snapshots, ejecuta el
-                    pipeline para empezar a capturar la serie.
-                  </p>
                 </div>
               </div>
 
@@ -375,13 +368,13 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                     : "Selecciona un modelo para ver publicaciones."}
                 </p>
 
-                <div className="mt-2 overflow-auto rounded-2xl border border-jd-black/10 bg-white/70">
-                  <table className="table-base">
+                <div className="mt-2 overflow-x-auto rounded-2xl border border-jd-black/10 bg-white/70">
+                  <table className="table-base w-full">
                     <thead>
                       <tr>
-                        <th>Origen</th>
+                        <th className="w-28">Origen</th>
                         <th>Título</th>
-                        <th>USD</th>
+                        <th className="w-32 text-right">USD</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -396,13 +389,10 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                             onClick={() => setSelectedUrl(row.url)}
                           >
                             <td>{row.origen ?? "-"}</td>
-                            <td
-                              className="max-w-[380px] truncate"
-                              title={row.titulo ?? row.url ?? undefined}
-                            >
+                            <td title={row.titulo ?? row.url ?? undefined}>
                               {row.titulo ?? row.url ?? "-"}
                             </td>
-                            <td>{row.precio_nor !== null ? formatUsd(row.precio_nor) : "Sin dato"}</td>
+                            <td className="text-right">{row.precio_nor !== null ? formatUsd(row.precio_nor) : "Sin dato"}</td>
                           </tr>
                         );
                       })}

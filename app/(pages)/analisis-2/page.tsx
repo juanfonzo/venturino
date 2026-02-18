@@ -313,7 +313,7 @@ export default function Analisis2Page() {
                                     variant="outline"
                                     onClick={() => void openItemsModal(c.empresa)}
                                   >
-                                    Ver publicaciones
+                                    Ver detalles
                                   </Button>
                                 </td>
                               </tr>

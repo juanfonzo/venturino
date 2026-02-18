@@ -65,7 +65,13 @@ export function MarketEvolutionChart({
   })();
 
   if ((!hasSeries && singleData.length === 0) || (hasSeries && multiData.length === 0)) {
-    return <p className="text-sm text-jd-black/60">Sin serie de precios para este modelo.</p>;
+    return (
+      <div className="flex h-32 items-center justify-center rounded-2xl border border-jd-black/10 bg-white/70 px-6 text-center">
+        <p className="text-sm text-jd-black/50">
+          Sin historial de precios aún. La serie se irá construyendo con cada corrida del pipeline.
+        </p>
+      </div>
+    );
   }
 
   const bucketColors = ["#367C2B", "#1A1A1A", "#FFDE00", "#6B6B6B", "#0F5B9A", "#7C3AED"];
