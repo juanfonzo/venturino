@@ -7,6 +7,7 @@ import { createStableId } from "@/lib/utils/id";
 import type { AcaraDataset, AcaraItem, AcaraSeriesPoint } from "@/lib/types";
 
 const DATA_PATH = path.join(process.cwd(), "data", "acara_precios_maquinaria_agricola_wide.csv");
+const FALLBACK_PATH = path.join(process.cwd(), "acara_precios_maquinaria_agricola_wide.csv");
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cache: AcaraDataset | null = null;
@@ -26,7 +27,19 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
     return cache;
   }
 
-  const raw = await fs.readFile(DATA_PATH, "utf8");
+  let raw: string;
+  try {
+    raw = await fs.readFile(DATA_PATH, "utf8");
+  } catch {
+    try {
+      raw = await fs.readFile(FALLBACK_PATH, "utf8");
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(
+        `ACARA CSV no encontrado. Paths probados: ${DATA_PATH} | ${FALLBACK_PATH}. Detalle: ${detail}`,
+      );
+    }
+  }
   const delimiter = detectDelimiter(raw);
   const rows = parseCsvToObjects(raw, delimiter);
 
@@ -80,7 +93,7 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
 
   let fileMtimeMs: number | null = null;
   try {
-    const stat = await fs.stat(DATA_PATH);
+    const stat = await fs.stat(DATA_PATH).catch(async () => fs.stat(FALLBACK_PATH));
     fileMtimeMs = stat.mtimeMs;
   } catch {
     fileMtimeMs = null;

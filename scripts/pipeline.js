@@ -841,10 +841,12 @@ async function main() {
     const fechaScraping = parseFechaScraping(doc.fecha_scraping);
     const fechaPublicacion = doc.fecha_publicacion || null;
 
+    const url = (doc.url || '').toString().trim();
+    if (!url) continue; // skip docs without URL
+
     const record = {
-      mongoId: doc._id.toString(),
       origen,
-      url: doc.url || '',
+      url,
       titulo,
       descripcion,
       categoriaRaw: doc.categoria || null,
@@ -939,10 +941,13 @@ async function main() {
     });
     console.log(`  Created scraping run #${run.id}`);
 
-    // Clear existing listings (full replace strategy)
+    // Clear existing listings and price history (full replace strategy for initial load)
+    const deletedHistory = await prisma.priceHistory.deleteMany({});
+    console.log(`  Cleared ${deletedHistory.count} price history records`);
     const deleted = await prisma.listing.deleteMany({});
     console.log(`  Cleared ${deleted.count} existing listings`);
 
+    const now = new Date();
     // Insert in batches
     let inserted = 0;
     for (let i = 0; i < processed.length; i += BATCH_SIZE) {
@@ -951,6 +956,9 @@ async function main() {
         data: batch.map(r => ({
           ...r,
           scrapingRunId: run.id,
+          active: true,
+          firstSeenAt: now,
+          lastSeenAt: now,
         })),
         skipDuplicates: true,
       });
@@ -958,6 +966,31 @@ async function main() {
       process.stdout.write(`\r  Inserted: ${inserted}/${processed.length}`);
     }
     console.log(`\n  Done! ${inserted} listings inserted.`);
+
+    // Seed price history snapshots for traceability
+    console.log(`  Seeding price history snapshots...`);
+    const snapshotDate = new Date(new Date().toISOString().split('T')[0]);
+    const listings = await prisma.listing.findMany({
+      select: { id: true, precioUsd: true, monedaNorm: true, precioRaw: true },
+    });
+
+    let historyInserted = 0;
+    for (let i = 0; i < listings.length; i += BATCH_SIZE) {
+      const batch = listings.slice(i, i + BATCH_SIZE);
+      const res = await prisma.priceHistory.createMany({
+        data: batch.map(l => ({
+          listingId: l.id,
+          precioUsd: l.precioUsd,
+          monedaNorm: l.monedaNorm,
+          precioRaw: l.precioRaw,
+          scrapingRunId: run.id,
+          snapshotDate,
+        })),
+      });
+      historyInserted += res.count;
+      process.stdout.write(`\r  PriceHistory: ${historyInserted}/${listings.length}`);
+    }
+    console.log(`\n  Done! ${historyInserted} price history snapshots inserted.`);
 
     // Verify
     const count = await prisma.listing.count();

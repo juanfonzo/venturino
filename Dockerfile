@@ -47,6 +47,15 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
+# Copiar scripts de pipeline (necesarios para ejecución en producción)
+COPY --from=builder /app/scripts ./scripts
+
+# Directorio para outputs del pipeline (ej. sample dry-run)
+RUN mkdir -p /app/data
+
+# Copiar archivos de datos (ACARA CSV, etc.)
+COPY --from=builder /app/data ./data
+
 # Copiar el schema de Prisma y las migraciones
 COPY --from=builder /app/prisma ./prisma
 

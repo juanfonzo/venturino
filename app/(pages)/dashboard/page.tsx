@@ -1,5 +1,6 @@
 import { formatNumber, formatPercent } from "@/lib/utils/format";
 import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
+import { ModelMarketPanel } from "@/components/ModelMarketPanel";
 import { buildStats } from "@/lib/stats/buildStats";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,8 @@ export default async function DashboardPage() {
         </div>
         <AcaraTrendPanel />
       </section>
+
+      <ModelMarketPanel combos={stats.topModelCombos} />
     </div>
   );
 }
