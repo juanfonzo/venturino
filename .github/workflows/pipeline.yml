@@ -14,7 +14,7 @@ jobs:
       SERVICE:    venturino             # Nombre del contenedor en el VPS
       WEB_NETWORK: nginxproxymanager_default # Red donde se conecta el proxy NGINX
       DB_NETWORK:  venturino-backend            # Red donde vive la base de datos
- 
+  
     steps:
       # 1) Checkout
       - name: Checkout code
