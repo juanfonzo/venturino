@@ -619,7 +619,13 @@ function normalizeCondicion(condicionRaw, origen, anio, horas) {
 
   const value = (condicionRaw ?? '').toString().trim().toLowerCase();
   if (value.includes('usado') || value === 'used') condicion = 'Usado';
-  else if (value.includes('nuevo') || value === 'new') condicion = 'Nuevo';
+  else if (
+    value.includes('nuevo') ||
+    value === 'new' ||
+    /\b0\s*[-–]?\s*km(s)?\b/.test(value) ||
+    /\b0\s*kilo(metro|metros)?\b/.test(value) ||
+    /\bcero\s*[-–]?\s*km\b/.test(value)
+  ) condicion = 'Nuevo';
   else if (value === 'not_specified' || !value) {
     // Infer from year
     if (anio !== null && anio < CURRENT_YEAR - 2) {
