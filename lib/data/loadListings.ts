@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { TractorItem, TractorsDataset } from "@/lib/types";
+import { normalizeMatchText } from "@/lib/normalize/text";
 
 // Infer the Listing type from Prisma client
 type Listing = NonNullable<Awaited<ReturnType<typeof prisma.listing.findFirst>>>;
@@ -93,13 +94,17 @@ export async function loadListings(query: ListingQuery = {}): Promise<{
 
 /**
  * Load ALL listings (no pagination) for stats computation.
- * Optionally filter by categoria.
+ * Optionally filter by categoria and estado.
  */
 export async function loadAllListings(
   categoria?: string | null,
+  estado?: string | null,
 ): Promise<TractorsDataset> {
   const where: Record<string, unknown> = { active: true };
   if (categoria) where.categoria = categoria;
+  const estadoNorm = normalizeTextUpper(estado);
+  if (estadoNorm === "NUEVO") where.condicion = "Nuevo";
+  if (estadoNorm === "USADO") where.condicion = "Usado";
   const rows = await prisma.listing.findMany({ where });
 
   return {
@@ -187,6 +192,11 @@ function normalizeTextUpper(value?: string | null) {
     .toUpperCase();
 }
 
+function normalizeCompactTextUpper(value?: string | null) {
+  const normalized = normalizeMatchText(value);
+  return normalized ? normalized.replace(/\s+/g, "") : null;
+}
+
 function buildWhere(query: ListingQuery) {
   const conditions: Record<string, unknown>[] = [];
 
@@ -232,9 +242,20 @@ function buildWhere(query: ListingQuery) {
 
   if (query.model) {
     const modelNorm = normalizeTextUpper(query.model);
-    if (modelNorm) {
+    const compactModelNorm = normalizeCompactTextUpper(query.model);
+    const rawModel = query.model.trim();
+    if ((modelNorm || compactModelNorm) && rawModel) {
+      const modelVariants = [modelNorm, compactModelNorm].filter(
+        (value, index, array): value is string => Boolean(value) && array.indexOf(value) === index,
+      );
       conditions.push({
-        modeloNorm: { contains: modelNorm, mode: "insensitive" as const },
+        OR: [
+          { modelo: { equals: rawModel, mode: "insensitive" as const } },
+          { modelo: { contains: rawModel, mode: "insensitive" as const } },
+          ...modelVariants.map((value) => ({
+            modeloNorm: { contains: value, mode: "insensitive" as const },
+          })),
+        ],
       });
     }
   }

@@ -6,7 +6,7 @@ import type {
   TractorItem,
 } from "@/lib/types";
 import { getPercentiles } from "@/lib/stats/percentiles";
-import { normalizeText } from "@/lib/normalize/text";
+import { normalizeMatchText, normalizeText } from "@/lib/normalize/text";
 
 export function groupByProvince(rows: TractorItem[]): ProvinceStat[] {
   const buckets = new Map<string, TractorItem[]>();
@@ -74,12 +74,48 @@ export function topBrands(rows: TractorItem[], limit = 8): BrandStat[] {
     .map(([marca, count]) => ({ marca, count }));
 }
 
+function humanizeNormalizedModel(value?: string | null) {
+  if (!value) return null;
+  return value
+    .toString()
+    .replace(/([A-Za-z])([0-9])/g, "$1 $2")
+    .replace(/([0-9])([A-Za-z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function compactSearchText(value?: string | null) {
+  const normalized = normalizeMatchText(value);
+  return normalized ? normalized.replace(/\s+/g, "") : null;
+}
+
+function getComboDisplayParts(row: TractorItem) {
+  const marca = row.marca?.trim() || row.marca_norm?.trim() || null;
+  const modelo = row.modelo?.trim() || humanizeNormalizedModel(row.modelo_norm) || null;
+  return { marca, modelo };
+}
+
+export function matchesModelComboQuery(combo: ModelComboStat, query: string) {
+  const normalizedQuery = normalizeText(query);
+  const compactQuery = compactSearchText(query);
+  if (!normalizedQuery && !compactQuery) return true;
+
+  const haystack = normalizeText(`${combo.marca ?? ""} ${combo.modelo ?? ""}`);
+  const compactHaystack = compactSearchText(`${combo.marca ?? ""} ${combo.modelo ?? ""}`);
+
+  return Boolean(
+    (normalizedQuery && haystack && haystack.includes(normalizedQuery)) ||
+      (compactQuery && compactHaystack && compactHaystack.includes(compactQuery)),
+  );
+}
+
 export function topModelCombos(rows: TractorItem[], limit = 20): ModelComboStat[] {
   const counts = new Map<string, ModelComboStat>();
   rows.forEach((row) => {
-    if (!row.marca || !row.modelo) return;
-    const brandNorm = normalizeText(row.marca) || row.marca;
-    const modelNorm = normalizeText(row.modelo) || row.modelo;
+    const { marca, modelo } = getComboDisplayParts(row);
+    if (!marca || !modelo) return;
+    const brandNorm = normalizeText(row.marca_norm || marca) || marca;
+    const modelNorm = normalizeText(row.modelo_norm || modelo) || modelo;
     const key = `${brandNorm}|${modelNorm}`;
     const existing = counts.get(key);
     if (existing) {
@@ -87,8 +123,8 @@ export function topModelCombos(rows: TractorItem[], limit = 20): ModelComboStat[
     } else {
       counts.set(key, {
         key,
-        marca: row.marca,
-        modelo: row.modelo,
+        marca,
+        modelo,
         count: 1,
       });
     }

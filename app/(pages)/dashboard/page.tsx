@@ -6,7 +6,7 @@ import { buildStats } from "@/lib/stats/buildStats";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const stats = await buildStats();
+  const [stats, tractorStats] = await Promise.all([buildStats(), buildStats("Tractores")]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,8 +42,7 @@ export default async function DashboardPage() {
         <AcaraTrendPanel />
       </section>
 
-      <ModelMarketPanel combos={stats.topModelCombos} />
+      <ModelMarketPanel combos={tractorStats.topModelCombos} />
     </div>
   );
 }
-

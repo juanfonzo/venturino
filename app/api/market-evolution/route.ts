@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { normalizeText } from "@/lib/normalize/text";
+import { normalizeMatchText, normalizeText } from "@/lib/normalize/text";
 import { getPercentiles } from "@/lib/stats/percentiles";
 
 export const runtime = "nodejs";
@@ -60,13 +60,29 @@ export async function GET(request: NextRequest) {
 
     const brandNorm = normalizeText(brand);
     const modelNorm = normalizeText(model);
+    const compactModelNorm = normalizeMatchText(model)?.replace(/\s+/g, "") || null;
+    const rawModel = model.trim();
+    const modelVariants = [modelNorm, compactModelNorm].filter(
+      (value, index, array): value is string => Boolean(value) && array.indexOf(value) === index,
+    );
+    const modelWhere = modelVariants.length
+      ? {
+          OR: [
+            { modelo: { equals: rawModel, mode: "insensitive" as const } },
+            { modelo: { contains: rawModel, mode: "insensitive" as const } },
+            ...modelVariants.map((value) => ({
+              modeloNorm: { contains: value, mode: "insensitive" as const },
+            })),
+          ],
+        }
+      : {};
 
     const rows = await prisma.priceHistory.findMany({
       where: {
         listing: {
           categoria,
           ...(brandNorm ? { marcaNorm: brandNorm } : {}),
-          ...(modelNorm ? { modeloNorm: { contains: modelNorm, mode: "insensitive" } } : {}),
+          ...modelWhere,
           ...(activeOnly ? { active: true } : {}),
           ...(estado ? { condicion: estado } : {}),
         },

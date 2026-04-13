@@ -9,7 +9,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categoria = searchParams.get("categoria") ?? undefined;
-    const stats = await buildStats(categoria);
+    const estado = searchParams.get("estado") ?? undefined;
+    const stats = await buildStats(categoria, estado);
 
     return NextResponse.json(stats);
   } catch (error) {

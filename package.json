@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "pipeline:live": "node scripts/pipeline-live.js",
+    "pipeline:backfill-history": "node scripts/backfill-price-history.js",
     "crawl:venturino:tractores-usados": "node scripts/crawlVenturinoTractoresUsados.js",
     "crawl:agrofy:tractores": "node scripts/crawlAgrofyTractoresConPrecio.js"
   },

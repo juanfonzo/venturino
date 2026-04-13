@@ -4,8 +4,8 @@ import { getPercentiles } from "@/lib/stats/percentiles";
 import { groupByOrigin, groupByProvince, topBrands, topModelCombos } from "@/lib/stats/aggregations";
 import { computeTopOpportunities } from "@/lib/stats/opportunities";
 
-export async function buildStats(categoria?: string): Promise<StatsResponse> {
-  const dataset = await loadAllListings(categoria);
+export async function buildStats(categoria?: string, estado?: string): Promise<StatsResponse> {
+  const dataset = await loadAllListings(categoria, estado);
   const rows = dataset.rows;
 
   const prices = rows.map((row) => row.precio_nor).filter((v): v is number => v !== null);

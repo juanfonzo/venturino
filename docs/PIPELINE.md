@@ -38,12 +38,26 @@ node scripts/pipeline-live.js --since 2026-03-01
 
 **Qué hace:**
 1. Conecta a MongoDB Atlas
-2. Detecta la `fecha_scraping` más reciente **por origen** (cada crawler puede tener fecha distinta)
+2. Detecta la `fecha_scraping` más reciente **por origen** parseando `DD-MM-YYYY` como fecha real (cada crawler puede tener fecha distinta)
 3. Filtra a las 4 categorías core (Tractores, Cosechadoras, Sembradoras, Pulverizadoras)
 4. Normaliza todos los campos (misma lógica que pipeline.js)
 5. **Upsert por URL**: si la publicación (misma URL) ya existe, actualiza; si es nueva, inserta
-6. **Snapshot de precios**: en cada ejecución inserta un nuevo registro en `price_history` con el precio actual (nunca elimina registros anteriores)
+6. **Snapshot de precios**: registra un snapshot por URL y `fecha_scraping` real. Si ese snapshot ya existe, lo actualiza en vez de duplicarlo
 7. **Marca inactivas**: publicaciones que no aparecen en esta ejecución se marcan `active=false`
+
+### 3. `backfill-price-history.js` — Backfill histórico desde MongoDB
+Reconstruye el historial de precios usando todas las fechas `fecha_scraping` disponibles en MongoDB. Las publicaciones antiguas se conservan como inactivas para que alimenten la evolución de mercado sin aparecer en el listado de publicaciones activas.
+
+```bash
+# Ver qué va a procesar sin escribir
+node scripts/backfill-price-history.js --dry-run
+
+# Completar historial sin borrar snapshots existentes
+node scripts/backfill-price-history.js
+
+# Rehacer price_history desde MongoDB y eliminar snapshots previos incorrectos
+node scripts/backfill-price-history.js --replace-history
+```
 
 ## Ejecución en producción (Docker)
 

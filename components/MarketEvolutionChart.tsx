@@ -34,6 +34,7 @@ export function MarketEvolutionChart({
   series?: MarketEvolutionBucketSeries[] | null;
 }) {
   const hasSeries = Boolean(series && series.length);
+  const hasAnyPointSamples = Boolean((points || []).some((point) => point.n > 0));
 
   const singleData = (points || [])
     .map((point) => ({
@@ -64,11 +65,19 @@ export function MarketEvolutionChart({
     });
   })();
 
+  const hasAnySeriesSamples = Boolean(
+    (series || []).some((entry) => entry.points.some((point) => point.n > 0)),
+  );
+
+  const showInsufficientSampleMessage = hasSeries ? hasAnySeriesSamples : hasAnyPointSamples;
+
   if ((!hasSeries && singleData.length === 0) || (hasSeries && multiData.length === 0)) {
     return (
       <div className="flex h-32 items-center justify-center rounded-2xl border border-jd-black/10 bg-white/70 px-6 text-center">
         <p className="text-sm text-jd-black/50">
-          Sin historial de precios aún. La serie se irá construyendo con cada corrida del pipeline.
+          {showInsufficientSampleMessage
+            ? "Hay historial, pero aún no alcanza la muestra mínima para calcular la evolución de mercado (p25/p50/p75)."
+            : "Sin historial de precios aún. La serie se irá construyendo con cada corrida del pipeline."}
         </p>
       </div>
     );

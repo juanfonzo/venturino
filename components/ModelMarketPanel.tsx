@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/utils/format";
-import { normalizeText } from "@/lib/normalize/text";
+import { normalizeMatchText, normalizeText } from "@/lib/normalize/text";
 import { MarketEvolutionChart, type MarketEvolutionPoint } from "@/components/MarketEvolutionChart";
 import {
   ListingPriceHistoryChart,
@@ -20,10 +20,17 @@ type Categoria = "Tractores" | "Cosechadoras" | "Sembradoras" | "Pulverizadoras"
 
 const CATEGORIES: Categoria[] = ["Tractores", "Cosechadoras", "Sembradoras", "Pulverizadoras"];
 
+function compactSearchText(value?: string | null) {
+  const normalized = normalizeMatchText(value);
+  return normalized ? normalized.replace(/\s+/g, "") : null;
+}
+
 export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
   const [categoria, setCategoria] = useState<Categoria>("Tractores");
   const [comboList, setComboList] = useState<ModelComboStat[]>(combos);
   const [comboSearch, setComboSearch] = useState("");
+  const [comboSearchResults, setComboSearchResults] = useState<ModelComboStat[] | null>(null);
+  const [comboSearchLoading, setComboSearchLoading] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedMeta, setSelectedMeta] = useState<{ marca: string; modelo: string } | null>(null);
   const [estado, setEstado] = useState<"" | "Nuevo" | "Usado">("");
@@ -57,18 +64,12 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/stats?categoria=${encodeURIComponent(categoria)}`)
+    const estadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
+    fetch(`/api/stats?categoria=${encodeURIComponent(categoria)}${estadoParam}`)
       .then((res) => res.json())
       .then((json: StatsResponse) => {
         if (cancelled) return;
         setComboList(json.topModelCombos || []);
-        setSelectedKey(null);
-        setSelectedMeta(null);
-        setSelectedUrl(null);
-        setListings(null);
-        setMarket(null);
-        setMarketSeries(null);
-        setListingHistory(null);
       })
       .catch(() => {
         if (!cancelled) setComboList(combos);
@@ -77,16 +78,69 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
     return () => {
       cancelled = true;
     };
-  }, [categoria, combos]);
+  }, [categoria, estado, combos]);
+
+  useEffect(() => {
+    setSelectedKey(null);
+    setSelectedMeta(null);
+    setSelectedUrl(null);
+    setListings(null);
+    setMarket(null);
+    setMarketSeries(null);
+    setListingHistory(null);
+  }, [categoria, estado]);
+
+  useEffect(() => {
+    const q = comboSearch.trim();
+    if (!q) {
+      setComboSearchResults(null);
+      setComboSearchLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setComboSearchLoading(true);
+
+    const timeoutId = window.setTimeout(() => {
+      const estadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
+      fetch(
+        `/api/model-combos?categoria=${encodeURIComponent(categoria)}${estadoParam}&q=${encodeURIComponent(q)}&limit=30`,
+      )
+        .then((res) => res.json())
+        .then((json: { combos?: ModelComboStat[] }) => {
+          if (cancelled) return;
+          setComboSearchResults(json.combos || []);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setComboSearchResults([]);
+        })
+        .finally(() => {
+          if (cancelled) return;
+          setComboSearchLoading(false);
+        });
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [categoria, estado, comboSearch]);
 
   const comboMatches = useMemo(() => {
+    if (comboSearchResults) return comboSearchResults;
     const q = normalizeText(comboSearch);
-    if (!q) return comboList;
+    const qCompact = compactSearchText(comboSearch);
+    if (!q && !qCompact) return comboList;
     return comboList.filter((combo) => {
       const haystack = normalizeText(`${combo.marca ?? ""} ${combo.modelo ?? ""}`);
-      return haystack ? haystack.includes(q) : false;
+      const haystackCompact = compactSearchText(`${combo.marca ?? ""} ${combo.modelo ?? ""}`);
+      return Boolean(
+        (q && haystack && haystack.includes(q)) ||
+          (qCompact && haystackCompact && haystackCompact.includes(qCompact)),
+      );
     });
-  }, [comboList, comboSearch]);
+  }, [comboList, comboSearch, comboSearchResults]);
 
   const selectedLabel = useMemo(() => {
     if (!selectedMeta) return null;
@@ -113,12 +167,15 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
       const yearPresetParam = estado === "Usado" ? "&yearBucketPreset=used_default" : "";
       return `${base}${estadoParam}${yearPresetParam}`;
     })();
+    const listingsEstadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
 
     Promise.all([
       fetch(
         `/api/tractors?categoria=${encodeURIComponent(categoria)}&brand=${encodeURIComponent(
           selectedMeta.marca,
-        )}&model=${encodeURIComponent(selectedMeta.modelo)}&page=1&pageSize=25&sortBy=price_nor&sortDir=asc`,
+        )}&model=${encodeURIComponent(
+          selectedMeta.modelo,
+        )}${listingsEstadoParam}&page=1&pageSize=25&sortBy=price_nor&sortDir=asc`,
       )
         .then((res) => res.json())
         .then((json) => ({ rows: (json.rows || []) as TractorItem[], total: Number(json.total || 0) }))
@@ -276,11 +333,17 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
               onChange={(e) => setComboSearch(e.target.value)}
             />
             <p className="mt-1 text-xs text-jd-black/60">
-              {comboMatches.length
-                ? `Mostrando ${formatNumber(Math.min(comboMatches.length, 30))} de ${formatNumber(
-                    comboList.length,
-                  )} combos.`
-                : "Sin coincidencias."}
+              {comboSearch.trim()
+                ? comboSearchLoading
+                  ? "Buscando modelos..."
+                  : comboMatches.length
+                    ? `${formatNumber(comboMatches.length)} coincidencias.`
+                    : "Sin coincidencias."
+                : comboMatches.length
+                  ? `Mostrando ${formatNumber(Math.min(comboMatches.length, 30))} de ${formatNumber(
+                      comboList.length,
+                    )} combos.`
+                  : "Sin coincidencias."}
             </p>
           </div>
         </div>
