@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { dedupeListingsByUnit } from "@/lib/dedupe/listingUnits";
 import type { TractorItem, TractorsDataset } from "@/lib/types";
 import { normalizeMatchText } from "@/lib/normalize/text";
 
@@ -53,6 +54,7 @@ export interface ListingQuery {
   hpMin?: number | null;
   hpMax?: number | null;
   hasPrice?: boolean | null;
+  dedupeByUnit?: boolean | null;
   page?: number;
   pageSize?: number;
   sortBy?: string | null;
@@ -70,23 +72,39 @@ export async function loadListings(query: ListingQuery = {}): Promise<{
 }> {
   const page = Math.max(1, query.page ?? 1);
   const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 25));
+  const dedupeByUnit = query.dedupeByUnit !== false;
 
   const where = buildWhere(query);
   const orderBy = buildOrderBy(query.sortBy, query.sortDir);
 
-  const [rows, total] = await Promise.all([
-    prisma.listing.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.listing.count({ where }),
-  ]);
+  if (!dedupeByUnit) {
+    const [rows, total] = await Promise.all([
+      prisma.listing.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.listing.count({ where }),
+    ]);
+
+    return {
+      rows: rows.map(listingToTractorItem),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  const allRows = await prisma.listing.findMany({
+    where,
+    orderBy,
+  });
+  const dedupedRows = dedupeListingsByUnit(allRows.map(listingToTractorItem));
 
   return {
-    rows: rows.map(listingToTractorItem),
-    total,
+    rows: dedupedRows.slice((page - 1) * pageSize, page * pageSize),
+    total: dedupedRows.length,
     page,
     pageSize,
   };
@@ -99,6 +117,7 @@ export async function loadListings(query: ListingQuery = {}): Promise<{
 export async function loadAllListings(
   categoria?: string | null,
   estado?: string | null,
+  dedupeByUnit = true,
 ): Promise<TractorsDataset> {
   const where: Record<string, unknown> = { active: true };
   if (categoria) where.categoria = categoria;
@@ -106,9 +125,10 @@ export async function loadAllListings(
   if (estadoNorm === "NUEVO") where.condicion = "Nuevo";
   if (estadoNorm === "USADO") where.condicion = "Usado";
   const rows = await prisma.listing.findMany({ where });
+  const mappedRows = rows.map(listingToTractorItem);
 
   return {
-    rows: rows.map(listingToTractorItem),
+    rows: dedupeByUnit ? dedupeListingsByUnit(mappedRows) : mappedRows,
     meta: {
       loadedAt: Date.now(),
       fileMtimeMs: null,
@@ -118,60 +138,21 @@ export async function loadAllListings(
 }
 
 /**
- * Get distinct values for filter dropdowns.
- */
-export async function getDistinctValues(categoria?: string | null) {
-  const where: Record<string, unknown> = { active: true };
-  if (categoria) where.categoria = categoria;
-
-  const [origins, brands, provinces, categorias] = await Promise.all([
-    prisma.listing.findMany({
-      where,
-      select: { origen: true },
-      distinct: ["origen"],
-      orderBy: { origen: "asc" },
-    }),
-    prisma.listing.findMany({
-      where: { ...where, marcaNorm: { not: null } },
-      select: { marcaNorm: true },
-      distinct: ["marcaNorm"],
-      orderBy: { marcaNorm: "asc" },
-    }),
-    prisma.listing.findMany({
-      where: { ...where, provincia: { not: null } },
-      select: { provincia: true },
-      distinct: ["provincia"],
-      orderBy: { provincia: "asc" },
-    }),
-    prisma.listing.findMany({
-      select: { categoria: true },
-      distinct: ["categoria"],
-      orderBy: { categoria: "asc" },
-    }),
-  ]);
-
-  return {
-    origins: origins.map((r: { origen: string }) => r.origen),
-    brands: brands.map((r: { marcaNorm: string | null }) => r.marcaNorm).filter(Boolean) as string[],
-    provinces: provinces.map((r: { provincia: string | null }) => r.provincia).filter(Boolean) as string[],
-    categorias: categorias.map((r: { categoria: string }) => r.categoria),
-  };
-}
-
-/**
  * Load Venturino's own inventory from PostgreSQL (origen='venturino').
  * Optionally filter by categoria.
  */
 export async function loadVenturinoListings(
   categoria?: string | null,
+  dedupeByUnit = true,
 ): Promise<TractorsDataset> {
   const where: Record<string, unknown> = { origen: "venturino", active: true };
   if (categoria) where.categoria = categoria;
 
   const rows = await prisma.listing.findMany({ where });
+  const mappedRows = rows.map(listingToTractorItem);
 
   return {
-    rows: rows.map(listingToTractorItem),
+    rows: dedupeByUnit ? dedupeListingsByUnit(mappedRows) : mappedRows,
     meta: {
       loadedAt: Date.now(),
       fileMtimeMs: null,

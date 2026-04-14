@@ -398,7 +398,7 @@ export async function computeAnalisis1(params?: {
       generatedAt: Date.now(),
       categoria,
       venturinoCount: venturinoDataset.rows.length,
-      competitorsCount: competitorsDataset.rows.length,
+      competitorsCount: competitors.length,
       params: {
         compareYear,
         compareHours,

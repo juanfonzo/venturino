@@ -28,7 +28,7 @@ type CompanyItemRow = {
   hp_motor: number | null;
   provincia: string | null;
   precio_nor: number | null;
-  isDupCrossPortal: boolean;
+  isUnitDuplicate: boolean;
 };
 
 type CompanyItemsResponse = {
@@ -233,8 +233,8 @@ export default function Analisis2Page() {
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
                   <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Unidades únicas</div>
                   <div className="mt-2 text-2xl font-semibold text-jd-black">{formatNumber(data.kpis.totalUniqueUnits)}</div>
-                  {data.meta.crossPortalDedupCount > 0 && (
-                    <div className="mt-1 text-xs text-jd-black/40">{formatNumber(data.meta.crossPortalDedupCount)} dups excluidos</div>
+                  {data.meta.dedupCount > 0 && (
+                    <div className="mt-1 text-xs text-jd-black/40">{formatNumber(data.meta.dedupCount)} duplicados excluidos</div>
                   )}
                 </div>
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
@@ -291,9 +291,9 @@ export default function Analisis2Page() {
                                 </td>
                                 <td>
                                   <span>{formatNumber(c.countUniqueUnits)}</span>
-                                  {c.crossPortalDups > 0 ? (
-                                    <span className="ml-1 text-xs text-jd-black/40" title={`${c.crossPortalDups} duplicados cross-portal`}>
-                                      (+{c.crossPortalDups})
+                                  {c.duplicateUnits > 0 ? (
+                                    <span className="ml-1 text-xs text-jd-black/40" title={`${c.duplicateUnits} duplicados por unidad`}>
+                                      (+{c.duplicateUnits})
                                     </span>
                                   ) : null}
                                 </td>
@@ -334,7 +334,9 @@ export default function Analisis2Page() {
                       Tabla con intensidad por volumen (unidades). Listo para choropleth usando GeoJSON local.
                     </p>
                   </div>
-                  <div className="text-sm text-jd-black/60">{formatNumber(filteredByProvince.length)} provincias</div>
+                  <div className="text-sm text-jd-black/60">
+                    {formatNumber(filteredByProvince.length)} provincias
+                  </div>
                 </div>
                 <div className="panel-body">
                   {filteredByProvince.length === 0 ? (
@@ -391,7 +393,7 @@ export default function Analisis2Page() {
               </section>
 
               <div className="text-xs text-jd-black/40">
-                Dedup: URL/ID + cross-portal (empresa+marca+modelo+año). Capital: solo con precio.
+                Dedup: empresa + marca + modelo + año. Capital: solo con precio.
               </div>
             </div>
           ) : null}
@@ -587,7 +589,7 @@ export default function Analisis2Page() {
                     const visibleRows = modalCategoria
                       ? itemsData.rows.filter((r) => r.categoria === modalCategoria)
                       : itemsData.rows;
-                    const uniqueVisible = visibleRows.filter((r) => !r.isDupCrossPortal);
+                    const uniqueVisible = visibleRows.filter((r) => !r.isUnitDuplicate);
                     const dupCount = visibleRows.length - uniqueVisible.length;
                     const visibleCapital = uniqueVisible.reduce((s, r) => s + (r.precio_nor ?? 0), 0);
                     return (
@@ -598,7 +600,7 @@ export default function Analisis2Page() {
                           </span>
                           <span className="text-xs text-jd-black/60">
                             {formatNumber(uniqueVisible.length)} unidades · {formatUsd(visibleCapital)}
-                            {dupCount > 0 ? ` · ${dupCount} duplicados cross-portal` : ""}
+                            {dupCount > 0 ? ` · ${dupCount} duplicados por unidad` : ""}
                           </span>
                         </div>
                         {visibleRows.length === 0 ? (
@@ -619,10 +621,10 @@ export default function Analisis2Page() {
                               </thead>
                               <tbody>
                                 {visibleRows.map((r) => (
-                                  <tr key={r.id} className={r.isDupCrossPortal ? "opacity-40" : ""}>
+                                  <tr key={r.id} className={r.isUnitDuplicate ? "opacity-40" : ""}>
                                     <td className="max-w-[420px]">
                                       <div className="flex items-center gap-2">
-                                        {r.isDupCrossPortal ? (
+                                        {r.isUnitDuplicate ? (
                                           <Badge variant="muted">Dup</Badge>
                                         ) : null}
                                         {r.url ? (

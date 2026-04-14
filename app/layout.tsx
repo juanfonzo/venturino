@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Venturino Tractores - PoC",
+  title: "Venturino App",
   description: "Analisis de mercado de tractores en Argentina.",
 };
 

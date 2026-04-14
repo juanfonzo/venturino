@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { getListingUnitKey } from "@/lib/dedupe/listingUnits";
 import { normalizeMatchText, normalizeText } from "@/lib/normalize/text";
 import { getPercentiles } from "@/lib/stats/percentiles";
 
@@ -39,6 +40,27 @@ function findYearBucketId(anio: number | null, buckets: YearBucketDef[]) {
   if (anio === null) return "SIN_ANIO";
   const match = buckets.find((bucket) => matchesYearBucket(anio, bucket));
   return match ? match.id : null;
+}
+
+function getUnitKeyForRow(row: {
+  listingId: number;
+  precioUsd: { toNumber(): number } | number | null;
+  listing: {
+    anio: number | null;
+    vendedor: string | null;
+    marcaNorm: string | null;
+    modeloNorm: string | null;
+  } | null;
+}) {
+  return (
+    getListingUnitKey({
+      empresa: row.listing?.vendedor ?? null,
+      marca_norm: row.listing?.marcaNorm ?? null,
+      modelo_norm: row.listing?.modeloNorm ?? null,
+      anio: row.listing?.anio ?? null,
+      precio_nor: row.precioUsd !== null ? Number(row.precioUsd) : null,
+    }) ?? `listing:${row.listingId}`
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -88,10 +110,14 @@ export async function GET(request: NextRequest) {
         },
       },
       select: {
+        listingId: true,
         snapshotDate: true,
         precioUsd: true,
         listing: {
           select: {
+            vendedor: true,
+            marcaNorm: true,
+            modeloNorm: true,
             anio: true,
           },
         },
@@ -99,18 +125,25 @@ export async function GET(request: NextRequest) {
       orderBy: { snapshotDate: "asc" },
     });
 
-    const dateBuckets = new Map<string, number[]>();
+    const dateBuckets = new Map<string, Map<string, number>>();
     rows.forEach((row) => {
       if (!row.snapshotDate) return;
       const price = row.precioUsd !== null ? Number(row.precioUsd) : null;
       if (price === null || Number.isNaN(price)) return;
       const key = toDateKey(row.snapshotDate);
-      if (!dateBuckets.has(key)) dateBuckets.set(key, []);
-      dateBuckets.get(key)?.push(price);
+      const unitKey = getUnitKeyForRow(row);
+      if (!dateBuckets.has(key)) dateBuckets.set(key, new Map());
+      const byUnit = dateBuckets.get(key);
+      if (!byUnit) return;
+      const existing = byUnit.get(unitKey);
+      if (existing === undefined || price < existing) {
+        byUnit.set(unitKey, price);
+      }
     });
 
     const points = Array.from(dateBuckets.entries())
-      .map(([date, prices]) => {
+      .map(([date, pricesByUnit]) => {
+        const prices = Array.from(pricesByUnit.values());
         if (prices.length < MIN_SAMPLE_SIZE) {
           return { date, n: prices.length, p25: null, p50: null, p75: null };
         }
@@ -124,7 +157,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ points });
     }
 
-    const yearBucketMap = new Map<string, Map<string, number[]>>();
+    const yearBucketMap = new Map<string, Map<string, Map<string, number>>>();
     presetBuckets.forEach((bucket) => {
       yearBucketMap.set(bucket.id, new Map());
     });
@@ -137,11 +170,17 @@ export async function GET(request: NextRequest) {
       const dateKey = toDateKey(row.snapshotDate);
       const bucketId = findYearBucketId(row.listing?.anio ?? null, presetBuckets);
       if (!bucketId) return;
+      const unitKey = getUnitKeyForRow(row);
       if (!yearBucketMap.has(bucketId)) yearBucketMap.set(bucketId, new Map());
       const byDate = yearBucketMap.get(bucketId);
       if (!byDate) return;
-      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-      byDate.get(dateKey)?.push(price);
+      if (!byDate.has(dateKey)) byDate.set(dateKey, new Map());
+      const byUnit = byDate.get(dateKey);
+      if (!byUnit) return;
+      const existing = byUnit.get(unitKey);
+      if (existing === undefined || price < existing) {
+        byUnit.set(unitKey, price);
+      }
     });
 
     const series = Array.from(yearBucketMap.entries())
@@ -149,7 +188,8 @@ export async function GET(request: NextRequest) {
         const def = presetBuckets.find((bucket) => bucket.id === bucketId);
         const label = def?.label ?? (bucketId === "SIN_ANIO" ? "Sin año" : bucketId);
         const bucketPoints = Array.from(byDate.entries())
-          .map(([date, prices]) => {
+          .map(([date, pricesByUnit]) => {
+            const prices = Array.from(pricesByUnit.values());
             if (prices.length < MIN_SAMPLE_SIZE) {
               return { date, n: prices.length, p25: null, p50: null, p75: null };
             }

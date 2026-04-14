@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const mappings = isRecord(body?.mappings) ? (body.mappings as AcaraMappings) : {};
 
-    const [tractors, acara] = await Promise.all([loadAllListings(), loadAcara()]);
+    const [tractors, acara] = await Promise.all([loadAllListings(undefined, undefined, false), loadAcara()]);
     const acaraById = new Map(acara.items.map((item) => [item.id, item]));
 
     let count = 0;
