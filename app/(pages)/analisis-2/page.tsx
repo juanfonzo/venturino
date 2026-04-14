@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Analisis2CompanyRow, Analisis2Response } from "@/lib/analysis/analisis2";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/utils/format";
@@ -37,13 +37,6 @@ type CompanyItemsResponse = {
   rows: CompanyItemRow[];
 };
 
-function parseCompaniesInput(value: string) {
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
 function pctBadge(pct: number) {
   if (pct <= 0.05) return { variant: "green" as const, label: "Muy bajo" };
   if (pct <= 0.15) return { variant: "yellow" as const, label: "Medio" };
@@ -61,12 +54,15 @@ const CATEGORIAS = [
   { value: "Pulverizadoras", label: "Pulverizadoras" },
 ];
 
+const COMPANIES_PER_PAGE = 20;
+
 export default function Analisis2Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<Analisis2Response | null>(null);
 
-  const [companiesInput, setCompaniesInput] = useState<string>("");
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedCompany, setSelectedCompany] = useState<Analisis2CompanyRow | null>(null);
 
   const [itemsModalEmpresa, setItemsModalEmpresa] = useState<string | null>(null);
@@ -75,14 +71,11 @@ export default function Analisis2Page() {
   const [itemsData, setItemsData] = useState<CompanyItemsResponse | null>(null);
   const [modalCategoria, setModalCategoria] = useState<string | null>(null);
 
-  const selectedCompanies = useMemo(() => parseCompaniesInput(companiesInput), [companiesInput]);
-
-  const fetchData = async (opts?: { nextCompanies?: string[] }) => {
+  const fetchData = async (companies: string[]) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
-      const companies = opts?.nextCompanies ?? selectedCompanies;
       if (companies.length > 0) {
         params.set("companies", companies.join(","));
       }
@@ -102,13 +95,19 @@ export default function Analisis2Page() {
   };
 
   useEffect(() => {
-    void fetchData({ nextCompanies: [] });
+    setCurrentPage(1);
+    void fetchData(selectedCompanies);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedCompanies]);
 
   const topExampleCompanies = useMemo(() => {
     const companies = data?.companies ?? [];
     return companies.slice(0, 6).map((c) => c.empresa);
+  }, [data]);
+
+  const companyOptions = useMemo(() => {
+    const names = data?.meta.availableCompanies ?? [];
+    return names.map((name) => ({ value: name, label: name }));
   }, [data]);
 
   const filteredCompanies = useMemo(() => {
@@ -117,6 +116,21 @@ export default function Analisis2Page() {
     const set = new Set(selectedCompanies);
     return companies.filter((c) => set.has(c.empresa));
   }, [data, selectedCompanies]);
+
+  const totalCompanyPages = Math.max(1, Math.ceil(filteredCompanies.length / COMPANIES_PER_PAGE));
+
+  useEffect(() => {
+    if (currentPage <= totalCompanyPages) return;
+    setCurrentPage(totalCompanyPages);
+  }, [currentPage, totalCompanyPages]);
+
+  const paginatedCompanies = useMemo(() => {
+    const start = (currentPage - 1) * COMPANIES_PER_PAGE;
+    return filteredCompanies.slice(start, start + COMPANIES_PER_PAGE);
+  }, [currentPage, filteredCompanies]);
+
+  const pageStart = filteredCompanies.length === 0 ? 0 : (currentPage - 1) * COMPANIES_PER_PAGE + 1;
+  const pageEnd = Math.min(currentPage * COMPANIES_PER_PAGE, filteredCompanies.length);
 
   const filteredByProvince = useMemo(() => {
     const rows = data?.byProvince ?? [];
@@ -169,19 +183,14 @@ export default function Analisis2Page() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Input
-              placeholder="Filtrar empresas (separar con coma)"
-              value={companiesInput}
-              onChange={(e) => setCompaniesInput(e.target.value)}
-              className="w-[280px]"
+            <MultiSelect
+              options={companyOptions}
+              value={selectedCompanies}
+              onChange={setSelectedCompanies}
+              placeholder="Filtrar empresas"
+              searchPlaceholder="Buscar empresa..."
+              className="w-[320px]"
             />
-            <Button
-              onClick={() => void fetchData()}
-              disabled={loading}
-              size="sm"
-            >
-              {loading ? "..." : "Actualizar"}
-            </Button>
           </div>
         </div>
         {topExampleCompanies.length > 0 && (
@@ -192,20 +201,18 @@ export default function Analisis2Page() {
                 key={name}
                 type="button"
                 onClick={() => {
-                  setCompaniesInput(name);
-                  void fetchData({ nextCompanies: [name] });
+                  setSelectedCompanies([name]);
                 }}
                 className="rounded-full bg-jd-cream/70 px-2.5 py-0.5 text-xs font-medium text-jd-black hover:bg-jd-yellow/60"
               >
                 {name}
               </button>
             ))}
-            {companiesInput && (
+            {selectedCompanies.length > 0 && (
               <button
                 type="button"
                 onClick={() => {
-                  setCompaniesInput("");
-                  void fetchData({ nextCompanies: [] });
+                  setSelectedCompanies([]);
                 }}
                 className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-jd-black/60 hover:bg-jd-cream/70"
               >
@@ -242,8 +249,8 @@ export default function Analisis2Page() {
                   <div className="mt-2 text-2xl font-semibold text-jd-black">{formatUsd(data.kpis.totalCapitalUsd)}</div>
                 </div>
                 <div className="rounded-xl border border-jd-black/10 bg-white/70 p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Sin precio</div>
-                  <div className="mt-2 text-2xl font-semibold text-jd-black">{formatPercent(data.kpis.totalMissingPricePct, 0)}</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Empresas</div>
+                  <div className="mt-2 text-2xl font-semibold text-jd-black">{formatNumber(data.meta.companies)}</div>
                 </div>
               </section>
 
@@ -253,74 +260,103 @@ export default function Analisis2Page() {
                     <h3 className="text-base font-semibold text-jd-black">Stock por competidor</h3>
                   </div>
                   <div className="text-sm text-jd-black/60">
-                    {formatNumber(filteredCompanies.length)} empresas
+                    {formatNumber(filteredCompanies.length)} empresas · página {formatNumber(currentPage)}/{formatNumber(totalCompanyPages)}
                   </div>
                 </div>
                 <div className="panel-body">
                   {filteredCompanies.length === 0 ? (
                     <p className="text-sm text-jd-black/60">Sin resultados para los filtros actuales.</p>
                   ) : (
-                    <div className="overflow-auto rounded-xl border border-jd-black/10">
-                      <table className="table-base">
-                        <thead>
-                          <tr>
-                            <th>Empresa</th>
-                            <th>Unidades</th>
-                            <th>Capital</th>
-                            <th>Sin precio</th>
-                            <th>Precio p50</th>
-                            <th>Edad p50</th>
-                            <th>Top provincias</th>
-                            <th>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredCompanies.map((c) => {
-                            const badge = pctBadge(c.missingPricePct);
-                            const provinces = safeListTop(c.topProvinces, 2).map((x) => x.provincia).join(" · ");
-                            return (
-                              <tr key={c.empresa}>
-                                <td>
-                                  <button
-                                    type="button"
-                                    onClick={() => setSelectedCompany(c)}
-                                    className="text-left font-semibold text-jd-black hover:underline"
-                                  >
-                                    {c.empresa}
-                                  </button>
-                                </td>
-                                <td>
-                                  <span>{formatNumber(c.countUniqueUnits)}</span>
-                                  {c.duplicateUnits > 0 ? (
-                                    <span className="ml-1 text-xs text-jd-black/40" title={`${c.duplicateUnits} duplicados por unidad`}>
-                                      (+{c.duplicateUnits})
-                                    </span>
-                                  ) : null}
-                                </td>
-                                <td>{formatUsd(c.capitalUsd)}</td>
-                                <td>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant={badge.variant}>{formatPercent(c.missingPricePct, 0)}</Badge>
-                                    <span className="text-xs text-jd-black/60">({formatNumber(c.missingPriceCount)})</span>
-                                  </div>
-                                </td>
-                                <td>{c.priceP50 !== null ? formatUsd(c.priceP50) : "-"}</td>
-                                <td>{c.ageP50 !== null ? `${formatNumber(c.ageP50)} años` : "-"}</td>
-                                <td className="text-sm text-jd-black/70">{provinces || "-"}</td>
-                                <td>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => void openItemsModal(c.empresa)}
-                                  >
-                                    Ver detalles
-                                  </Button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    <div className="flex flex-col gap-4">
+                      <div className="overflow-auto rounded-xl border border-jd-black/10">
+                        <table className="table-base">
+                          <thead>
+                            <tr>
+                              <th>Empresa</th>
+                              <th>Unidades</th>
+                              <th>Capital</th>
+                              <th>Sin precio</th>
+                              <th>Precio p50</th>
+                              <th>Edad p50</th>
+                              <th>Top provincias</th>
+                              <th>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedCompanies.map((c) => {
+                              const badge = pctBadge(c.missingPricePct);
+                              const provinces = safeListTop(c.topProvinces, 2).map((x) => x.provincia).join(" · ");
+                              return (
+                                <tr key={c.empresa}>
+                                  <td>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedCompany(c)}
+                                      className="text-left font-semibold text-jd-black hover:underline"
+                                    >
+                                      {c.empresa}
+                                    </button>
+                                  </td>
+                                  <td>
+                                    <span>{formatNumber(c.countUniqueUnits)}</span>
+                                    {c.duplicateUnits > 0 ? (
+                                      <span className="ml-1 text-xs text-jd-black/40" title={`${c.duplicateUnits} duplicados por unidad`}>
+                                        (+{c.duplicateUnits})
+                                      </span>
+                                    ) : null}
+                                  </td>
+                                  <td>{formatUsd(c.capitalUsd)}</td>
+                                  <td>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant={badge.variant}>{formatPercent(c.missingPricePct, 0)}</Badge>
+                                      <span className="text-xs text-jd-black/60">({formatNumber(c.missingPriceCount)})</span>
+                                    </div>
+                                  </td>
+                                  <td>{c.priceP50 !== null ? formatUsd(c.priceP50) : "-"}</td>
+                                  <td>{c.ageP50 !== null ? `${formatNumber(c.ageP50)} años` : "-"}</td>
+                                  <td className="text-sm text-jd-black/70">{provinces || "-"}</td>
+                                  <td>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => void openItemsModal(c.empresa)}
+                                    >
+                                      Ver detalles
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="text-sm text-jd-black/60">
+                          Mostrando {formatNumber(pageStart)}-{formatNumber(pageEnd)} de {formatNumber(filteredCompanies.length)} empresas
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                            disabled={currentPage === 1}
+                          >
+                            Anterior
+                          </Button>
+                          <div className="min-w-[72px] text-center text-sm text-jd-black/70">
+                            {formatNumber(currentPage)} / {formatNumber(totalCompanyPages)}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setCurrentPage((page) => Math.min(totalCompanyPages, page + 1))}
+                            disabled={currentPage === totalCompanyPages}
+                          >
+                            Siguiente
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

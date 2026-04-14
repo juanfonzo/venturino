@@ -61,6 +61,7 @@ export type Analisis2Response = {
     dedupCount: number;
     companies: number;
     selectedCompanies: string[];
+    availableCompanies: string[];
   };
   kpis: {
     totalUnits: number;
@@ -78,6 +79,10 @@ function isFiniteNumber(value: unknown): value is number {
 
 function normalizeEmpresa(value: string | null) {
   return (value ?? "").toString().trim().toUpperCase();
+}
+
+function hasEmpresa(value: string | null) {
+  return normalizeEmpresa(value).length > 0;
 }
 
 function isSelfCompany(empresa: string | null) {
@@ -139,6 +144,8 @@ type TractorItemWithDup = UnitDuplicateMarked<TractorItem>;
 function getCompetitorsDedup(rows: TractorItem[]): { competitorsOnly: TractorItem[]; marked: TractorItemWithDup[] } {
   const competitorsOnly = rows.filter((row) => {
     if ((row.origen ?? "").toString().toLowerCase() === "venturino") return false;
+    if (!hasEmpresa(row.empresa ?? null)) return false;
+    if (!isFiniteNumber(row.precio_nor)) return false;
     if (isSelfCompany(row.empresa ?? null)) return false;
     if (isMarketplaceRow(row)) return false;
     return true;
@@ -156,6 +163,7 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
   const raw = dataset.rows;
 
   const { competitorsOnly, marked: rows } = getCompetitorsDedup(raw);
+  const availableCompanies = Array.from(new Set(rows.map((row) => safeEmpresa(row)))).sort((a, b) => a.localeCompare(b));
 
   const workingRows = selectedSet.size
     ? rows.filter((r) => selectedSet.has(safeEmpresa(r)))
@@ -299,6 +307,7 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
       dedupCount: totalDedupCount,
       companies: companies.length,
       selectedCompanies,
+      availableCompanies,
     },
     kpis: {
       totalUnits,
