@@ -37,12 +37,6 @@ type CompanyItemsResponse = {
   rows: CompanyItemRow[];
 };
 
-function pctBadge(pct: number) {
-  if (pct <= 0.05) return { variant: "green" as const, label: "Muy bajo" };
-  if (pct <= 0.15) return { variant: "yellow" as const, label: "Medio" };
-  return { variant: "red" as const, label: "Alto" };
-}
-
 function safeListTop<T>(items: T[], n: number) {
   return items.slice(0, n);
 }
@@ -182,19 +176,19 @@ export default function Analisis2Page() {
             <h2 className="text-lg font-semibold text-jd-black">Stock de competidores</h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full items-center gap-2 lg:w-auto lg:min-w-[520px] lg:shrink-0 lg:justify-end">
             <MultiSelect
               options={companyOptions}
               value={selectedCompanies}
               onChange={setSelectedCompanies}
               placeholder="Filtrar empresas"
               searchPlaceholder="Buscar empresa..."
-              className="w-[320px]"
+              className="w-full lg:w-[520px]"
             />
           </div>
         </div>
         {topExampleCompanies.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 px-6 pb-4">
+          <div className="flex flex-wrap items-center gap-2 px-6 pb-4 mt-2">
             <span className="text-xs text-jd-black/50">Top:</span>
             {topExampleCompanies.map((name) => (
               <button
@@ -254,6 +248,73 @@ export default function Analisis2Page() {
                 </div>
               </section>
 
+              {data.venturino ? (
+                <section className="panel">
+                  <div className="panel-header">
+                    <div>
+                      <h3 className="text-base font-semibold text-jd-black">Venturino</h3>
+                    </div>
+                  </div>
+                  <div className="panel-body">
+                    <div className="overflow-auto rounded-xl border border-jd-black/10">
+                      <table className="table-base">
+                        <thead>
+                          <tr>
+                            <th>Empresa</th>
+                            <th>Unidades</th>
+                            <th>Capital</th>
+                            <th>Precio p50</th>
+                            <th>Edad p50</th>
+                            <th>Top provincias</th>
+                            <th>Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const c = data.venturino;
+                            const provinces = safeListTop(c.topProvinces, 2).map((x) => x.provincia).join(" · ");
+                            return (
+                              <tr key={c.empresa}>
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedCompany(c)}
+                                    className="text-left font-semibold text-jd-black hover:underline"
+                                  >
+                                    {c.empresa}
+                                  </button>
+                                </td>
+                                <td>
+                                  <span>{formatNumber(c.countUniqueUnits)}</span>
+                                  {c.duplicateUnits > 0 ? (
+                                    <span className="ml-1 text-xs text-jd-black/40" title={`${c.duplicateUnits} duplicados por unidad`}>
+                                      (+{c.duplicateUnits})
+                                    </span>
+                                  ) : null}
+                                </td>
+                                <td>{formatUsd(c.capitalUsd)}</td>
+                                <td>{c.priceP50 !== null ? formatUsd(c.priceP50) : "-"}</td>
+                                <td>{c.ageP50 !== null ? `${formatNumber(c.ageP50)} años` : "-"}</td>
+                                <td className="text-sm text-jd-black/70">{provinces || "-"}</td>
+                                <td>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => void openItemsModal(c.empresa)}
+                                  >
+                                    Ver detalles
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+              ) : null}
+
               <section className="panel">
                 <div className="panel-header">
                   <div>
@@ -275,7 +336,6 @@ export default function Analisis2Page() {
                               <th>Empresa</th>
                               <th>Unidades</th>
                               <th>Capital</th>
-                              <th>Sin precio</th>
                               <th>Precio p50</th>
                               <th>Edad p50</th>
                               <th>Top provincias</th>
@@ -284,7 +344,6 @@ export default function Analisis2Page() {
                           </thead>
                           <tbody>
                             {paginatedCompanies.map((c) => {
-                              const badge = pctBadge(c.missingPricePct);
                               const provinces = safeListTop(c.topProvinces, 2).map((x) => x.provincia).join(" · ");
                               return (
                                 <tr key={c.empresa}>
@@ -306,12 +365,6 @@ export default function Analisis2Page() {
                                     ) : null}
                                   </td>
                                   <td>{formatUsd(c.capitalUsd)}</td>
-                                  <td>
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant={badge.variant}>{formatPercent(c.missingPricePct, 0)}</Badge>
-                                      <span className="text-xs text-jd-black/60">({formatNumber(c.missingPriceCount)})</span>
-                                    </div>
-                                  </td>
                                   <td>{c.priceP50 !== null ? formatUsd(c.priceP50) : "-"}</td>
                                   <td>{c.ageP50 !== null ? `${formatNumber(c.ageP50)} años` : "-"}</td>
                                   <td className="text-sm text-jd-black/70">{provinces || "-"}</td>
@@ -386,14 +439,12 @@ export default function Analisis2Page() {
                             <th>Intensidad</th>
                             <th>Unidades</th>
                             <th>Capital</th>
-                            <th>Sin precio</th>
                             <th>Top empresas</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredByProvince.map((p) => {
                             const width = maxProvinceCount ? Math.round((p.countTotal / maxProvinceCount) * 100) : 0;
-                            const badge = pctBadge(p.missingPricePct);
                             const topEmpresas = safeListTop(p.byEmpresa, 3)
                               .map((x) => `${x.empresa} (${formatNumber(x.countTotal)})`)
                               .join(" · ");
@@ -411,12 +462,6 @@ export default function Analisis2Page() {
                                 </td>
                                 <td>{formatNumber(p.countTotal)}</td>
                                 <td>{formatUsd(p.capitalUsd)}</td>
-                                <td>
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant={badge.variant}>{formatPercent(p.missingPricePct, 0)}</Badge>
-                                    <span className="text-xs text-jd-black/60">({formatNumber(p.missingPriceCount)})</span>
-                                  </div>
-                                </td>
                                 <td className="text-sm text-jd-black/70">{topEmpresas || "-"}</td>
                               </tr>
                             );
@@ -448,7 +493,7 @@ export default function Analisis2Page() {
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle empresa</p>
                 <h3 className="text-lg font-semibold text-jd-black">{selectedCompany?.empresa}</h3>
                 <p className="mt-1 text-sm text-jd-black/60">
-                  Stock: {formatNumber(selectedCompany?.countTotal ?? 0)} | Capital: {formatUsd(selectedCompany?.capitalUsd ?? 0)} | Sin precio: {formatPercent(selectedCompany?.missingPricePct ?? 0, 0)}
+                  Stock: {formatNumber(selectedCompany?.countTotal ?? 0)} | Capital: {formatUsd(selectedCompany?.capitalUsd ?? 0)} | Precio p50: {selectedCompany?.priceP50 !== null ? formatUsd(selectedCompany?.priceP50 ?? 0) : "-"}
                 </p>
               </div>
               <Button variant="outline" onClick={() => setSelectedCompany(null)}>Cerrar</Button>

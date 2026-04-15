@@ -69,6 +69,7 @@ export type Analisis2Response = {
     totalCapitalUsd: number;
     totalMissingPricePct: number;
   };
+  venturino: Analisis2CompanyRow | null;
   companies: Analisis2CompanyRow[];
   byProvince: Analisis2ProvinceRow[];
 };
@@ -154,6 +155,83 @@ function getCompetitorsDedup(rows: TractorItem[]): { competitorsOnly: TractorIte
   return { competitorsOnly, marked: markListingUnitDuplicates(competitorsOnly) };
 }
 
+function getVenturinoDedup(rows: TractorItem[]): { venturinoOnly: TractorItem[]; marked: TractorItemWithDup[] } {
+  const venturinoOnly = rows.filter((row) => {
+    if ((row.origen ?? "").toString().toLowerCase() !== "venturino") return false;
+    if (!isFiniteNumber(row.precio_nor)) return false;
+    return true;
+  });
+
+  return { venturinoOnly, marked: markListingUnitDuplicates(venturinoOnly) };
+}
+
+function buildCompanyRow(empresa: string, items: TractorItemWithDup[], currentYear: number): Analisis2CompanyRow {
+  const uniqueItems = items.filter((x) => !x._isUnitDuplicate);
+  const duplicateUnits = items.length - uniqueItems.length;
+  const prices = uniqueItems.map((x) => x.precio_nor).filter((v): v is number => v !== null);
+  const ages = uniqueItems
+    .map((x) => (isFiniteNumber(x.anio) ? toAge(x.anio, currentYear) : null))
+    .filter((v): v is number => v !== null);
+
+  const capitalUsd = prices.reduce((acc, v) => acc + v, 0);
+  const missingPriceCount = uniqueItems.length - prices.length;
+  const missingPricePct = uniqueItems.length ? missingPriceCount / uniqueItems.length : 0;
+  const priceP = getPercentiles(prices);
+  const ageP = getPercentiles(ages);
+
+  const brandCounts = new Map<string, number>();
+  const hpCounts = new Map<string, number>();
+  const ageCounts = new Map<string, number>();
+  const provCounts = new Map<string, number>();
+
+  uniqueItems.forEach((x) => {
+    const brand = (x.marca_norm ?? x.marca ?? "Sin marca").toString().trim() || "Sin marca";
+    brandCounts.set(brand, (brandCounts.get(brand) ?? 0) + 1);
+
+    if (isFiniteNumber(x.hp_motor)) {
+      const b = bucketHp(x.hp_motor);
+      hpCounts.set(b, (hpCounts.get(b) ?? 0) + 1);
+    }
+
+    if (isFiniteNumber(x.anio)) {
+      const age = toAge(x.anio, currentYear);
+      if (age !== null) {
+        const b = bucketAge(age);
+        ageCounts.set(b, (ageCounts.get(b) ?? 0) + 1);
+      }
+    }
+
+    const prov = safeProvince(x.provincia);
+    provCounts.set(prov, (provCounts.get(prov) ?? 0) + 1);
+  });
+
+  const topBrands = topNCounts(brandCounts, 6).map((x) => ({ marca: x.key, count: x.count }));
+  const hpBuckets = topNCounts(hpCounts, 10).map((x) => ({ bucket: x.key, count: x.count }));
+  const ageBuckets = topNCounts(ageCounts, 10).map((x) => ({ bucket: x.key, count: x.count }));
+  const topProvinces = topNCounts(provCounts, 8).map((x) => ({ provincia: x.key, count: x.count }));
+
+  return {
+    empresa,
+    countTotal: items.length,
+    countUniqueUnits: uniqueItems.length,
+    duplicateUnits,
+    countWithPrice: prices.length,
+    missingPriceCount,
+    missingPricePct,
+    capitalUsd,
+    priceP25: priceP.p25,
+    priceP50: priceP.p50,
+    priceP75: priceP.p75,
+    ageP25: ageP.p25,
+    ageP50: ageP.p50,
+    ageP75: ageP.p75,
+    topBrands,
+    hpBuckets,
+    ageBuckets,
+    topProvinces,
+  };
+}
+
 export async function computeAnalisis2(params?: { categoria?: string | null; selectedCompanies?: string[] | null }): Promise<Analisis2Response> {
   const categoria = params?.categoria ?? null;
   const selectedCompanies = (params?.selectedCompanies ?? []).filter((x) => x && x.trim().length > 0);
@@ -162,7 +240,8 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
   const dataset = await loadAllListings(categoria, undefined, false);
   const raw = dataset.rows;
 
-  const { competitorsOnly, marked: rows } = getCompetitorsDedup(raw);
+  const { marked: rows } = getCompetitorsDedup(raw);
+  const { marked: venturinoRows } = getVenturinoDedup(raw);
   const availableCompanies = Array.from(new Set(rows.map((row) => safeEmpresa(row)))).sort((a, b) => a.localeCompare(b));
 
   const workingRows = selectedSet.size
@@ -171,6 +250,7 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
   const uniqueWorkingRows = workingRows.filter((r) => !r._isUnitDuplicate);
 
   const currentYear = new Date().getFullYear();
+  const venturino = venturinoRows.length > 0 ? buildCompanyRow("VENTURINO", venturinoRows, currentYear) : null;
 
   const byEmpresa = new Map<string, TractorItemWithDup[]>();
   workingRows.forEach((row) => {
@@ -179,74 +259,7 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
     byEmpresa.get(empresa)?.push(row);
   });
 
-  const companies: Analisis2CompanyRow[] = Array.from(byEmpresa.entries()).map(([empresa, items]) => {
-    const uniqueItems = items.filter((x) => !x._isUnitDuplicate);
-    const duplicateUnits = items.length - uniqueItems.length;
-    const prices = uniqueItems.map((x) => x.precio_nor).filter((v): v is number => v !== null);
-    const ages = uniqueItems
-      .map((x) => (isFiniteNumber(x.anio) ? toAge(x.anio, currentYear) : null))
-      .filter((v): v is number => v !== null);
-
-    const capitalUsd = prices.reduce((acc, v) => acc + v, 0);
-
-    const missingPriceCount = uniqueItems.length - prices.length;
-    const missingPricePct = uniqueItems.length ? missingPriceCount / uniqueItems.length : 0;
-
-    const priceP = getPercentiles(prices);
-    const ageP = getPercentiles(ages);
-
-    const brandCounts = new Map<string, number>();
-    const hpCounts = new Map<string, number>();
-    const ageCounts = new Map<string, number>();
-    const provCounts = new Map<string, number>();
-
-    uniqueItems.forEach((x) => {
-      const brand = (x.marca_norm ?? x.marca ?? "Sin marca").toString().trim() || "Sin marca";
-      brandCounts.set(brand, (brandCounts.get(brand) ?? 0) + 1);
-
-      if (isFiniteNumber(x.hp_motor)) {
-        const b = bucketHp(x.hp_motor);
-        hpCounts.set(b, (hpCounts.get(b) ?? 0) + 1);
-      }
-
-      if (isFiniteNumber(x.anio)) {
-        const age = toAge(x.anio, currentYear);
-        if (age !== null) {
-          const b = bucketAge(age);
-          ageCounts.set(b, (ageCounts.get(b) ?? 0) + 1);
-        }
-      }
-
-      const prov = safeProvince(x.provincia);
-      provCounts.set(prov, (provCounts.get(prov) ?? 0) + 1);
-    });
-
-    const topBrands = topNCounts(brandCounts, 6).map((x) => ({ marca: x.key, count: x.count }));
-    const hpBuckets = topNCounts(hpCounts, 10).map((x) => ({ bucket: x.key, count: x.count }));
-    const ageBuckets = topNCounts(ageCounts, 10).map((x) => ({ bucket: x.key, count: x.count }));
-    const topProvinces = topNCounts(provCounts, 8).map((x) => ({ provincia: x.key, count: x.count }));
-
-    return {
-      empresa,
-      countTotal: items.length,
-      countUniqueUnits: uniqueItems.length,
-      duplicateUnits,
-      countWithPrice: prices.length,
-      missingPriceCount,
-      missingPricePct,
-      capitalUsd,
-      priceP25: priceP.p25,
-      priceP50: priceP.p50,
-      priceP75: priceP.p75,
-      ageP25: ageP.p25,
-      ageP50: ageP.p50,
-      ageP75: ageP.p75,
-      topBrands,
-      hpBuckets,
-      ageBuckets,
-      topProvinces,
-    };
-  });
+  const companies: Analisis2CompanyRow[] = Array.from(byEmpresa.entries()).map(([empresa, items]) => buildCompanyRow(empresa, items, currentYear));
 
   companies.sort((a, b) => b.countUniqueUnits - a.countUniqueUnits || b.countTotal - a.countTotal);
 
@@ -315,6 +328,7 @@ export async function computeAnalisis2(params?: { categoria?: string | null; sel
       totalCapitalUsd,
       totalMissingPricePct: totalUniqueUnits ? totalMissing / totalUniqueUnits : 0,
     },
+    venturino,
     companies,
     byProvince,
   };
@@ -339,9 +353,10 @@ export async function listAnalisis2Items(params: { categoria?: string | null; em
 
   // Always load ALL categories to show the full breakdown per company
   const dataset = await loadAllListings(null, undefined, false);
-  const { marked } = getCompetitorsDedup(dataset.rows);
+  const isVenturinoRequest = isSelfCompany(empresa);
+  const { marked } = isVenturinoRequest ? getVenturinoDedup(dataset.rows) : getCompetitorsDedup(dataset.rows);
 
-  const filtered = marked.filter((r) => safeEmpresa(r) === empresa);
+  const filtered = isVenturinoRequest ? marked : marked.filter((r) => safeEmpresa(r) === empresa);
 
   // Category breakdown (only unique items count toward capital)
   const catMap = new Map<string, { count: number; countUnique: number; capitalUsd: number }>();
