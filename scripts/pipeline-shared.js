@@ -54,6 +54,7 @@ module.exports = {
   parseHp,
   parseHoras,
   normalizePrice,
+  FALLBACK_FX_RATE,
   extractPriceFromTitle,
   deriveLocation,
   normalizeCondicion,
@@ -127,10 +128,11 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
     if (extracted.monedaRaw) monedaRaw = extracted.monedaRaw;
   }
 
-  const { precioUsd, monedaNorm, priceFlags } = P.normalizePrice(
+  const { precioUsd, precioArs, monedaNorm, priceFlags } = P.normalizePrice(
     precioRaw !== null && precioRaw !== undefined ? precioRaw.toString() : null,
     monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
     origen,
+    P.FALLBACK_FX_RATE || 1500,
   );
 
   const { provincia, ciudad } = P.deriveLocation(doc.ubicacion, doc.localidad, doc.provincia);
@@ -187,6 +189,7 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
     monedaRaw: monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
     monedaNorm,
     precioUsd: precioUsd !== null ? Math.round(precioUsd * 100) / 100 : null,
+    precioArs: precioArs !== null ? Math.round(precioArs * 100) / 100 : null,
     ubicacionRaw: doc.ubicacion || doc.localidad || null,
     provincia,
     ciudad,

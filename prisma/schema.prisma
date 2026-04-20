@@ -61,6 +61,7 @@ model Listing {
   monedaRaw     String?  @map("moneda_raw")
   monedaNorm    String?  @map("moneda_norm")  // USD | ARS
   precioUsd     Decimal? @map("precio_usd") @db.Decimal(14, 2)
+  precioArs     Decimal? @map("precio_ars") @db.Decimal(14, 2)  // valor ARS original parseado
 
   // Ubicación
   ubicacionRaw  String?  @map("ubicacion_raw")
@@ -118,6 +119,8 @@ model PriceHistory {
   listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   precioUsd   Decimal?  @map("precio_usd") @db.Decimal(14, 2)
+  precioArs   Decimal?  @map("precio_ars") @db.Decimal(14, 2)
+  fxRate      Decimal?  @map("fx_rate") @db.Decimal(12, 4)
   monedaNorm  String?   @map("moneda_norm")
   precioRaw   String?   @map("precio_raw")
 
@@ -132,4 +135,15 @@ model PriceHistory {
   @@index([snapshotDate])
   @@index([scrapingRunId])
   @@map("price_history")
+}
+
+model FxRate {
+  id         Int      @id @default(autoincrement())
+  rate       Decimal  @db.Decimal(12, 4)
+  source     String?
+  sourceDate DateTime? @map("source_date")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@map("fx_rates")
 }

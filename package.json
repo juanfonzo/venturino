@@ -10,10 +10,13 @@
     "pipeline:live": "node scripts/pipeline-live.js",
     "pipeline:backfill-history": "node scripts/backfill-price-history.js",
     "crawl:venturino:tractores-usados": "node scripts/crawlVenturinoTractoresUsados.js",
-    "crawl:agrofy:tractores": "node scripts/crawlAgrofyTractoresConPrecio.js"
+    "crawl:agrofy:tractores": "node scripts/crawlAgrofyTractoresConPrecio.js",
+    "report:venturino": "node scripts/generateVenturinoReport.js",
+    "backfill:precio-ars": "node scripts/backfill-precio-ars.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@react-pdf/renderer": "^3.4.0",
     "clsx": "2.1.1",
     "dotenv": "^17.3.1",
     "jose": "^6.1.3",

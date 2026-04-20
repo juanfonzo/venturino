@@ -1,7 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import { detectDelimiter, parseCsvToObjects } from "@/lib/utils/csv";
-import { normalizeCurrency, parsePriceRaw, FX_RATE } from "@/lib/normalize/price";
+import { normalizeCurrency, parsePriceRaw } from "@/lib/normalize/price";
+import { getCurrentFxRate } from "@/lib/fx-rate";
 import { normalizeText, normalizeLoose } from "@/lib/normalize/text";
 import { createStableId } from "@/lib/utils/id";
 import type { AcaraDataset, AcaraItem, AcaraSeriesPoint } from "@/lib/types";
@@ -12,12 +13,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cache: AcaraDataset | null = null;
 
-function parseSeriesValue(rawValue: string | null | undefined, currency: string | null) {
+function parseSeriesValue(rawValue: string | null | undefined, currency: string | null, fxRate: number) {
   const parsed = parsePriceRaw(rawValue ?? null);
   if (parsed === null) return null;
   const currencyNorm = normalizeCurrency(currency, rawValue ?? null);
   if (currencyNorm === "USD") return parsed;
-  if (currencyNorm === "ARS") return parsed / FX_RATE;
+  if (currencyNorm === "ARS") return parsed / fxRate;
   return parsed;
 }
 
@@ -26,6 +27,8 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
   if (!force && cache && now - cache.meta.loadedAt < CACHE_TTL_MS) {
     return cache;
   }
+
+  const fxRate = await getCurrentFxRate();
 
   let raw: string;
   try {
@@ -57,7 +60,7 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
       const trimmedKey = key.trim();
       if (!trimmedKey) return;
       const yearLabel = trimmedKey;
-      const valueUsd = parseSeriesValue(value, row.currency ?? null);
+      const valueUsd = parseSeriesValue(value, row.currency ?? null, fxRate);
       series.push({ yearLabel, valueUsd });
     });
 

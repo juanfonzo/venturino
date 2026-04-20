@@ -12,7 +12,8 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
 // ─── Config ──────────────────────────────────────────────
-const FX_RATE = 1500;
+const FALLBACK_FX_RATE = 1500;
+let FX_RATE = FALLBACK_FX_RATE;
 const DATA_PATH = path.join(__dirname, '..', 'data', 'mongo_export.json');
 const DRY_RUN = process.argv.includes('--dry-run');
 const BATCH_SIZE = 500;
@@ -449,10 +450,11 @@ function parsePriceRaw(raw) {
 // Threshold: if labeled USD but price > this, it's likely ARS
 const USD_SANITY_MAX = 1500000;
 
-function normalizePrice(precioRaw, monedaRaw, origen) {
+function normalizePrice(precioRaw, monedaRaw, origen, fxRate) {
+  const rate = fxRate || FX_RATE;
   let monedaNorm = normalizeCurrency(monedaRaw, precioRaw);
   const parsed = parsePriceRaw(precioRaw);
-  if (parsed === null) return { precioUsd: null, monedaNorm, parsed: null, priceFlags: [] };
+  if (parsed === null) return { precioUsd: null, precioArs: null, monedaNorm, parsed: null, priceFlags: [] };
 
   let precioFixed = parsed;
   const priceFlags = [];
@@ -462,7 +464,7 @@ function normalizePrice(precioRaw, monedaRaw, origen) {
       && /^\d+\.\d{2}$/.test(precioRaw.toString().trim()) && parsed < 1000) {
     precioFixed = parsed * 1000;
   }
-  if (precioFixed === 0) return { precioUsd: null, monedaNorm, parsed: null, priceFlags: [] };
+  if (precioFixed === 0) return { precioUsd: null, precioArs: null, monedaNorm, parsed: null, priceFlags: [] };
 
   // Detect ARS mislabeled as USD: if labeled USD but > $1.5M, treat as ARS
   if (monedaNorm === 'USD' && precioFixed > USD_SANITY_MAX) {
@@ -470,9 +472,9 @@ function normalizePrice(precioRaw, monedaRaw, origen) {
     priceFlags.push('CURRENCY_CORRECTED_USD_TO_ARS');
   }
 
-  if (monedaNorm === 'USD') return { precioUsd: precioFixed, monedaNorm, parsed: precioFixed, priceFlags };
-  if (monedaNorm === 'ARS') return { precioUsd: precioFixed / FX_RATE, monedaNorm, parsed: precioFixed, priceFlags };
-  return { precioUsd: null, monedaNorm, parsed: precioFixed, priceFlags };
+  if (monedaNorm === 'USD') return { precioUsd: precioFixed, precioArs: null, monedaNorm, parsed: precioFixed, priceFlags };
+  if (monedaNorm === 'ARS') return { precioUsd: precioFixed / rate, precioArs: precioFixed, monedaNorm, parsed: precioFixed, priceFlags };
+  return { precioUsd: null, precioArs: precioFixed, monedaNorm, parsed: precioFixed, priceFlags };
 }
 
 // ML: extract price from title (last match)
@@ -728,7 +730,22 @@ function buildFlags({ precioUsd, anio, hp, horas, provincia, condicion, extraFla
 async function main() {
   console.log('=== Pipeline: MongoDB JSON → PostgreSQL ===');
   console.log(`Mode: ${DRY_RUN ? 'DRY RUN' : 'LIVE'}`);
-  console.log(`FX Rate: ${FX_RATE} ARS/USD`);
+
+  // Load FX rate from database (fallback to hardcoded)
+  const prismaInit = new PrismaClient();
+  try {
+    const latestFx = await prismaInit.fxRate.findFirst({ orderBy: { createdAt: 'desc' } });
+    if (latestFx) {
+      FX_RATE = Number(latestFx.rate);
+      console.log(`FX Rate (from DB): ${FX_RATE} ARS/USD`);
+    } else {
+      console.log(`FX Rate (fallback): ${FX_RATE} ARS/USD`);
+    }
+  } catch (e) {
+    console.log(`FX Rate (fallback, DB not available): ${FX_RATE} ARS/USD`);
+  } finally {
+    await prismaInit.$disconnect();
+  }
   console.log();
 
   // 1. Load data
@@ -796,10 +813,11 @@ async function main() {
       if (extracted.precioRaw) precioRaw = extracted.precioRaw;
       if (extracted.monedaRaw) monedaRaw = extracted.monedaRaw;
     }
-    const { precioUsd, monedaNorm, priceFlags } = normalizePrice(
+    const { precioUsd, precioArs, monedaNorm, priceFlags } = normalizePrice(
       precioRaw !== null && precioRaw !== undefined ? precioRaw.toString() : null,
       monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
-      origen
+      origen,
+      FX_RATE
     );
 
     // Location
@@ -873,6 +891,7 @@ async function main() {
       monedaRaw: monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
       monedaNorm,
       precioUsd: precioUsd !== null ? Math.round(precioUsd * 100) / 100 : null,
+      precioArs: precioArs !== null ? Math.round(precioArs * 100) / 100 : null,
       ubicacionRaw: doc.ubicacion || doc.localidad || null,
       provincia,
       ciudad,

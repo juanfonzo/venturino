@@ -106,3 +106,25 @@ jobs:
       - name: Apply database changes
         run: |
           ssh algorym "docker exec $SERVICE npx prisma db push"
+
+      # 6.6) Configure host cron jobs (FX rate sync + DB backup)
+      - name: Configure host cron jobs
+        run: |
+          ssh algorym <<'CRONEOF'
+          set -Eeuo pipefail
+
+          TMP="$(mktemp)"
+          TMP_NEW="$(mktemp)"
+          crontab -l > "$TMP" 2>/dev/null || true
+
+          # Remove previous venturino-managed entries to avoid duplicates
+          grep -v 'venturino-managed-' "$TMP" > "$TMP_NEW" || true
+
+          printf '%s\n' \
+            "0 11 * * * docker exec venturino sh -lc 'curl -fsS -X POST \"http://127.0.0.1:3000/api/sync-fx-rate\" >/dev/null 2>&1' # venturino-managed-fx-sync" \
+            "30 3 * * * docker exec -u postgres venturino-db pg_dump -Fc --no-owner --no-acl -d venturino | gzip -c > /tmp/venturino_db_$(date +\%F_\%H-\%M-\%S).dump.gz # venturino-managed-db-backup" \
+            >> "$TMP_NEW"
+
+          crontab "$TMP_NEW"
+          rm -f "$TMP" "$TMP_NEW"
+          CRONEOF

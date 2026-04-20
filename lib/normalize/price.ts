@@ -1,6 +1,6 @@
 import type { Currency } from "@/lib/types";
 
-export const FX_RATE = 1500;
+export const FALLBACK_FX_RATE = 1500;
 
 const USD_PATTERNS = ["U$", "U$S", "US$", "USD"];
 const ARS_PATTERNS = ["$", "ARS"];
@@ -66,17 +66,22 @@ export function normalizePrice({
   precioRaw,
   monedaRaw,
   origen,
+  fxRate,
 }: {
   precioRaw: string | null;
   monedaRaw: string | null;
   origen: string | null;
+  fxRate?: number;
 }) {
   const monedaNorm = normalizeCurrency(monedaRaw, precioRaw);
   const parsed = parsePriceRaw(precioRaw);
 
+  const rate = fxRate ?? FALLBACK_FX_RATE;
+
   if (parsed === null) {
     return {
       precio_nor: null,
+      precio_ars: null,
       moneda_norm: monedaNorm,
       precio_fixed: null,
     };
@@ -96,6 +101,7 @@ export function normalizePrice({
   if (precioFixed === 0) {
     return {
       precio_nor: null,
+      precio_ars: null,
       moneda_norm: monedaNorm,
       precio_fixed: null,
     };
@@ -104,6 +110,7 @@ export function normalizePrice({
   if (monedaNorm === "USD") {
     return {
       precio_nor: precioFixed,
+      precio_ars: null,
       moneda_norm: monedaNorm,
       precio_fixed: precioFixed,
     };
@@ -111,7 +118,8 @@ export function normalizePrice({
 
   if (monedaNorm === "ARS") {
     return {
-      precio_nor: precioFixed / FX_RATE,
+      precio_nor: precioFixed / rate,
+      precio_ars: precioFixed,
       moneda_norm: monedaNorm,
       precio_fixed: precioFixed,
     };
@@ -119,6 +127,7 @@ export function normalizePrice({
 
   return {
     precio_nor: null,
+    precio_ars: precioFixed,
     moneda_norm: monedaNorm,
     precio_fixed: precioFixed,
   };
