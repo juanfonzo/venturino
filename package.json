@@ -12,6 +12,8 @@
     "crawl:venturino:tractores-usados": "node scripts/crawlVenturinoTractoresUsados.js",
     "crawl:agrofy:tractores": "node scripts/crawlAgrofyTractoresConPrecio.js",
     "report:venturino": "node scripts/generateVenturinoReport.js",
+    "fx:sync": "node scripts/syncFxRate.js",
+    "fx:show": "node scripts/syncFxRate.js --show",
     "backfill:precio-ars": "node scripts/backfill-precio-ars.js"
   },
   "dependencies": {

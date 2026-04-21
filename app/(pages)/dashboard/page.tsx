@@ -1,6 +1,7 @@
 import { formatNumber, formatPercent } from "@/lib/utils/format";
 import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
 import { ModelMarketPanel } from "@/components/ModelMarketPanel";
+import { DownloadReportButton } from "@/components/DownloadReportButton";
 import { buildStats } from "@/lib/stats/buildStats";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <DownloadReportButton />
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="panel">
           <div className="panel-header">
