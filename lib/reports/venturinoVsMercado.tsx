@@ -9,8 +9,8 @@
  *    sin filtro de horas.
  *  - Referencia de mercado: MEDIANA USD.
  *  - Confianza:
- *      Alta   : >3 comparables dentro de ±3 años.
- *      Media  : muestra chica cercana, o expansión fuera de ±3 con >3.
+ *      Alta   : >3 comparables dentro de ±2 años.
+ *      Media  : muestra chica cercana, o expansión fuera de ±2 con >3.
  *      Baja   : aun expandiendo ≤3 comparables.
  *  - Semáforo:
  *      Rojo   : Venturino >10% por encima de la referencia (salvo confianza Baja).
@@ -32,7 +32,7 @@ import {
 import type { PrismaClient } from "@prisma/client";
 
 // ─── Config ─────────────────────────────────────────────────────
-const YEAR_WINDOW = 3;
+const YEAR_WINDOW = 2;
 const N_HIGH = 3;
 const ALERT_PCT = 0.1;
 const WARN_PCT = 0.05;

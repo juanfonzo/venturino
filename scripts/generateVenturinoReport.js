@@ -11,8 +11,8 @@
  *  - Matching: misma lógica que "Análisis 1" de la app (sin filtro de horas).
  *  - Referencia de mercado: MEDIANA en USD.
  *  - Confianza:
- *      Alta   : >3 comparables dentro de ±3 años.
- *      Media  : <=3 cercanos, o hubo que ampliar la búsqueda más allá de ±3 años para llegar a >3.
+ *      Alta   : >3 comparables dentro de ±2 años.
+ *      Media  : <=3 cercanos, o hubo que ampliar la búsqueda más allá de ±2 años para llegar a >3.
  *      Baja   : aun ampliando la búsqueda hay 3 o menos comparables.
  *  - Semáforo:
  *      Rojo   : Venturino >10% por encima de la referencia (sólo si confianza ≠ Baja).
@@ -37,7 +37,7 @@ const {
 } = require('@react-pdf/renderer');
 
 // ─── Config ─────────────────────────────────────────────────────
-const YEAR_WINDOW = 3;
+const YEAR_WINDOW = 2;
 const N_HIGH = 3;
 const ALERT_PCT = 0.10;
 const WARN_PCT = 0.05;
