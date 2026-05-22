@@ -51,7 +51,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | docs/backlog/roadmap.md | vigente | postventa v0 + docs/technical/postventa-ml.md | 2026-05-22 |
 | docs/backlog/hitos/hito-02-postventa-ml.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |
 | docs/backlog/features/postventa-01-ingesta-postgres.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |
-| docs/backlog/features/postventa-02-matching-persistido.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |
+| docs/backlog/features/postventa-02-matching-persistido.md | en-proceso | docs/technical/postventa-ml.md | 2026-05-22 |
 | docs/backlog/features/postventa-03-ui-analisis.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |
 | docs/backlog/features/postventa-04-reporte-pdf.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |
 | docs/backlog/features/postventa-05-mcp-contratos.md | pendiente | docs/technical/postventa-ml.md | 2026-05-22 |

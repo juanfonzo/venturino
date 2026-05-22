@@ -1,9 +1,9 @@
 # Feature: Matching Postventa Persistido
 
 Tipo: AFK
-Estado: pendiente
+Estado: en-proceso
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: `postventa-01-ingesta-postgres`
+Bloqueado por: validación manual en producción después de `pipeline:postventa`
 
 ## Valor De Negocio
 
@@ -30,14 +30,14 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 
 ## Criterios De Aceptación
 
-- [ ] El algoritmo productivo replica criterios documentados en `docs/technical/postventa-ml.md`.
-- [ ] Se persiste `PostventaAnalysisRun`.
-- [ ] Se persiste un `PostventaProductAnalysis` por producto Venturino activo.
-- [ ] Se persisten hasta 20 candidatos por producto.
-- [ ] La mediana se calcula con candidatos aceptados.
-- [ ] Productos ML inactivos no participan.
-- [ ] La banda estándar es `0.4`.
-- [ ] El algoritmo queda versionado como `postventa-v0`.
+- [x] El algoritmo productivo replica criterios documentados en `docs/technical/postventa-ml.md`.
+- [x] Se persiste `PostventaAnalysisRun`.
+- [x] Se persiste un `PostventaProductAnalysis` por producto Venturino activo.
+- [x] Se persisten hasta 20 candidatos por producto.
+- [x] La mediana se calcula con candidatos aceptados.
+- [x] Productos ML inactivos no participan.
+- [x] La banda estándar es `0.4`.
+- [x] El algoritmo queda versionado como `postventa-v0`.
 - [ ] Hay tests unitarios para normalización, tipos, precio fuera de banda, score y estados.
 
 ## Definition Of Ready
@@ -52,13 +52,13 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 
 ## Tareas Técnicas
 
-- [ ] Extraer normalización y scoring desde el script de análisis.
-- [ ] Crear tipos TypeScript del dominio postventa.
-- [ ] Implementar servicio `runPostventaAnalysis`.
-- [ ] Implementar persistencia transaccional de corrida, análisis y candidatos.
-- [ ] Crear endpoint interno `POST /api/postventa/analyze`.
-- [ ] Agregar script npm `analysis:postventa-persist`.
-- [ ] Mantener el script exploratorio como herramienta de calibración o marcarlo como legacy.
+- [x] Extraer normalización y scoring desde el script de análisis.
+- [x] Crear tipos TypeScript del dominio postventa.
+- [x] Implementar servicio `runPostventaAnalysis`.
+- [x] Implementar persistencia de corrida, análisis y candidatos con estado `running/success/failed`.
+- [x] Crear endpoint interno `POST /api/postventa/analyze`.
+- [x] Agregar script npm `analysis:postventa-persist`.
+- [x] Mantener el script exploratorio como herramienta de calibración.
 - [ ] Agregar tests del algoritmo.
 
 ## MCP/IA
@@ -71,9 +71,9 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 
 ## Definition Of Done
 
-- [ ] Implementado.
-- [ ] Validado.
-- [ ] Tests/build/lint ejecutados o justificados.
+- [x] Implementado.
+- [ ] Validado en producción.
+- [x] Tests/build/lint ejecutados o justificados.
 - [ ] Estados UX cubiertos si aplica.
 - [ ] MCP/skills del sistema actualizados, registrados como contrato-candidato, bloqueados o marcado no aplica.
 - [ ] `docs/technical/mcp-coverage-map.md` actualizado si hubo capacidad operativa.
@@ -85,7 +85,7 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 - Nivel de verificación esperado: 2
 - Navegador requerido: no.
 - [ ] Ejecutar tests unitarios.
-- [ ] Ejecutar análisis contra datos dev.
+- [ ] Ejecutar análisis contra datos productivos.
 - [ ] Comparar conteos contra reporte de calibración cuando los datos sean equivalentes.
 
 ## Entorno

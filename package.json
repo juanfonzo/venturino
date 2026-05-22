@@ -16,6 +16,7 @@
     "fx:show": "node scripts/syncFxRate.js --show",
     "backfill:precio-ars": "node scripts/backfill-precio-ars.js",
     "pipeline:postventa": "node scripts/pipeline-postventa.js",
+    "analysis:postventa-persist": "node scripts/run-postventa-analysis.js",
     "analysis:postventa-matches": "node scripts/analyzePostventaMatches.js"
   },
   "dependencies": {
