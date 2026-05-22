@@ -8,98 +8,98 @@ datasource db {
 }
 
 model ScrapingRun {
-  id             Int       @id @default(autoincrement())
-  runDate        DateTime  @map("run_date") @db.Date
-  sourceFile     String?   @map("source_file")
-  sourceCount    Int       @map("source_count")
-  filteredCount  Int       @map("filtered_count")
-  processedCount Int       @map("processed_count")
-  upsertedCount  Int       @default(0) @map("upserted_count")
-  newCount       Int       @default(0) @map("new_count")
-  updatedCount   Int       @default(0) @map("updated_count")
-  deactivatedCount Int     @default(0) @map("deactivated_count")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  listings       Listing[]
-  priceHistory   PriceHistory[]
+  id               Int            @id @default(autoincrement())
+  runDate          DateTime       @map("run_date") @db.Date
+  sourceFile       String?        @map("source_file")
+  sourceCount      Int            @map("source_count")
+  filteredCount    Int            @map("filtered_count")
+  processedCount   Int            @map("processed_count")
+  upsertedCount    Int            @default(0) @map("upserted_count")
+  newCount         Int            @default(0) @map("new_count")
+  updatedCount     Int            @default(0) @map("updated_count")
+  deactivatedCount Int            @default(0) @map("deactivated_count")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  listings         Listing[]
+  priceHistory     PriceHistory[]
 
   @@map("scraping_runs")
 }
 
 model Listing {
-  id        Int    @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // Origen y URLs
-  origen    String
-  url       String @unique
-  titulo    String?
+  origen      String
+  url         String  @unique
+  titulo      String?
   descripcion String? @db.Text
 
   // Categoría normalizada
-  categoriaRaw  String?  @map("categoria_raw")
-  categoria     String   // Tractores | Cosechadoras | Sembradoras | Pulverizadoras
+  categoriaRaw String? @map("categoria_raw")
+  categoria    String // Tractores | Cosechadoras | Sembradoras | Pulverizadoras
 
   // Marca y modelo
-  marca         String?
-  marcaNorm     String?  @map("marca_norm")
-  modelo        String?
-  modeloNorm    String?  @map("modelo_norm")
+  marca      String?
+  marcaNorm  String? @map("marca_norm")
+  modelo     String?
+  modeloNorm String? @map("modelo_norm")
 
   // Atributos técnicos
-  anio          Int?
-  anioRaw       String?  @map("anio_raw")
-  hp            Decimal? @db.Decimal(10, 2)
-  hpRaw         String?  @map("hp_raw")
-  horas         Decimal? @db.Decimal(10, 2)
-  horasRaw      String?  @map("horas_raw")
+  anio     Int?
+  anioRaw  String?  @map("anio_raw")
+  hp       Decimal? @db.Decimal(10, 2)
+  hpRaw    String?  @map("hp_raw")
+  horas    Decimal? @db.Decimal(10, 2)
+  horasRaw String?  @map("horas_raw")
 
   // Condición
-  condicionRaw  String?  @map("condicion_raw")
-  condicion     String?  // Nuevo | Usado
+  condicionRaw String? @map("condicion_raw")
+  condicion    String? // Nuevo | Usado
 
   // Precio
-  precioRaw     String?  @map("precio_raw")
-  monedaRaw     String?  @map("moneda_raw")
-  monedaNorm    String?  @map("moneda_norm")  // USD | ARS
-  precioUsd     Decimal? @map("precio_usd") @db.Decimal(14, 2)
-  precioArs     Decimal? @map("precio_ars") @db.Decimal(14, 2)  // valor ARS original parseado
+  precioRaw  String?  @map("precio_raw")
+  monedaRaw  String?  @map("moneda_raw")
+  monedaNorm String?  @map("moneda_norm") // USD | ARS
+  precioUsd  Decimal? @map("precio_usd") @db.Decimal(14, 2)
+  precioArs  Decimal? @map("precio_ars") @db.Decimal(14, 2) // valor ARS original parseado
 
   // Ubicación
-  ubicacionRaw  String?  @map("ubicacion_raw")
-  provincia     String?
-  ciudad        String?
+  ubicacionRaw String? @map("ubicacion_raw")
+  provincia    String?
+  ciudad       String?
 
   // Vendedor / empresa
-  vendedor      String?
-  tipoVendedor  String?  @map("tipo_vendedor")
+  vendedor     String?
+  tipoVendedor String? @map("tipo_vendedor")
 
   // Competidor directo (Análisis 2)
-  esCompetidor      Boolean @default(false) @map("es_competidor")
-  competidorNombre  String? @map("competidor_nombre")
+  esCompetidor     Boolean @default(false) @map("es_competidor")
+  competidorNombre String? @map("competidor_nombre")
 
   // Financiación e IVA
-  iva           String?
-  financiacion  String?  @db.Text
+  iva          String?
+  financiacion String? @db.Text
 
   // Metadata
   fechaScraping    DateTime? @map("fecha_scraping") @db.Date
   fechaPublicacion String?   @map("fecha_publicacion")
 
   // Estado de la publicación (activa = vista en el último scraping)
-  active        Boolean   @default(true)
-  firstSeenAt   DateTime  @default(now()) @map("first_seen_at")
-  lastSeenAt    DateTime  @default(now()) @map("last_seen_at")
+  active      Boolean  @default(true)
+  firstSeenAt DateTime @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
 
   // Calidad
-  flags         String[]  @default([])
+  flags String[] @default([])
 
   // Relación con run
-  scrapingRunId Int?      @map("scraping_run_id")
+  scrapingRunId Int?         @map("scraping_run_id")
   scrapingRun   ScrapingRun? @relation(fields: [scrapingRunId], references: [id])
 
   // Historial de precios
-  priceHistory  PriceHistory[]
+  priceHistory PriceHistory[]
 
-  createdAt     DateTime  @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([origen])
   @@index([categoria])
@@ -114,22 +114,22 @@ model Listing {
 }
 
 model PriceHistory {
-  id          Int       @id @default(autoincrement())
-  listingId   Int       @map("listing_id")
-  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  id        Int     @id @default(autoincrement())
+  listingId Int     @map("listing_id")
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
-  precioUsd   Decimal?  @map("precio_usd") @db.Decimal(14, 2)
-  precioArs   Decimal?  @map("precio_ars") @db.Decimal(14, 2)
-  fxRate      Decimal?  @map("fx_rate") @db.Decimal(12, 4)
-  monedaNorm  String?   @map("moneda_norm")
-  precioRaw   String?   @map("precio_raw")
+  precioUsd  Decimal? @map("precio_usd") @db.Decimal(14, 2)
+  precioArs  Decimal? @map("precio_ars") @db.Decimal(14, 2)
+  fxRate     Decimal? @map("fx_rate") @db.Decimal(12, 4)
+  monedaNorm String?  @map("moneda_norm")
+  precioRaw  String?  @map("precio_raw")
 
   // Qué run capturó este snapshot
-  scrapingRunId Int     @map("scraping_run_id")
+  scrapingRunId Int         @map("scraping_run_id")
   scrapingRun   ScrapingRun @relation(fields: [scrapingRunId], references: [id])
 
-  snapshotDate  DateTime @map("snapshot_date") @db.Date
-  createdAt     DateTime @default(now()) @map("created_at")
+  snapshotDate DateTime @map("snapshot_date") @db.Date
+  createdAt    DateTime @default(now()) @map("created_at")
 
   @@index([listingId])
   @@index([snapshotDate])
@@ -138,12 +138,159 @@ model PriceHistory {
 }
 
 model FxRate {
-  id         Int      @id @default(autoincrement())
-  rate       Decimal  @db.Decimal(12, 4)
+  id         Int       @id @default(autoincrement())
+  rate       Decimal   @db.Decimal(12, 4)
   source     String?
   sourceDate DateTime? @map("source_date")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@map("fx_rates")
+}
+
+model PostventaImportRun {
+  id               Int       @id @default(autoincrement())
+  mongoDb          String    @default("algorym") @map("mongo_db")
+  mongoCollection  String    @default("productos") @map("mongo_collection")
+  venturinoDate    DateTime? @map("venturino_date") @db.Date
+  mlDate           DateTime? @map("ml_date") @db.Date
+  sourceCount      Int       @default(0) @map("source_count")
+  venturinoCount   Int       @default(0) @map("venturino_count")
+  mlCount          Int       @default(0) @map("ml_count")
+  newCount         Int       @default(0) @map("new_count")
+  updatedCount     Int       @default(0) @map("updated_count")
+  deactivatedCount Int       @default(0) @map("deactivated_count")
+  snapshotsCreated Int       @default(0) @map("snapshots_created")
+  snapshotsUpdated Int       @default(0) @map("snapshots_updated")
+  status           String    @default("success")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  products       PostventaProduct[]       @relation("PostventaProductLastImportRun")
+  priceSnapshots PostventaPriceSnapshot[]
+  analysisRuns   PostventaAnalysisRun[]
+
+  @@index([venturinoDate])
+  @@index([mlDate])
+  @@index([status])
+  @@map("postventa_import_runs")
+}
+
+model PostventaProduct {
+  id              Int                 @id @default(autoincrement())
+  source          String
+  externalId      String              @map("external_id")
+  name            String
+  priceArs        Decimal?            @map("price_ars") @db.Decimal(14, 2)
+  priceText       String?             @map("price_text")
+  currency        String?
+  url             String?
+  categoryMl      String?             @map("category_ml")
+  scrapingDate    DateTime?           @map("scraping_date") @db.Date
+  scrapedAt       DateTime?           @map("scraped_at")
+  active          Boolean             @default(true)
+  firstSeenAt     DateTime            @default(now()) @map("first_seen_at")
+  lastSeenAt      DateTime            @default(now()) @map("last_seen_at")
+  lastImportRunId Int?                @map("last_import_run_id")
+  lastImportRun   PostventaImportRun? @relation("PostventaProductLastImportRun", fields: [lastImportRunId], references: [id])
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  priceSnapshots    PostventaPriceSnapshot[]
+  venturinoAnalyses PostventaProductAnalysis[] @relation("PostventaVenturinoProduct")
+  mlCandidates      PostventaMatchCandidate[]  @relation("PostventaMlProduct")
+
+  @@unique([source, externalId])
+  @@index([source, active])
+  @@index([name])
+  @@index([priceArs])
+  @@index([scrapingDate])
+  @@index([lastImportRunId])
+  @@map("postventa_products")
+}
+
+model PostventaPriceSnapshot {
+  id           Int                @id @default(autoincrement())
+  productId    Int                @map("product_id")
+  product      PostventaProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  importRunId  Int                @map("import_run_id")
+  importRun    PostventaImportRun @relation(fields: [importRunId], references: [id])
+  snapshotDate DateTime           @map("snapshot_date") @db.Date
+  name         String
+  priceArs     Decimal?           @map("price_ars") @db.Decimal(14, 2)
+  priceText    String?            @map("price_text")
+  url          String?
+  activeInRun  Boolean            @default(true) @map("active_in_run")
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  @@unique([productId, snapshotDate])
+  @@index([productId])
+  @@index([snapshotDate])
+  @@index([importRunId])
+  @@map("postventa_price_snapshots")
+}
+
+model PostventaAnalysisRun {
+  id               Int                 @id @default(autoincrement())
+  importRunId      Int?                @map("import_run_id")
+  importRun        PostventaImportRun? @relation(fields: [importRunId], references: [id])
+  algorithmVersion String              @default("postventa-v0") @map("algorithm_version")
+  priceBand        Decimal             @default(0.4) @map("price_band") @db.Decimal(5, 4)
+  topN             Int                 @default(20) @map("top_n")
+  minScore         Int                 @default(20) @map("min_score")
+  venturinoDate    DateTime?           @map("venturino_date") @db.Date
+  mlDate           DateTime?           @map("ml_date") @db.Date
+  status           String              @default("success")
+  summary          Json?
+  createdAt        DateTime            @default(now()) @map("created_at")
+
+  productAnalyses PostventaProductAnalysis[]
+
+  @@index([importRunId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("postventa_analysis_runs")
+}
+
+model PostventaProductAnalysis {
+  id                   Int                  @id @default(autoincrement())
+  analysisRunId        Int                  @map("analysis_run_id")
+  analysisRun          PostventaAnalysisRun @relation(fields: [analysisRunId], references: [id], onDelete: Cascade)
+  venturinoProductId   Int                  @map("venturino_product_id")
+  venturinoProduct     PostventaProduct     @relation("PostventaVenturinoProduct", fields: [venturinoProductId], references: [id])
+  status               String
+  medianMlPriceArs     Decimal?             @map("median_ml_price_ars") @db.Decimal(14, 2)
+  ventVsMedianPct      Decimal?             @map("vent_vs_median_pct") @db.Decimal(8, 4)
+  bestConfidence       String               @map("best_confidence")
+  strongCandidateCount Int                  @default(0) @map("strong_candidate_count")
+  totalCandidates      Int                  @default(0) @map("total_candidates")
+  excludedByPrice      Int                  @default(0) @map("excluded_by_price")
+  excludedByScore      Int                  @default(0) @map("excluded_by_score")
+
+  candidates PostventaMatchCandidate[]
+
+  @@unique([analysisRunId, venturinoProductId])
+  @@index([status])
+  @@index([bestConfidence])
+  @@index([ventVsMedianPct])
+  @@map("postventa_product_analyses")
+}
+
+model PostventaMatchCandidate {
+  id                Int                      @id @default(autoincrement())
+  productAnalysisId Int                      @map("product_analysis_id")
+  productAnalysis   PostventaProductAnalysis @relation(fields: [productAnalysisId], references: [id], onDelete: Cascade)
+  mlProductId       Int                      @map("ml_product_id")
+  mlProduct         PostventaProduct         @relation("PostventaMlProduct", fields: [mlProductId], references: [id])
+  rank              Int
+  score             Int
+  confidence        String
+  mlPriceArs        Decimal                  @map("ml_price_ars") @db.Decimal(14, 2)
+  diffPct           Decimal                  @map("diff_pct") @db.Decimal(8, 4)
+  reasons           Json
+
+  @@unique([productAnalysisId, rank])
+  @@unique([productAnalysisId, mlProductId])
+  @@index([mlProductId])
+  @@index([confidence])
+  @@map("postventa_match_candidates")
 }

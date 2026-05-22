@@ -14,7 +14,9 @@
     "report:venturino": "node scripts/generateVenturinoReport.js",
     "fx:sync": "node scripts/syncFxRate.js",
     "fx:show": "node scripts/syncFxRate.js --show",
-    "backfill:precio-ars": "node scripts/backfill-precio-ars.js"
+    "backfill:precio-ars": "node scripts/backfill-precio-ars.js",
+    "pipeline:postventa": "node scripts/pipeline-postventa.js",
+    "analysis:postventa-matches": "node scripts/analyzePostventaMatches.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
