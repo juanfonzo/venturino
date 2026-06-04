@@ -141,6 +141,8 @@ function isMarketplaceRow(row) {
 }
 
 function toItem(row) {
+  const precioUsd = normalizeListingPriceUsd(row.precioUsd);
+
   return {
     id: String(row.id),
     url: row.url,
@@ -156,9 +158,16 @@ function toItem(row) {
     horas_uso: row.horas != null ? Number(row.horas) : null,
     hp_motor: row.hp != null ? Number(row.hp) : null,
     provincia: row.provincia,
-    precio_nor: row.precioUsd != null ? Number(row.precioUsd) : null,
+    precio_nor: precioUsd,
     active: row.active,
   };
+}
+
+function normalizeListingPriceUsd(value) {
+  if (value == null) return null;
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue) || numericValue < 1000) return null;
+  return numericValue;
 }
 
 function indexCompetitors(competitors) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { normalizeListingPriceUsd } from "@/lib/utils/price";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
       listing,
       points: rows.map((row) => ({
         date: toDateKey(row.snapshotDate),
-        precioUsd: row.precioUsd !== null ? Number(row.precioUsd) : null,
+        precioUsd: normalizeListingPriceUsd(row.precioUsd),
         monedaNorm: row.monedaNorm,
         precioRaw: row.precioRaw,
       })),

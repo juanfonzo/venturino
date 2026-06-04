@@ -17,6 +17,8 @@ export function MultiSelect({
   searchPlaceholder = "Buscar...",
   emptyText = "Sin opciones",
   className,
+  ariaLabel,
+  searchAriaLabel,
 }: {
   options: MultiSelectOption[];
   value: string[];
@@ -25,6 +27,8 @@ export function MultiSelect({
   searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
+  ariaLabel?: string;
+  searchAriaLabel?: string;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
@@ -71,6 +75,8 @@ export function MultiSelect({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
+        aria-label={ariaLabel ?? placeholder}
+        aria-expanded={open}
         className="flex min-h-[42px] w-full items-center justify-between gap-3 rounded-xl border border-jd-black/15 bg-white/80 px-3 py-2 text-left text-sm outline-none transition hover:border-jd-green focus:border-jd-green"
       >
         <span className={cn("truncate", selectedOptions.length === 0 ? "text-jd-black/45" : "text-jd-black")}>{summary}</span>
@@ -83,6 +89,7 @@ export function MultiSelect({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={searchPlaceholder}
+            aria-label={searchAriaLabel ?? searchPlaceholder}
             className="mb-3"
           />
 
@@ -117,7 +124,7 @@ export function MultiSelect({
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="text-xs font-semibold text-jd-black/60 hover:text-jd-black"
+                className="min-h-9 rounded-full px-3 py-2 text-xs font-semibold text-jd-black/60 hover:bg-jd-black/5 hover:text-jd-black"
               >
                 Limpiar selección
               </button>

@@ -145,6 +145,22 @@ export default function Analisis2Page() {
   const isDrawerOpen = selectedCompany !== null;
   const isItemsModalOpen = itemsModalEmpresa !== null;
 
+  useEffect(() => {
+    if (!isDrawerOpen && !isItemsModalOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      if (isItemsModalOpen) {
+        setItemsModalEmpresa(null);
+        return;
+      }
+      setSelectedCompany(null);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDrawerOpen, isItemsModalOpen]);
+
   const openItemsModal = async (empresa: string) => {
     setItemsModalEmpresa(empresa);
     setItemsLoading(true);
@@ -183,6 +199,8 @@ export default function Analisis2Page() {
               onChange={setSelectedCompanies}
               placeholder="Filtrar empresas"
               searchPlaceholder="Buscar empresa..."
+              ariaLabel="Filtrar empresas"
+              searchAriaLabel="Buscar empresa"
               className="w-full lg:w-[520px]"
             />
           </div>
@@ -197,7 +215,7 @@ export default function Analisis2Page() {
                 onClick={() => {
                   setSelectedCompanies([name]);
                 }}
-                className="rounded-full bg-jd-cream/70 px-2.5 py-0.5 text-xs font-medium text-jd-black hover:bg-jd-yellow/60"
+                className="min-h-9 rounded-full bg-jd-cream/70 px-3 py-2 text-xs font-medium text-jd-black hover:bg-jd-yellow/60"
               >
                 {name}
               </button>
@@ -208,7 +226,7 @@ export default function Analisis2Page() {
                 onClick={() => {
                   setSelectedCompanies([]);
                 }}
-                className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-jd-black/60 hover:bg-jd-cream/70"
+                className="min-h-9 rounded-full bg-white/70 px-3 py-2 text-xs font-medium text-jd-black/60 hover:bg-jd-cream/70"
               >
                 Ver todas
               </button>
@@ -279,7 +297,7 @@ export default function Analisis2Page() {
                                   <button
                                     type="button"
                                     onClick={() => setSelectedCompany(c)}
-                                    className="text-left font-semibold text-jd-black hover:underline"
+                                    className="inline-flex min-h-9 items-center text-left font-semibold text-jd-black hover:underline"
                                   >
                                     {c.empresa}
                                   </button>
@@ -351,7 +369,7 @@ export default function Analisis2Page() {
                                     <button
                                       type="button"
                                       onClick={() => setSelectedCompany(c)}
-                                      className="text-left font-semibold text-jd-black hover:underline"
+                                      className="inline-flex min-h-9 items-center text-left font-semibold text-jd-black hover:underline"
                                     >
                                       {c.empresa}
                                     </button>
@@ -482,7 +500,12 @@ export default function Analisis2Page() {
       </div>
 
       {isDrawerOpen ? (
-        <div className="fixed inset-0 z-[90]">
+        <div
+          className="fixed inset-0 z-[90]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="analisis-2-company-title"
+        >
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setSelectedCompany(null)}
@@ -491,12 +514,16 @@ export default function Analisis2Page() {
             <div className="flex items-start justify-between gap-4 border-b border-jd-black/10 px-6 py-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle empresa</p>
-                <h3 className="text-lg font-semibold text-jd-black">{selectedCompany?.empresa}</h3>
+                <h3 id="analisis-2-company-title" className="text-lg font-semibold text-jd-black">
+                  {selectedCompany?.empresa}
+                </h3>
                 <p className="mt-1 text-sm text-jd-black/60">
                   Stock: {formatNumber(selectedCompany?.countTotal ?? 0)} | Capital: {formatUsd(selectedCompany?.capitalUsd ?? 0)} | Precio p50: {selectedCompany?.priceP50 !== null ? formatUsd(selectedCompany?.priceP50 ?? 0) : "-"}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setSelectedCompany(null)}>Cerrar</Button>
+              <Button variant="outline" onClick={() => setSelectedCompany(null)} aria-label="Cerrar detalle empresa">
+                Cerrar
+              </Button>
             </div>
 
             <div className="grid gap-6 p-6 lg:grid-cols-2">
@@ -561,7 +588,12 @@ export default function Analisis2Page() {
       ) : null}
 
       {isItemsModalOpen ? (
-        <div className="fixed inset-0 z-[110]">
+        <div
+          className="fixed inset-0 z-[110]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="analisis-2-items-title"
+        >
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setItemsModalEmpresa(null)}
@@ -570,12 +602,18 @@ export default function Analisis2Page() {
             <div className="flex shrink-0 items-start justify-between gap-4 border-b border-jd-black/10 px-6 py-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle por categoría</p>
-                <h3 className="text-lg font-semibold text-jd-black">{itemsModalEmpresa}</h3>
+                <h3 id="analisis-2-items-title" className="text-lg font-semibold text-jd-black">
+                  {itemsModalEmpresa}
+                </h3>
                 <p className="mt-1 text-sm text-jd-black/60">
                   Capital inmovilizado por categoría y publicaciones asociadas.
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setItemsModalEmpresa(null)}>
+              <Button
+                variant="outline"
+                onClick={() => setItemsModalEmpresa(null)}
+                aria-label="Cerrar detalle por categoría"
+              >
                 Cerrar
               </Button>
             </div>
@@ -638,7 +676,7 @@ export default function Analisis2Page() {
                     <button
                       type="button"
                       onClick={() => setModalCategoria(null)}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                      className={`min-h-9 rounded-lg px-3 py-2 text-xs font-semibold transition ${
                         modalCategoria === null
                           ? "bg-jd-green text-white"
                           : "bg-jd-black/5 text-jd-black/70 hover:bg-jd-black/10"
@@ -654,7 +692,7 @@ export default function Analisis2Page() {
                           key={cat.value}
                           type="button"
                           onClick={() => setModalCategoria(modalCategoria === cat.value ? null : cat.value)}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                          className={`min-h-9 rounded-lg px-3 py-2 text-xs font-semibold transition ${
                             modalCategoria === cat.value
                               ? "bg-jd-green text-white"
                               : "bg-jd-black/5 text-jd-black/70 hover:bg-jd-black/10"
@@ -713,7 +751,7 @@ export default function Analisis2Page() {
                                             href={r.url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="font-semibold text-jd-green hover:underline"
+                                            className="inline-flex min-h-9 items-center font-semibold text-jd-green hover:underline"
                                           >
                                             {(r.titulo ?? r.url).toString().substring(0, 80)}
                                           </a>

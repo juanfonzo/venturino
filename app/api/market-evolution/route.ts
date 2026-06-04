@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getListingUnitKey } from "@/lib/dedupe/listingUnits";
 import { normalizeMatchText, normalizeText } from "@/lib/normalize/text";
 import { getPercentiles } from "@/lib/stats/percentiles";
+import { normalizeListingPriceUsd } from "@/lib/utils/price";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,7 +59,7 @@ function getUnitKeyForRow(row: {
       marca_norm: row.listing?.marcaNorm ?? null,
       modelo_norm: row.listing?.modeloNorm ?? null,
       anio: row.listing?.anio ?? null,
-      precio_nor: row.precioUsd !== null ? Number(row.precioUsd) : null,
+      precio_nor: normalizeListingPriceUsd(row.precioUsd),
     }) ?? `listing:${row.listingId}`
   );
 }
@@ -128,8 +129,8 @@ export async function GET(request: NextRequest) {
     const dateBuckets = new Map<string, Map<string, number>>();
     rows.forEach((row) => {
       if (!row.snapshotDate) return;
-      const price = row.precioUsd !== null ? Number(row.precioUsd) : null;
-      if (price === null || Number.isNaN(price)) return;
+      const price = normalizeListingPriceUsd(row.precioUsd);
+      if (price === null) return;
       const key = toDateKey(row.snapshotDate);
       const unitKey = getUnitKeyForRow(row);
       if (!dateBuckets.has(key)) dateBuckets.set(key, new Map());
@@ -165,8 +166,8 @@ export async function GET(request: NextRequest) {
 
     rows.forEach((row) => {
       if (!row.snapshotDate) return;
-      const price = row.precioUsd !== null ? Number(row.precioUsd) : null;
-      if (price === null || Number.isNaN(price)) return;
+      const price = normalizeListingPriceUsd(row.precioUsd);
+      if (price === null) return;
       const dateKey = toDateKey(row.snapshotDate);
       const bucketId = findYearBucketId(row.listing?.anio ?? null, presetBuckets);
       if (!bucketId) return;

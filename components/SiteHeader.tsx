@@ -54,7 +54,7 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={handleLogout}
-            className="text-xs font-medium text-jd-black/40 transition hover:text-jd-black/70"
+            className="min-h-9 rounded-full px-3 py-2 text-xs font-medium text-jd-black/40 transition hover:bg-jd-black/5 hover:text-jd-black/70"
           >
             Cerrar sesión
           </button>

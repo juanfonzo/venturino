@@ -69,6 +69,7 @@ export function AcaraTrendPanel() {
         </p>
         <div className="relative">
           <Input
+            aria-label="Buscar modelo ACARA"
             placeholder="Ej: A134 Cabinado"
             value={query}
             onChange={(event) => {
@@ -84,7 +85,7 @@ export function AcaraTrendPanel() {
               {results.map((item) => (
                 <button
                   key={item.id}
-                  className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-jd-cream/60"
+                  className="flex min-h-10 w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-jd-cream/60"
                   onClick={() => {
                     setSelected({
                       id: item.id,

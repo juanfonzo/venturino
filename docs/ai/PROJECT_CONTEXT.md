@@ -96,7 +96,7 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 ## Reglas De Negocio Críticas
 
 - `condicion` define Nuevo/Usado; no inferir estado desde otros campos salvo flags de calidad.
-- Precio cero, vacío o "Consultar" debe tratarse como sin dato.
+- Precio cero, vacío, "Consultar", negativo, no finito o USD menor a 1000 debe tratarse como sin dato en maquinaria.
 - Maquinaria normaliza precios a USD; ARS se convierte con FX guardado o fallback 1500.
 - DolarAPI actualiza `FxRate` y recalcula listings ARS.
 - Listados operan sobre publicaciones activas.

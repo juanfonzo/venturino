@@ -126,6 +126,17 @@ export default function Analisis1Page() {
 
   const isDrawerOpen = selected !== null;
 
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setSelected(null);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDrawerOpen]);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="panel">
@@ -136,6 +147,7 @@ export default function Analisis1Page() {
             <p className="mt-1 text-sm text-jd-black/60">Matching por marca + modelo (opcional: año/horas).</p>
             <div className="mt-2">
               <select
+                aria-label="Categoría"
                 value={filters.categoria}
                 onChange={(e) => {
                   setFilters((p) => ({ ...p, categoria: e.target.value }));
@@ -154,11 +166,13 @@ export default function Analisis1Page() {
               <div className="grid gap-3">
                 <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto] md:items-center">
                   <Input
+                    aria-label="Marca"
                     placeholder="Marca (ej: Pauny)"
                     value={filters.brand}
                     onChange={(e) => setFilters((p) => ({ ...p, brand: e.target.value }))}
                   />
                   <Input
+                    aria-label="Modelo"
                     placeholder="Modelo (ej: 280A)"
                     value={filters.model}
                     onChange={(e) => setFilters((p) => ({ ...p, model: e.target.value }))}
@@ -195,6 +209,7 @@ export default function Analisis1Page() {
                       Año
                     </label>
                     <Input
+                      aria-label="Tolerancia de año"
                       value={String(filters.yearTolerance)}
                       onChange={(e) => {
                         const raw = Number.parseInt(e.target.value || "0", 10);
@@ -218,6 +233,7 @@ export default function Analisis1Page() {
                       Horas
                     </label>
                     <Input
+                      aria-label="Tolerancia de horas en porcentaje"
                       value={String(Math.round(filters.hoursTolerancePct * 100))}
                       onChange={(e) => {
                         const raw = Number.parseFloat(e.target.value || "0");
@@ -233,6 +249,7 @@ export default function Analisis1Page() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-jd-black">Precisión</span>
                     <select
+                      aria-label="Precisión de matching"
                       value={String(filters.fuzzyLevel)}
                       onChange={(e) => {
                         const raw = Number.parseInt(e.target.value || "1", 10);
@@ -285,6 +302,7 @@ export default function Analisis1Page() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <Input
+                          aria-label="Filtrar modelos"
                           placeholder="Filtrar modelos (busca en marca/modelo)"
                           value={filters.modelSearch}
                           onChange={(e) => setFilters((p) => ({ ...p, modelSearch: e.target.value }))}
@@ -327,7 +345,7 @@ export default function Analisis1Page() {
                                       <button
                                         type="button"
                                         onClick={() => setActiveModelKey(r.key)}
-                                        className="text-left font-semibold text-jd-black hover:underline"
+                                        className="inline-flex min-h-9 items-center text-left font-semibold text-jd-black hover:underline"
                                       >
                                         {r.marca} {r.modelo}
                                       </button>
@@ -385,6 +403,7 @@ export default function Analisis1Page() {
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Input
+                      aria-label="Buscar en Venturino"
                       placeholder="Buscar en Venturino (marca/modelo/url)"
                       value={filters.tableSearch}
                       onChange={(e) => setFilters((p) => ({ ...p, tableSearch: e.target.value }))}
@@ -449,6 +468,7 @@ export default function Analisis1Page() {
           className="fixed inset-0 z-50 flex"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="analisis-1-detail-title"
         >
           <div
             className="absolute inset-0 z-0 bg-black/30"
@@ -465,14 +485,14 @@ export default function Analisis1Page() {
             <div className="flex shrink-0 items-start justify-between border-b border-jd-black/10 p-5">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>
-                <h3 className="text-lg font-semibold text-jd-black">
+                <h3 id="analisis-1-detail-title" className="text-lg font-semibold text-jd-black">
                   {selected?.venturino.marca} {selected?.venturino.modelo}
                 </h3>
                 <p className="mt-1 text-sm text-jd-black/60">
                   Venturino: {formatUsd(selected?.venturino.precio_nor)} | Año {formatYear(selected?.venturino.anio)} | Horas {formatNumber(selected?.venturino.horas_uso)}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setSelected(null)}>
+              <Button variant="outline" onClick={() => setSelected(null)} aria-label="Cerrar detalle">
                 Cerrar
               </Button>
             </div>
@@ -522,7 +542,7 @@ export default function Analisis1Page() {
                             <td>
                               {eq.url ? (
                                 <a
-                                  className="text-sm font-semibold text-jd-green hover:underline"
+                                  className="inline-flex min-h-9 items-center text-sm font-semibold text-jd-green hover:underline"
                                   href={eq.url}
                                   target="_blank"
                                   rel="noreferrer"

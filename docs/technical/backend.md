@@ -74,6 +74,7 @@
 - Filtros: `categoria`, `q`, `origin`, `brand`, `model`, `estado`, `province`, `yearMin`, `yearMax`, `hpMin`, `hpMax`, `hasPrice`.
 - Sort: `price_nor`, `year`, `hp`; fallback por `id`.
 - Fuente: PostgreSQL.
+- Regla de precio: para maquinaria, `precioUsd < 1000`, cero, negativo o no finito se expone como `precio_nor: null`; `hasPrice=true` exige `precioUsd >= 1000`.
 - Observación: con dedupe activo carga todos los rows filtrados antes de paginar.
 
 ### `/api/acara/items`

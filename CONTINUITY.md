@@ -30,6 +30,7 @@
   - 2026-06-03 docs actualizados en UTF-8: PROJECT_CONTEXT, MANIFEST, arquitectura, frontend, backend, base-de-datos, seguridad y mcp-coverage-map.
   - 2026-06-04 Next.js migrado a 16.2.7, `middleware.ts` reemplazado por `proxy.ts`, ESLint configurado para Next 16 y CSVs legacy de MVP retirados.
   - 2026-06-04 reporte PDF corregido: `/api/reports/venturino` usa `scripts/generateVenturinoReport.js` en proceso Node aislado porque React PDF falla dentro del bundle Next 16 con React error #31.
+  - 2026-06-04 UX/UI desktop puntos 1-4 corregidos: precios de maquinaria USD < 1000 como sin dato, modales/drawers con semántica dialog, controles nombrados y targets compactos agrandados.
   - PROJECT_CONTEXT.md creado en docs/ai/ con alcance, arquitectura, flujos, APIs, datos, deploy y riesgos actuales.
   - Script analytics postventa creado: scripts/analyzePostventaMatches.js.
   - Reporte de calibracion generado: reports/postventa-match-analysis.md.

@@ -255,11 +255,22 @@ export default function ExploradorPage() {
   }, [acaraItem, autoMatchWithRef?.refUsd, selected]);
 
   const gapInfo = useMemo(() => {
-    if (!selected?.precio_nor || !acaraReference) return null;
+    if (!selected?.precio_nor || selected.precio_nor <= 0 || !acaraReference) return null;
     const gapAbs = selected.precio_nor - acaraReference;
     const gapPct = gapAbs / acaraReference;
     return { gapAbs, gapPct };
   }, [selected?.precio_nor, acaraReference]);
+
+  useEffect(() => {
+    if (!selected) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setSelected(null);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selected]);
 
   useEffect(() => {
     let cancelled = false;
@@ -326,6 +337,7 @@ export default function ExploradorPage() {
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <Input
+              aria-label="Buscar por título o marca"
               placeholder="Buscar titulo o marca"
               value={query.q}
               onChange={(event) => {
@@ -334,6 +346,7 @@ export default function ExploradorPage() {
               }}
             />
             <Input
+              aria-label="Marca"
               placeholder="Marca"
               value={query.brand}
               onChange={(event) => {
@@ -342,6 +355,7 @@ export default function ExploradorPage() {
               }}
             />
             <Select
+              aria-label="Estado"
               value={query.estado}
               onChange={(event) => {
                 setPage(1);
@@ -353,6 +367,7 @@ export default function ExploradorPage() {
               <option value="Usado">Usado</option>
             </Select>
             <Input
+              aria-label="Provincia"
               placeholder="Provincia"
               value={query.province}
               onChange={(event) => {
@@ -361,6 +376,7 @@ export default function ExploradorPage() {
               }}
             />
             <Input
+              aria-label="Año mínimo"
               placeholder="Anio min"
               type="number"
               value={query.yearMin}
@@ -370,6 +386,7 @@ export default function ExploradorPage() {
               }}
             />
             <Input
+              aria-label="Año máximo"
               placeholder="Anio max"
               type="number"
               value={query.yearMax}
@@ -379,6 +396,7 @@ export default function ExploradorPage() {
               }}
             />
             <Input
+              aria-label="HP mínimo"
               placeholder="HP min"
               type="number"
               value={query.hpMin}
@@ -388,6 +406,7 @@ export default function ExploradorPage() {
               }}
             />
             <Input
+              aria-label="HP máximo"
               placeholder="HP max"
               type="number"
               value={query.hpMax}
@@ -501,7 +520,7 @@ export default function ExploradorPage() {
                           href={row.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-jd-green underline"
+                          className="inline-flex min-h-9 items-center text-jd-green underline"
                         >
                           Link
                         </a>
@@ -548,14 +567,21 @@ export default function ExploradorPage() {
       </section>
 
       {selected ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="explorador-detail-title"
+        >
           <div className="panel max-h-[80vh] w-full max-w-2xl overflow-auto">
             <div className="panel-header">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>
-                <h3 className="text-lg font-semibold text-jd-black">{selected.titulo}</h3>
+                <h3 id="explorador-detail-title" className="text-lg font-semibold text-jd-black">
+                  {selected.titulo}
+                </h3>
               </div>
-              <Button variant="ghost" onClick={() => setSelected(null)}>
+              <Button variant="ghost" onClick={() => setSelected(null)} aria-label="Cerrar detalle">
                 Cerrar
               </Button>
             </div>
@@ -582,7 +608,7 @@ export default function ExploradorPage() {
                       href={selected.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-jd-green underline"
+                      className="inline-flex min-h-9 items-center text-jd-green underline"
                     >
                       Abrir publicacion
                     </a>
