@@ -9,14 +9,24 @@ Esto no significa escribir código verboso. Significa crear estructuras predecib
 ## Principios Generales
 
 - Revisar el contexto real del código antes de editar. Usar `docs/ai/CODE_CONTEXT_POLICY.md`.
-- Preferir módulos pequeños con responsabilidad clara.
+- Preferir módulos profundos: interfaz pequeña y clara, implementación suficiente para ocultar complejidad real.
 - Usar nombres de dominio, no nombres genéricos.
 - Separar UI, lógica de negocio, acceso a datos e integraciones.
 - Mantener contratos tipados entre capas.
 - Evitar helpers globales ambiguos.
-- Evitar archivos enormes con muchas responsabilidades.
+- Evitar archivos enormes con muchas responsabilidades y módulos superficiales que sólo pasan parámetros.
 - Documentar sólo decisiones no obvias.
 - Mantener UTF-8 en código, comentarios, fixtures, seeds y copy visible.
+
+## Módulos Profundos
+
+Usar estas reglas sólo cuando se diseña una feature, se detecta deuda real o se refactoriza una zona tocada por el cambio.
+
+- Si borrar un módulo sólo elimina una capa pass-through, probablemente es un módulo superficial.
+- La interfaz pública debe expresar el dominio y ser el punto natural de test.
+- No crear adapters, services o factories por especulación; crearlos cuando aíslen complejidad, permisos, integración externa o variación real.
+- Preferir un seam claro y testeable antes que múltiples helpers pequeños con contratos débiles.
+- Refactorizar de forma incremental, dentro del alcance del slice.
 
 ## Next.js
 

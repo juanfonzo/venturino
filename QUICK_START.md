@@ -58,6 +58,15 @@ Implementá la feature docs/backlog/features/NOMBRE.md.
 
 Si la feature toca capacidades operativas, datos, permisos, reportes, agentes, WhatsApp, Telegram o automatizaciones, Codex debe aplicar `docs/ai/MCP_FIRST_POLICY.md` y actualizar `docs/technical/mcp-coverage-map.md`.
 
+Si el repo es grande o el cambio cruza varios modulos, inicializar o actualizar CodeGraph localmente:
+
+```powershell
+codegraph init -i
+codegraph index
+```
+
+`.codegraph/` no se versiona y debe quedar en `.gitignore`.
+
 ## Verificación
 
 Para validar:
@@ -74,4 +83,5 @@ Verificá la feature según su nivel de testing y cerrala si cumple Definition o
 - No dejar plantillas vacías dentro de `docs/changes/pending/`.
 - No cerrar una feature operativa sin estado MCP explícito.
 - No guardar ni aceptar archivos con encoding distinto de UTF-8.
+- No versionar `.codegraph/`; regenerarlo localmente despues de pulls o cambios grandes.
 - Mantener `MANIFEST.md` actualizado.

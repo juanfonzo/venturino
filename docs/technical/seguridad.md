@@ -1,94 +1,114 @@
 # Seguridad
 
-Estado: pendiente
+Última revisión: 2026-06-04.
+
+## Estado Real
+
+El sistema tiene autenticación simple para app interna:
+
+- Login con usuario/contraseña desde variables de entorno.
+- JWT firmado con `jose`.
+- Cookie HttpOnly `venturino_token`.
+- `proxy.ts` protege rutas privadas por defecto.
+- No hay usuarios en DB.
+- No hay roles, permisos, tenant ni sucursales.
+- No hay signup/autoregistro.
 
 ## Autenticación
 
-Referencia: aplicar `docs/ai/AUTH_POLICY.md` cuando haya login, sesiones, roles, permisos, tenant, sucursales, acceso interno o recuperacion de contrasena.
+| Aspecto | Estado |
+|---|---|
+| Proveedor | Propio simple en `lib/auth.ts` |
+| Credenciales | `AUTH_USER`, `AUTH_PASSWORD` |
+| Secreto JWT | `JWT_SECRET`, fallback dev hardcodeado |
+| Login UI | `app/login/page.tsx` |
+| Login API | `POST /api/auth/login` |
+| Logout API | `POST /api/auth/logout` |
+| Cookie | `venturino_token`, HttpOnly, SameSite Lax, secure en producción |
+| Expiración | 7 días |
 
-Si el sistema contempla registro/autoregistro de usuarios, debe existir pantalla `Registrarse` y flujo backend de signup. Si no permite autoregistro, documentar `signup no-aplica` y como se crean usuarios.
+## Rutas Públicas Y Privadas
 
-- Proveedor:
-- Estrategia dev/test:
-- Usuario seed o bypass local:
-- Bloquea implementación: sí / no
+Públicas según `proxy.ts`:
 
-## Sesion
+- `/login`
+- `/api/auth/login`
+- `/api/auth/logout`
+- `/api/postventa/analyze`
+- assets estáticos y `_next`
 
-- Tipo: JWT firmado / sesion server-side / proveedor externo:
-- Cookie `HttpOnly`: si / no
-- Expiracion:
-- Claims incluidos:
-- Rutas publicas:
-- Rutas privadas por defecto: si / no
+Toda otra ruta matcheada requiere cookie válida y redirige a `/login` si falta o falla token.
 
-## Tenant Y Unidad Operativa
+Observación: `/api/postventa/analyze` está en lista pública del middleware, pero el handler limita por host local. Documentar y revisar antes de exponer operaciones postventa desde UI.
 
-- Tenant obligatorio: si / no
-- Campo tenant:
-- Unidad operativa activa:
-- Unidades asignadas:
-- Reglas de cambio de unidad:
+## Claims De Sesión
+
+Payload actual:
+
+```ts
+{ user: string }
+```
+
+No incluye tenant, rol, permisos ni unidad operativa.
+
+## Signup/Registro
+
+Estado: `signup no-aplica`.
+
+La app no contempla autoregistro. El acceso se crea/configura por variables de entorno (`AUTH_USER`, `AUTH_PASSWORD`) administradas por el equipo/infraestructura.
+
+## Tenant, Roles Y Permisos
+
+- Tenant obligatorio: no implementado.
+- Roles: no implementados.
+- Permisos granulares: no implementados.
+- Alcance de datos: app interna single-tenant para Venturino.
+
+No asumir permisos finos en futuras features. Si se agregan usuarios reales, administración, datos sensibles por rol o módulos operativos, aplicar `docs/ai/AUTH_POLICY.md` y rediseñar auth server-side.
 
 ## Acceso Interno
 
-- Header secreto:
-- Tenant requerido:
-- Usuario tecnico requerido:
-- Rutas permitidas:
+No hay header secreto dedicado.
 
-## Recuperacion De Contrasena
+Endpoints operativos protegidos por host local:
 
-- Aplica: si / no
-- Token hasheado:
-- Expiracion:
-- Respuesta neutra:
-- Rate limiting:
+- `POST /api/sync-fx-rate`
+- `POST /api/postventa/analyze`
 
-## Auditoria Auth
-
-- Login exitoso/fallido:
-- Recuperacion solicitada/completada:
-- Cambio de unidad:
-- Acceso interno aceptado/rechazado:
-
-## Roles
-
-| Rol | Descripción | Alcance De Datos | Puede Administrar Usuarios |
-|---|---|---|---|
-|  |  |  | sí / no |
-
-## Matriz De Permisos
-
-| Recurso | Acción | Admin | Colaborador/Operador | Sólo Lectura | Regla De Alcance |
-|---|---|---|---|---|---|
-|  | crear / leer / actualizar / eliminar / exportar | permitido / denegado | permitido / denegado | permitido / denegado |  |
+Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficiente para cron local controlado, pero no para exposición externa.
 
 ## Datos Sensibles
 
-| Dato | Sensibilidad | Quién Puede Verlo | Quién Puede Modificarlo | Exponer A MCP/IA |
-|---|---|---|---|---|
-|  | baja / media / alta |  |  | sí / no / con restricción |
+| Dato | Sensibilidad | Estado |
+|---|---|---|
+| `DATABASE_URL` | alta | Sólo entorno, no exponer. |
+| `MONGODB_URI` | alta | Sólo entorno/scripts, no exponer. |
+| `AUTH_PASSWORD` | alta | Sólo entorno, no loguear. |
+| `JWT_SECRET` | alta | Sólo entorno. |
+| URLs públicas de publicaciones | baja/media | Visibles en UI. |
+| Datos de negocio de precios/capital | media | App interna autenticada. |
 
-## Validaciones Críticas
+## Auditoría
 
-- Server-side:
-- Client-side:
-- DB constraints:
-- Casos negativos obligatorios:
-
-## Integraciones Externas
-
-| Integración | Secreto/Variable | Riesgo | Ambiente Permitido | Fallback |
-|---|---|---|---|---|
-|  |  |  | dev / staging / prod |  |
+- No hay auditoría persistida de login/logout.
+- Scripts y endpoints imprimen logs operativos, no auditoría de usuario.
+- Postventa registra corridas y estados en DB.
+- Ingesta de maquinaria registra corridas en `ScrapingRun`.
 
 ## Riesgos
 
-| Riesgo | Severidad | Mitigación | Estado |
+| Riesgo | Severidad | Mitigación actual | Acción recomendada |
 |---|---|---|---|
-|  | baja / media / alta / crítica |  | pendiente / mitigado |
+| Fallback `JWT_SECRET` dev hardcodeado | media | Variables en deploy | Exigir `JWT_SECRET` en producción y documentar `.env.example`. |
+| Sin roles/permisos | media | Uso interno single-tenant | No agregar capacidades sensibles sin auth granular. |
+| Endpoints locales por host | media | Cron dentro de contenedor/host | Usar header secreto si se exponen desde UI o red externa. |
+| `/api/postventa/analyze` público en middleware | media | Handler exige localhost | Revisar antes de UI postventa. |
+| Sin rate limiting login | baja/media | App interna | Agregar si se expone públicamente. |
+| Sin auditoría auth | baja/media | Logs básicos | Agregar si hay usuarios reales. |
 
-## Criterio Mínimo
+## Criterio Para Futuras Tareas
 
-Si el PRD define roles, permisos, tenant, sucursales o datos sensibles, este documento no puede quedar vacío antes de implementar auth, DB real, MCP o features nivel 4.
+- Mantener rutas privadas por defecto.
+- No confiar en frontend para autorización.
+- Si aparecen usuarios reales, roles, tenant, sucursales o datos sensibles por perfil, migrar a modelo de auth completo antes de implementar módulos críticos.
+- Para MCP futuro, exigir permisos server-side y no exponer secretos ni datasets completos.

@@ -65,11 +65,30 @@ Disparadores:
 Acción:
 
 - leer `docs/ai/REFINEMENT_POLICY.md`
+- leer `docs/ai/OUT_OF_SCOPE_POLICY.md` si el pedido se parece a una decisión descartada o diferida
 - usar perfil `refinamiento-backlog` y skill `refinamiento-backlog`
 - clasificar vía rápida, refinamiento liviano o refinamiento completo
 - generar preguntas bloqueantes si faltan datos, permisos, flujo, integración o aceptación
 - no crear backlog implementable si el refinamiento queda `bloqueado`
 - pasar a `backlog-tecnico` sólo cuando haya criterios de aceptación, alcance dentro/fuera y dependencias claras
+
+## Prototipo Controlado
+
+Disparadores:
+
+- "prototipemos"
+- "quiero comparar diseños"
+- incertidumbre alta de UI, lógica, permisos, flujo o modelo de datos
+- varias soluciones razonables y costosas de revertir
+
+Acción:
+
+- leer `docs/ai/PROTOTYPE_POLICY.md`
+- declarar la pregunta que el prototipo debe responder
+- usar prototipo sólo si reduce incertidumbre real
+- bloquearlo o aislarlo de producción
+- registrar decisión aprendida si corresponde
+- eliminarlo o absorber sólo el aprendizaje validado antes de cerrar
 
 ## Refinamiento Del Kit
 
@@ -210,6 +229,7 @@ Acción:
 
 - usar skill `diagnostico`
 - construir feedback loop antes de modificar código
+- instrumentar con prefijos temporales y limpiarlos antes de cerrar
 
 ## Verificación
 

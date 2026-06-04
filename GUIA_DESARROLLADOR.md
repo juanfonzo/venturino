@@ -15,6 +15,7 @@ Ese archivo concentra el uso diario recomendado:
 - backlog técnico;
 - features pesadas y livianas;
 - bugs y regresiones;
+- CodeGraph opcional para repos grandes;
 - MCP-first en Python/FastAPI;
 - testing proporcional;
 - UTF-8;
@@ -33,6 +34,7 @@ Para evitar duplicación, deriva a la guía nueva y a las políticas canónicas 
 - `docs/ai/UTF8_POLICY.md`
 - `docs/ai/REFINEMENT_POLICY.md`
 - `docs/ai/CODE_CONTEXT_POLICY.md`
+- `docs/ai/PROJECT_GRAPH_POLICY.md`
 - `docs/ai/AI_FIRST.md`
 - `docs/ai/MCP_FIRST_POLICY.md`
 - `docs/ai/TESTING_POLICY.md`

@@ -8,6 +8,8 @@ Evitar que requerimientos vagos se conviertan en código frágil. El kit debe it
 
 No asumir de más. Preguntar cuando el faltante afecte negocio, datos, permisos, integraciones, seguridad, UX crítica, MCP/IA o criterios de aceptación.
 
+Antes de aceptar una solución, revisar si el concepto ya aparece como fuera de alcance en `docs/product/out-of-scope.md` usando `docs/ai/OUT_OF_SCOPE_POLICY.md`.
+
 ## Niveles
 
 ### Vía Rápida
@@ -59,7 +61,28 @@ Frenar antes de backlog implementable o implementación si falta definir:
 
 - `faltantes`: registra preguntas bloqueantes y no bloqueantes.
 - `prd`: absorbe decisiones estables de producto.
+- `PROJECT_CONTEXT`: conserva lenguaje ubicuo y términos canónicos del dominio.
 - `arquitectura` y técnicos: absorben contratos, datos y restricciones.
 - `backlog`: sólo recibe slices con criterios claros.
 - `changes`: conserva trazabilidad de pedidos de cliente.
 - `MANIFEST`: registra estado de procesamiento cuando cambia un artefacto canónico.
+- `DECISIONS`: registra sólo decisiones durables con tradeoff real, costo de reversa o contexto no obvio.
+- `docs/product/out-of-scope.md`: registra rechazos durables o diferimientos que podrían reaparecer.
+
+## Lenguaje Ubicuo
+
+- Detectar términos ambiguos o usados de distintas maneras por cliente, dev y agentes.
+- Si el término ya existe en `PROJECT_CONTEXT.md`, usarlo como canónico.
+- Si hay conflicto de términos, preguntar o proponer un término canónico antes de generar backlog.
+- Actualizar el lenguaje del proyecto sólo cuando el término esté consolidado; no crear glosarios por cada palabra menor.
+
+## Decisiones Mínimas
+
+Registrar en `DECISIONS.md` sólo cuando:
+
+- la decisión sea difícil de revertir;
+- haya varias opciones razonables con tradeoffs;
+- el motivo no sería obvio para un agente futuro;
+- afecte datos, permisos, arquitectura, MCP, UX crítica o compromiso de cliente.
+
+No crear ADRs para decisiones obvias, reversibles o puramente estéticas.

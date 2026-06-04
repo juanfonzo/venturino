@@ -26,6 +26,7 @@ Al cerrar:
 - actualizar estado de la feature;
 - completar Definition of Done;
 - registrar verificación ejecutada;
+- aplicar `docs/ai/CODE_REVIEW_POLICY.md` si hubo código nivel 2+ o riesgo transversal;
 - actualizar docs técnicos o producto sólo si cambiaron contratos, datos, permisos, UX o MCP;
 - mover solicitud de cliente a `processed/` o `rejected/` si existía;
 - actualizar `MANIFEST.md`.
@@ -34,6 +35,8 @@ Al cerrar:
 
 Al cerrar:
 
+- hacer revisión zoom-out: objetivo de negocio, alcance realmente entregado, riesgos y próximos pasos;
+- aplicar revisión estructurada según `docs/ai/CODE_REVIEW_POLICY.md`;
 - compactar feature completada en `docs/backlog/archive/YYYY-MM.md`;
 - mover o eliminar archivo activo sólo si el resumen conserva trazabilidad suficiente;
 - cerrar o mover cambios procesados;
@@ -46,6 +49,7 @@ Al cerrar:
 Codex puede limpiar:
 
 - archivos temporales creados para análisis si ya fueron incorporados;
+- prototipos cerrados o rutas/componentes/scripts throwaway luego de registrar la decisión aprendida;
 - entradas duplicadas;
 - solicitudes procesadas en `pending/`;
 - features completadas ya compactadas;
@@ -64,10 +68,14 @@ No borrar sin conservar resumen cuando el archivo contiene:
 
 - [ ] Código implementado o cambio aplicado.
 - [ ] Verificación proporcional ejecutada.
+- [ ] Revisión estructurada aplicada o marcada no aplica según `CODE_REVIEW_POLICY.md`.
+- [ ] CodeGraph reportado como usado, no disponible o no aplicable si la tarea fue mediana/grande.
+- [ ] Reindexado sugerido o ejecutado si hubo cambios grandes de arquitectura, modulos, schema, MCP o refactor.
 - [ ] Backlog actualizado si existía feature.
 - [ ] Solicitud de cliente movida o resumida si existía.
 - [ ] `MANIFEST.md` actualizado si cambió estado canónico.
 - [ ] MCP/skills del sistema destino actualizado o marcado no aplica.
 - [ ] Feature completada compactada en archive si corresponde.
+- [ ] Prototipos eliminados, absorbidos o marcados como pendientes de decisión.
 - [ ] Temporales o pendientes innecesarios limpiados.
 - [ ] Riesgos residuales documentados.

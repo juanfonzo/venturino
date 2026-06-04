@@ -72,11 +72,30 @@ Leer antes de editar:
 - No cambiar UI sin revisar estados: loading, vacío, error, éxito y disabled cuando aplique.
 - Si no se puede leer o ejecutar lo necesario por entorno, registrar bloqueo y pedir permiso o aclaración.
 
+## Uso De CodeGraph
+
+Para tareas nivel B/C/D en repos grandes, aplicar tambien `PROJECT_GRAPH_POLICY.md` cuando CodeGraph este disponible.
+
+CodeGraph puede ayudar a ubicar:
+
+- modulos y puntos de entrada;
+- dependencias y consumidores;
+- archivos candidatos para lectura;
+- impacto transversal antes de editar.
+
+Restricciones:
+
+- no reemplaza leer los archivos reales;
+- no se usa como fuente de verdad;
+- no debe bloquear cambios nivel A;
+- si el indice parece viejo tras `pull`, merge o refactor, pedir permiso para actualizarlo antes de apoyarse en el.
+
 ## Evidencia Esperada
 
 Al cerrar, indicar brevemente:
 
 - qué contexto se revisó;
+- si se uso CodeGraph o por que no aplicaba;
 - qué nivel de lectura aplicó;
 - qué verificación se ejecutó;
 - qué quedó sin validar si aplica.

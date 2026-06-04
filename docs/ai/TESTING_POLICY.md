@@ -6,6 +6,17 @@ La verificacion debe ser proporcional al riesgo del cambio.
 
 No todos los cambios requieren navegacion completa o tests pesados. Pero ningun cambio debe cerrarse sin una evidencia razonable de que funciona y no rompe el flujo afectado.
 
+## Tests Por Comportamiento
+
+Priorizar pruebas sobre comportamiento observable e interfaces públicas, no sobre detalles internos.
+
+- Testear contratos, outputs, estados UI, respuestas API, permisos y persistencia esperada.
+- Evitar mocks de módulos internos sólo para hacer pasar tests frágiles.
+- Mockear en límites externos: APIs de terceros, tiempo, random, filesystem, servicios externos o colas.
+- Si la DB es parte del comportamiento, preferir entorno de test/dev controlado antes que mocks profundos de repositorios.
+- En TDD, escribir un test de comportamiento por ciclo, hacerlo fallar por la razón correcta, implementar lo mínimo y refactorizar.
+- No aplicar TDD pesado a cambios nivel 0/1 ni escribir una batería grande de tests antes de entender el slice.
+
 ## Niveles De Verificacion
 
 ### Nivel 0 - Documental
@@ -35,7 +46,7 @@ Usar cuando cambia validacion, componente interactivo, calculo local, estado de 
 
 Verificacion minima:
 
-- tests unitarios/componentes si existen
+- tests unitarios/componentes si existen, enfocados en comportamiento observable
 - typecheck/lint/build segun repo
 - navegacion local si el comportamiento depende de interaccion humana
 
@@ -46,6 +57,7 @@ Usar cuando cambia un flujo end-to-end: formularios, carga de datos, server acti
 Verificacion minima:
 
 - tests disponibles
+- tests disponibles sin acoplarse a detalles internos innecesarios
 - build/typecheck/lint
 - navegacion con navegador cuando haya UI
 - completar flujo principal como usuario

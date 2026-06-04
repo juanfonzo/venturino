@@ -56,6 +56,15 @@ Usar `refinamiento-backlog` cuando el pedido sea vago, macro, contradictorio o p
 - Si hay bloqueantes, frenar y preguntar. No transformar dudas críticas en tareas técnicas.
 - El backlog sólo debe nacer de criterios de aceptación claros, supuestos explícitos y dependencias visibles.
 
+## Prototipos
+
+Usar `docs/ai/PROTOTYPE_POLICY.md` cuando convenga aprender antes de comprometer implementación.
+
+- Cada prototipo debe responder una pregunta concreta.
+- No usar prototipos para tareas nivel 0/1 ni para evitar tests.
+- No conectar prototipos a producción ni a mutaciones reales salvo decisión explícita.
+- Al cerrar, registrar la decisión si es durable y eliminar o absorber el prototipo.
+
 ## MCP-First
 
 Usar `docs/ai/MCP_FIRST_POLICY.md` como regla operativa.
@@ -131,6 +140,8 @@ Todos los documentos, código, seeds, fixtures, exports y textos visibles deben 
 - `docs/ai/CONTINUOUS_IMPROVEMENT.md`
 - `docs/ai/CHAT_FIRST_POLICY.md`
 - `docs/ai/CLOSURE_POLICY.md`
+- `docs/ai/PROTOTYPE_POLICY.md`
+- `docs/ai/OUT_OF_SCOPE_POLICY.md`
 - `docs/ai/UTF8_POLICY.md`
 - `docs/ai/AUTH_POLICY.md`
 - `docs/ai/AI_FIRST.md`
@@ -147,6 +158,7 @@ Todos los documentos, código, seeds, fixtures, exports y textos visibles deben 
 - `docs/ai/VISUAL_GUIDELINES.md`
 - `docs/product/brief.md`
 - `docs/product/prd.md`
+- `docs/product/out-of-scope.md`
 - `docs/technical/arquitectura.md`
 - `docs/technical/base-de-datos.md`
 - `docs/technical/backend.md`

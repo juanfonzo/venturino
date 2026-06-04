@@ -751,7 +751,7 @@ function CoverPage({
       <Text style={styles.p}>
         Comparamos cada unidad del inventario de Venturino con publicaciones equivalentes de la
         competencia (Agrofy, Agroads, MercadoLibre, Rastroagro, MachineFinder y Agronorte). Para
-        cada una calculamos un "precio de referencia" del mercado y marcamos con un color cuán
+        cada una calculamos un precio de referencia del mercado y marcamos con un color cuán
         alineado está el precio de Venturino.
       </Text>
 

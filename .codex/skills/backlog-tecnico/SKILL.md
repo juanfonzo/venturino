@@ -15,7 +15,8 @@ description: Convierte PRD, arquitectura y contratos en backlog Markdown con ép
 6. Dividir en vertical slices demoables.
 7. Declarar dependencias e impacto transversal por slice.
 8. Clasificar cada slice como `AFK` o `HITL`.
-9. Escribir `docs/backlog/roadmap.md`, `docs/backlog/epicas.md`, `docs/backlog/hitos/` y archivos activos en `docs/backlog/features/`.
+9. Redactar brief durable por slice: comportamiento esperado, criterios, dependencias y límites; no instrucciones frágiles de archivo/línea salvo que sean imprescindibles.
+10. Escribir `docs/backlog/roadmap.md`, `docs/backlog/epicas.md`, `docs/backlog/hitos/` y archivos activos en `docs/backlog/features/`.
 
 ## Formato De Slice
 
@@ -93,6 +94,9 @@ Bloqueado por:
 - Evitar tareas horizontales aisladas como "hacer backend".
 - No convertir pedidos ambiguos en backlog implementable sin refinamiento.
 - Cada slice debe ser verificable por sí mismo.
+- Cada slice debe describir el comportamiento a lograr y la evidencia esperada, no sólo una lista de archivos a editar.
+- Usar `AFK` cuando el agente puede avanzar con criterios, entorno y permisos suficientes; usar `HITL` cuando requiera decisión humana, credencial, dato sensible, definición de negocio o aprobación visual.
+- Evitar paths, líneas o implementaciones prescriptivas salvo cuando el contexto ya demuestre que son el punto correcto de cambio.
 - No crear un archivo por microtarea; agrupar microtareas dentro de una feature.
 - Mantener archivos individuales sólo para backlog activo.
 - Al completar una feature, compactar trazabilidad en `docs/backlog/archive/YYYY-MM.md` antes de borrar o mover el archivo original.

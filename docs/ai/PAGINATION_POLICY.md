@@ -32,6 +32,8 @@ Si hay duda razonable sobre crecimiento, usar al menos `limit` server-side.
 
 Los endpoints de listado deben aceptar paginacion y filtros cuando el volumen pueda crecer.
 
+Si el listado incluye búsqueda textual, aplicar también `docs/ai/SEARCH_POLICY.md`.
+
 Contrato recomendado:
 
 ```ts
@@ -51,7 +53,7 @@ Reglas:
 - default recomendado: `pageSize = 25`;
 - maximo recomendado: `pageSize = 100`;
 - validar y normalizar parametros en backend;
-- aplicar filtros, busqueda y ordenamiento en query DB, no en memoria;
+- aplicar filtros, busqueda tokenizada y ordenamiento en query DB, no en memoria;
 - devolver metadata suficiente para UI: `items`, `total` si aplica, `page`, `pageSize`, `hasNextPage` o `nextCursor`;
 - no devolver todos los registros para que el frontend los filtre;
 - usar cursor pagination para listas grandes, eventos, logs, mensajes o datos con alta escritura;
@@ -66,6 +68,7 @@ Toda pantalla con listado potencialmente grande debe incluir:
 - error state;
 - paginacion visible o carga incremental;
 - busqueda/filtros cuando ayuden al usuario;
+- búsqueda tokenizada en backend cuando haya texto libre;
 - page size razonable, sin permitir cargar todo;
 - filtros en URL cuando favorezcan compartir, recargar o volver a la pantalla;
 - tablas/listas compactas y responsive segun `VISUAL_GUIDELINES.md`.
@@ -78,6 +81,7 @@ Cuando se disena una lista paginada, documentar:
 
 - campos de ordenamiento;
 - indices necesarios para filtros, busqueda y sort;
+- campos buscables y estrategia de búsqueda según `SEARCH_POLICY.md`;
 - criterio de orden estable;
 - constraints que afecten filtros;
 - si conviene cursor u offset.

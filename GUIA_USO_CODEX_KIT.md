@@ -120,6 +120,38 @@ Codex debe:
 - verificar con tests, typecheck, navegador nativo de Codex o revision manual segun riesgo;
 - cerrar y limpiar artefactos temporales.
 
+## CodeGraph En Repos Grandes
+
+CodeGraph es una ayuda local para navegar proyectos extensos. No reemplaza lectura de codigo ni documentos versionados.
+
+Usarlo cuando el repo sea grande, el impacto sea incierto o el cambio cruce varios modulos.
+
+Preparacion por proyecto:
+
+```powershell
+codegraph init -i
+```
+
+Uso despues de `git pull`, merge o cambios grandes:
+
+```powershell
+codegraph index
+```
+
+Reglas practicas:
+
+- `.codegraph/` debe estar en `.gitignore`.
+- Cada dev mantiene su propio indice local.
+- No pedir CodeGraph para cambios livianos.
+- Si Codex lo usa, debe leer luego los archivos criticos reales antes de editar.
+- Si no esta instalado, Codex debe continuar con `CODE_CONTEXT_POLICY.md`.
+
+Prompt util:
+
+```txt
+Usa el kit dev IA. Como este repo es grande, si CodeGraph esta disponible usalo primero para mapear impacto y archivos candidatos. Despues lee los archivos criticos reales antes de editar.
+```
+
 ## Implementar Un Ajuste Liviano
 
 Usar para copy, color, spacing, texto visible, documentacion o cambios sin logica nueva.
@@ -311,6 +343,7 @@ Recorda:
 - auth propia server-side segun `AUTH_POLICY.md` si el sistema es multi-tenant o maneja roles/permisos;
 - pantalla `Registrarse` y signup backend si el sistema contempla registro/autoregistro de usuarios;
 - paginacion server-side y limites para listas potencialmente grandes;
+- CodeGraph como indice local opcional en repos grandes, sin reemplazar lectura real de codigo;
 - Postgres + Prisma ORM por defecto si hay DB real;
 - Next.js 16 por defecto para proyectos nuevos;
 - navegador nativo de Codex para pruebas UI cuando aplique;

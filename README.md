@@ -34,6 +34,7 @@ Ver `GUIA_USO_CODEX_KIT.md` para el uso diario recomendado con Codex.
 - Agentes IA: servicios/API separados que consumen MCP.
 - Base de datos: Postgres + Prisma ORM durante desarrollo local y ambientes de desarrollo.
 - Encoding: UTF-8 obligatorio.
+- Grafo del proyecto: CodeGraph opcional como indice local no versionado para repos grandes.
 - Backlog: Markdown.
 - Notas externas: Notion como fuente auxiliar, no canónica.
 
@@ -42,3 +43,5 @@ Ver `GUIA_USO_CODEX_KIT.md` para el uso diario recomendado con Codex.
 El repo es la fuente de verdad técnica. Notion, PDFs y chats alimentan el proceso, pero los artefactos que guían implementación deben quedar versionados en Markdown.
 
 Todo sistema personalizado de Algorym debe nacer MCP-first: base MCP en Python/FastAPI y cobertura progresiva por feature documentada en `docs/technical/mcp-coverage-map.md`.
+
+En repos grandes, CodeGraph puede usarse para orientar navegacion e impacto, pero `.codegraph/` no se versiona y la lectura real del codigo sigue siendo obligatoria antes de editar.

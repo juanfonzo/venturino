@@ -20,7 +20,7 @@ function isStaticAsset(pathname: string) {
   );
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isStaticAsset(pathname) || isPublic(pathname)) {
