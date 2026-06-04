@@ -31,7 +31,7 @@
 | `/api/analisis-1` | GET | Venturino vs competencia | `computeAnalisis1` |
 | `/api/analisis-2` | GET | Stock/capital por competidor | `computeAnalisis2` |
 | `/api/analisis-2/items` | GET | Detalle de publicaciones por empresa | `listAnalisis2Items` |
-| `/api/reports/venturino` | GET | Descargar PDF Venturino vs mercado | `generateVenturinoPdfBuffer` |
+| `/api/reports/venturino` | GET | Descargar PDF Venturino vs mercado | `scripts/generateVenturinoReport.js` vía proceso Node aislado |
 | `/api/sync-fx-rate` | GET/POST | Leer/sincronizar FX y recalcular ARS | `lib/fx-rate.ts` |
 | `/api/postventa/analyze` | POST | Ejecutar análisis postventa persistido | `runPostventaAnalysis` |
 | `/api/geo/provincias` | GET | Devolver GeoJSON local | FS local |
@@ -48,7 +48,7 @@
 | `lib/postventa/matching.ts` | Scoring semántico/precio de productos postventa. |
 | `lib/postventa/run-analysis.ts` | Persiste corridas, resultados y candidatos postventa. |
 | `lib/fx-rate.ts` | DolarAPI, `FxRate`, recálculo masivo de listings ARS. |
-| `lib/reports/venturinoVsMercado.tsx` | PDF server-side. |
+| `app/api/reports/venturino/route.ts` | Endpoint de descarga PDF; ejecuta el generador Node para evitar incompatibilidades de React PDF dentro del bundle de Next 16. |
 
 ## Scripts Operativos
 
@@ -59,6 +59,12 @@
 | `analysis:postventa-persist` | `scripts/run-postventa-analysis.js` | Ejecutar matching postventa persistido. |
 | `fx:sync` | `scripts/syncFxRate.js` | Sincronizar dólar oficial y recalcular precios. |
 | `report:venturino` | `scripts/generateVenturinoReport.js` | Generar PDF local. |
+
+## Reportes PDF
+
+- El reporte Venturino vs mercado se genera con `scripts/generateVenturinoReport.js`.
+- `/api/reports/venturino` ejecuta ese script en un proceso Node temporal, lee el PDF desde `os.tmpdir()` y lo devuelve como `application/pdf`.
+- No importar `@react-pdf/renderer` en route handlers de Next 16 para este flujo: el renderer falla dentro del bundle de Next con errores React #31 al recibir elementos del runtime de App Router.
 
 ## Contratos De Listado
 

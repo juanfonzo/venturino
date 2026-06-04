@@ -52,7 +52,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | ACARA | implementado | `app/(pages)/acara/page.tsx`, `app/api/acara/**`, `lib/data/loadAcara.ts`, `store/useAcaraMappings.ts` |
 | Análisis 1 | implementado | `app/(pages)/analisis-1/page.tsx`, `app/api/analisis-1/route.ts`, `lib/analysis/analisis1.ts` |
 | Análisis 2 | implementado | `app/(pages)/analisis-2/page.tsx`, `app/api/analisis-2/**`, `lib/analysis/analisis2.ts` |
-| Reporte Venturino PDF | implementado | `app/api/reports/venturino/route.ts`, `lib/reports/venturinoVsMercado.tsx` |
+| Reporte Venturino PDF | implementado | `app/api/reports/venturino/route.ts`, `scripts/generateVenturinoReport.js` |
 | Ingesta maquinaria | implementado | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `prisma/schema.prisma` |
 | FX | implementado | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
 | Postventa ingesta/análisis | parcial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/analyze/route.ts` |

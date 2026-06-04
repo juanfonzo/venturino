@@ -29,6 +29,7 @@
   - 2026-06-03 onboarding del repo existente completado proporcionalmente: CodeGraph disponible usado como orientación, lectura directa de rutas, APIs, loaders, Prisma, auth, pipelines, UI y docs previos.
   - 2026-06-03 docs actualizados en UTF-8: PROJECT_CONTEXT, MANIFEST, arquitectura, frontend, backend, base-de-datos, seguridad y mcp-coverage-map.
   - 2026-06-04 Next.js migrado a 16.2.7, `middleware.ts` reemplazado por `proxy.ts`, ESLint configurado para Next 16 y CSVs legacy de MVP retirados.
+  - 2026-06-04 reporte PDF corregido: `/api/reports/venturino` usa `scripts/generateVenturinoReport.js` en proceso Node aislado porque React PDF falla dentro del bundle Next 16 con React error #31.
   - PROJECT_CONTEXT.md creado en docs/ai/ con alcance, arquitectura, flujos, APIs, datos, deploy y riesgos actuales.
   - Script analytics postventa creado: scripts/analyzePostventaMatches.js.
   - Reporte de calibracion generado: reports/postventa-match-analysis.md.
@@ -94,6 +95,8 @@
 - .github/workflows/pipeline.yml
 - package.json
 - reports/postventa-match-analysis.md
+- scripts/generateVenturinoReport.js
+- app/api/reports/venturino/route.ts
 - data/postventa_match_analysis.json
 - docs/technical/postventa-ml.md
 - docs/backlog/hitos/hito-02-postventa-ml.md

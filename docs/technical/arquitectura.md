@@ -52,7 +52,7 @@ CSVs legacy MVP
 | ACARA | Carga CSV, búsqueda, detalle, sugerencias, auto-match y vínculos | `lib/data/loadAcara.ts`, `app/api/acara/**`, `store/useAcaraMappings.ts` |
 | Análisis 1 | Venturino vs competencia por marca/modelo/año/horas | `lib/analysis/analisis1.ts`, `app/(pages)/analisis-1/page.tsx` |
 | Análisis 2 | Stock y capital de competidores, dedupe de unidades | `lib/analysis/analisis2.ts`, `app/(pages)/analisis-2/page.tsx` |
-| Reportes | PDF Venturino vs mercado | `lib/reports/venturinoVsMercado.tsx`, `app/api/reports/venturino/route.ts` |
+| Reportes | PDF Venturino vs mercado | `scripts/generateVenturinoReport.js`, `app/api/reports/venturino/route.ts` |
 | Ingesta | Normalizar Mongo y persistir en Postgres | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `scripts/pipeline.js` |
 | FX | Cotización oficial y recálculo de precios ARS | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
 | Postventa | Ingesta productos, matching y análisis persistido | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/analyze/route.ts` |
