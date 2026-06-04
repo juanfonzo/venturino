@@ -10,6 +10,7 @@ const navItems = [
   { href: "/analisis-2", label: "Análisis 2" },
   { href: "/explorador", label: "Explorador" },
   { href: "/acara", label: "ACARA" },
+  { href: "/postventa", label: "Postventa" },
 ];
 
 export function SiteHeader() {

@@ -56,6 +56,33 @@
   - Autocomplete de publicaciones usa searchScope=core para evitar ruido de descripcion.
   - Comparables con guias de uso y microcopy para interpretar resultados.
 - Now:
+  - 2026-06-04 relevamiento data/flujo Postventa: lectura de scripts, Prisma y reporte de calibracion; CodeGraph consultado pero la lectura directa fue la fuente principal.
+  - Mongo Atlas no fue accesible desde este entorno para perfilado live (`querySrv ECONNREFUSED`), por lo que la calidad cruda debe confirmarse desde servidor/red con acceso.
+  - Postgres local/dev contiene importacion postventa #1 con 127 productos Venturino activos y 3903 ML activos; no contiene `PostventaAnalysisRun` persistida.
+  - Calibracion JSON previa sobre 127 productos: 67 con comparable, 60 sin comparable, 46 mas caro, 19 mas barato, 2 baja confianza; 26 comparables tienen brecha menor o igual a 5%.
+  - Mongo Atlas perfilado con hosts directos por falla SRV en Node: `algorym.productos` tiene 8497 docs, activos actuales postventa 127 Venturino al 2026-05-30 y 4108 ML normalizados al 2026-05-31.
+  - Matching temporal sobre Mongo actual: 64 comparables, 63 sin comparable, 41 mas caro, 20 mas barato, 3 baja confianza; 34 comparables tienen brecha menor o igual a 10%.
+  - `algorym.venturino` corresponde a dataset de maquinaria/publicaciones y no sirve para postventa porque no trae `producto_id`, `ml_item_id` ni `nombre` en el contrato del pipeline postventa.
+  - `algorym.productos` solo tiene indice `_id`; conviene evaluar indices por `origen`, fecha de scraping y ids estables si el volumen crece.
+  - Decision usuario: `DATABASE_URL` local no esta actualizado respecto de produccion y no debe tomarse como fuente para validar postventa.
+  - Decision usuario: el analisis postventa debe ejecutarse automaticamente despues de cada importacion mensual, igual que el flujo de maquinaria Mongo -> pipeline -> Postgres -> app.
+  - Decision usuario: la UI Postventa debe mostrar solo resultados del algoritmo vigente, sin revision/override manual en primera version.
+  - Decision implementada: usar `similar a ML` con umbral +/-10% para primera version de reporte/UI Postventa.
+  - Simulacion PDF Postventa creada en `reports/postventa-pdf-simulation.md`: recomienda `similar a ML` +/-10%, estructura PDF, KPIs y performance de ~522k pares en ~2,7 s.
+  - 2026-06-04 implementado primer ajuste postventa: `similar a ML` +/-10% en algoritmo productivo, `similarityThreshold` persistido en `PostventaAnalysisRun`, fallback de IDs ML desde URL, `pipeline:postventa` dispara analisis automatico y `pipeline:postventa:import-only` queda como escape.
+  - Calibracion Mongo actual regenerada: 127 Venturino, 4111 ML activos, 63 sin comparable, 33 similar, 17 mas caro, 11 mas barato, 3 baja confianza.
+  - 2026-06-04 creado evaluador benchmark Postventa: `npm run analysis:postventa-evaluate` genera `reports/postventa-benchmark-evaluation.md` y `npm run test:postventa` valida gates de clasificacion.
+  - 2026-06-04 segunda iteracion benchmark Postventa: diccionario `jarro/taza/mug` y comparacion de bateria por Ah. Evaluacion 5/5 gates OK, cobertura comparable 55,9%, sin comparable 44,1%, baja confianza 2,4%, 33 brechas accionables.
+  - Cobertura por familias tras segunda iteracion: JARRO 6/6 comparables, BATERIA 1/2 comparables; 150Ah, aceites por litros, ISG, correas, Honda, manometros y varios repuestos tecnicos quedan sin forzar por falta de evidencia ML equivalente.
+  - 2026-06-04 set de validacion etiquetado Postventa creado: `data/postventa_validation_set.json` con 28 productos dificiles y `reports/postventa-validation-set.md` con criterios analiticos. Prioriza guardrails de precision: aceites/litros, ISG, correas Draper, repuestos con part number, Honda por modelo exacto.
+  - 2026-06-04 guardrails Postventa implementados y testeados: fluidos por linea/litros, ISG no comparable con llaves fisicas, bateria por Ah, Honda por modelo exacto, correa Draper, cincel por medida y cap a baja confianza para filtro/inyeccion/cuchilla sin part number.
+  - `test:postventa-validation-set` creado. Ultima corrida: 5/5 gates OK, 28 casos, positivos 2/2, falsos positivos accionables 0, 1 warning no bloqueante en `PV-VAL-018` porque queda en baja confianza con candidato rechazado visible solo como evidencia.
+  - Benchmark general tras guardrails: 127 productos, 70 comparables (55,1%), 57 sin comparable (44,9%), baja confianza 5 (3,9%), 31 brechas accionables; `test:postventa` sigue 5/5 gates OK.
+  - 2026-06-04 control administrativo discreto agregado al final del dashboard: ruedita pequena abre acciones `Maquinaria` y `Postventa`. Endpoint privado `POST /api/admin/processes` ejecuta solo scripts allowlist (`pipeline:live`, `pipeline:postventa`) con sesion valida, mutex por accion y timeout.
+  - 2026-06-04 seccion UI Postventa implementada en `/postventa`: resumen, filtros, tabla paginada, detalle de candidatos ML, estados de carga/error/vacio y endpoints read-only `/api/postventa/summary`, `/api/postventa/products` y `/api/postventa/products/[id]`.
+  - Validacion Postventa UI: `npx tsc --noEmit`, `npm run lint` (4 warnings preexistentes), `npm run build`, login HTTP local y GET autenticado de `/postventa` y `/api/postventa/summary` OK. Navegador integrado no disponible en esta sesion (`iab` unavailable).
+  - 2026-06-04 reporte PDF Postventa implementado: `/api/reports/postventa`, `scripts/generatePostventaReport.js`, boton `Descargar PDF` en `/postventa` y servicio `getPostventaReportData` con mismos filtros server-side.
+  - Validacion Reporte Postventa: `node --check`, `npx tsc --noEmit`, `npm run lint` (mismas 4 warnings preexistentes), `npm run build`, render PDF con fixture temporal (`%PDF`) y endpoint local autenticado responde 404 JSON controlado porque la DB local no tiene corrida Postventa persistida.
   - Contexto canónico actualizado para futuras tareas del kit. App real: Next.js 16.2.7, PostgreSQL/Prisma, MongoDB pipelines, ACARA CSV activo, auth JWT simple, diseño propio Venturino/John Deere.
   - Analisis postventa ejecutado sobre 127 productos activos Venturino y ML ultima extraccion.
   - Resultado final calibracion: 46 Venturino mas caro, 19 mas barato, 60 sin comparable, 2 baja confianza.
@@ -69,14 +96,16 @@
   - Si el objetivo es eliminar todo CSV runtime, migrar primero ACARA desde `data/acara_precios_maquinaria_agricola_wide.csv` a DB u otra fuente definida.
   - Crear `.env.example`, definir estrategia de tests y decidir MCP base Python/FastAPI si se priorizan capacidades IA-first.
   - Usar docs/ai/PROJECT_CONTEXT.md como punto de partida para nuevos agentes.
-  - Validar postventa-01 en produccion: deploy aplica db push; luego correr manualmente pipeline:postventa.
-  - Validar postventa-02 en produccion: correr manualmente analysis:postventa-persist tras pipeline:postventa.
+  - Ajustar postventa para que `pipeline:postventa` ejecute importacion y analisis persistido en una sola corrida automatizable mensual.
+  - Siguiente slice recomendado: correr pipeline/analisis Postventa contra DB destino y verificar descarga real con datos persistidos; luego ajustar UX fina o agregar export CSV/XLSX si negocio lo pide.
   - Ajustes finos de UX (empty/error states, performance).
   - Reglas de outliers y umbral YEAR_CONDITION_CONFLICT.
 
 ## Open questions (UNCONFIRMED):
+- Alcance del PDF Postventa: todos los productos, solo comparables o export segun filtros.
 - Si los vínculos ACARA deben seguir en localStorage o migrar a DB.
 - Si la app seguirá single-tenant interna o requerirá roles/permisos.
+- Si el control de procesos debe quedar para todos los usuarios autenticados o restringirse a rol/admin cuando exista modelo de usuarios.
 - Cuándo implementar MCP Python/FastAPI real.
 - Si ACARA debe migrar a PostgreSQL para eliminar la última dependencia CSV.
 - Umbral final de YEAR_CONDITION_CONFLICT.

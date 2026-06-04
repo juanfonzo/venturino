@@ -2,7 +2,7 @@
  * Trigger persisted postventa analysis through the local Next.js API.
  *
  * Usage:
- *   node scripts/run-postventa-analysis.js [--top 20] [--price-band 0.4] [--min-score 20]
+ *   node scripts/run-postventa-analysis.js [--top 20] [--price-band 0.4] [--min-score 20] [--similarity-threshold 0.1]
  *
  * The API only accepts localhost requests. Run this inside the app container or
  * from the same host where Next.js is listening.
@@ -34,6 +34,7 @@ async function main() {
   console.log(`  Venturino products:${payload.summary.venturinoProducts}`);
   console.log(`  ML products:       ${payload.summary.mlProducts}`);
   console.log(`  Total candidates:  ${payload.summary.totalCandidates}`);
+  console.log(`  Similar threshold: ${payload.options.similarityThreshold}`);
   console.log(`  Status counts:     ${JSON.stringify(payload.summary.statusCounts)}`);
 }
 
@@ -44,6 +45,7 @@ function parseArgs(argv) {
     if (arg === "--top" && next) out.topN = Number(next);
     if (arg === "--price-band" && next) out.priceBand = Number(next);
     if (arg === "--min-score" && next) out.minScore = Number(next);
+    if (arg === "--similarity-threshold" && next) out.similarityThreshold = Number(next);
   });
   return out;
 }

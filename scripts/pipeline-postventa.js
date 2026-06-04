@@ -2,7 +2,7 @@
  * Pipeline postventa: MongoDB Atlas -> PostgreSQL.
  *
  * Usage:
- *   node scripts/pipeline-postventa.js [--dry-run] [--no-sample]
+ *   node scripts/pipeline-postventa.js [--dry-run] [--no-sample] [--skip-analysis]
  *
  * Imports active products from MongoDB algorym.productos. Venturino products are
  * identified by producto_id and ML products by ml_item_id. Only the latest
@@ -23,6 +23,8 @@ const COLLECTION_NAME = process.env.POSTVENTA_MONGO_COLLECTION || "productos";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const NO_SAMPLE = process.argv.includes("--no-sample");
+const SKIP_ANALYSIS = process.argv.includes("--skip-analysis");
+const ANALYSIS_URL = process.env.POSTVENTA_ANALYSIS_URL || "http://127.0.0.1:3000/api/postventa/analyze";
 const BATCH_SIZE = 500;
 
 if (!MONGODB_URI) {
@@ -68,7 +70,14 @@ async function main() {
     return;
   }
 
-  await upsertIntoPostgres({ activeProducts, counts, latestDates });
+  const result = await upsertIntoPostgres({ activeProducts, counts, latestDates });
+  if (SKIP_ANALYSIS) {
+    console.log();
+    console.log("=== Analysis skipped by --skip-analysis ===");
+    return;
+  }
+
+  await triggerPostventaAnalysis({ importRunId: result.importRunId });
 }
 
 async function fetchMongoProducts() {
@@ -145,8 +154,23 @@ function normalizeSource(value) {
 }
 
 function getExternalId(source, doc) {
-  const value = source === "venturino" ? doc.producto_id : doc.ml_item_id;
+  const value = source === "venturino" ? doc.producto_id : doc.ml_item_id || extractMlExternalIdFromUrl(doc.url);
   return value === null || value === undefined ? null : String(value).trim();
+}
+
+function extractMlExternalIdFromUrl(value) {
+  if (!value) return null;
+  const url = String(value);
+  const widMatch = url.match(/[?&#]wid=(MLA\d+)/i);
+  if (widMatch) return widMatch[1].toUpperCase();
+
+  const itemPathMatch = url.match(/\/(MLA-\d+)-/i);
+  if (itemPathMatch) return itemPathMatch[1].replace("-", "").toUpperCase();
+
+  const catalogMatch = url.match(/\/p\/(MLA\d+)/i);
+  if (catalogMatch) return `CATALOG-${catalogMatch[1].toUpperCase()}`;
+
+  return null;
 }
 
 function getRecordDate(doc) {
@@ -254,6 +278,7 @@ function buildCounts({ docs, normalized, activeRaw, activeProducts, latestDates 
     latestDates,
     activeRaw: countBy(activeRaw, (product) => product.source),
     activeUnique: countBy(activeProducts, (product) => product.source),
+    fallbackExternalIds: activeProducts.filter((product) => product.externalId.startsWith("CATALOG-")).length,
     withPrice: countBy(
       activeProducts.filter((product) => product.priceArs !== null),
       (product) => product.source,
@@ -272,6 +297,7 @@ function printProfile(counts) {
   console.log("  Active raw:          " + JSON.stringify(counts.activeRaw));
   console.log("  Active unique:       " + JSON.stringify(counts.activeUnique));
   console.log("  Active with price:   " + JSON.stringify(counts.withPrice));
+  console.log(`  Fallback ML ids:     ${counts.fallbackExternalIds}`);
 }
 
 async function upsertIntoPostgres({ activeProducts, counts, latestDates }) {
@@ -396,9 +422,52 @@ async function upsertIntoPostgres({ activeProducts, counts, latestDates }) {
     console.log(`  Price snapshots created: ${snapshotsCreated}`);
     console.log(`  Price snapshots updated: ${snapshotsUpdated}`);
     console.log(`  DB verification: ${activeVenturino} active Venturino, ${activeMl} active ML, ${totalProducts} total products, ${totalSnapshots} snapshots`);
+
+    return { importRunId: run.id };
   } finally {
     await prisma.$disconnect();
   }
+}
+
+async function triggerPostventaAnalysis({ importRunId }) {
+  const body = {
+    similarityThreshold: parseEnvNumber("POSTVENTA_SIMILARITY_THRESHOLD"),
+  };
+  Object.keys(body).forEach((key) => {
+    if (body[key] === undefined) delete body[key];
+  });
+
+  console.log();
+  console.log("=== Running postventa analysis ===");
+  console.log(`  Import run: #${importRunId}`);
+  console.log(`  Endpoint:   ${ANALYSIS_URL}`);
+  console.log(`  Options:    ${JSON.stringify(body)}`);
+
+  const response = await fetch(ANALYSIS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload?.error || `HTTP ${response.status}`;
+    throw new Error(`Postventa analysis failed after import #${importRunId}: ${message}`);
+  }
+
+  console.log();
+  console.log("=== ANALYSIS RESULTS ===");
+  console.log(`  Analysis run:      #${payload.analysisRunId}`);
+  console.log(`  Algorithm version: ${payload.algorithmVersion}`);
+  console.log(`  Similar threshold: ${payload.options.similarityThreshold}`);
+  console.log(`  Total candidates:  ${payload.summary.totalCandidates}`);
+  console.log(`  Status counts:     ${JSON.stringify(payload.summary.statusCounts)}`);
+}
+
+function parseEnvNumber(name) {
+  const value = process.env[name];
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 async function savePriceSnapshot(prisma, { productId, importRunId, product }) {

@@ -16,8 +16,13 @@
     "fx:show": "node scripts/syncFxRate.js --show",
     "backfill:precio-ars": "node scripts/backfill-precio-ars.js",
     "pipeline:postventa": "node scripts/pipeline-postventa.js",
+    "pipeline:postventa:import-only": "node scripts/pipeline-postventa.js --skip-analysis",
     "analysis:postventa-persist": "node scripts/run-postventa-analysis.js",
-    "analysis:postventa-matches": "node scripts/analyzePostventaMatches.js"
+    "analysis:postventa-matches": "node scripts/analyzePostventaMatches.js",
+    "analysis:postventa-evaluate": "node scripts/evaluatePostventaBenchmark.js",
+    "analysis:postventa-validation-set": "node scripts/evaluatePostventaValidationSet.js",
+    "test:postventa": "node scripts/evaluatePostventaBenchmark.js --ci",
+    "test:postventa-validation-set": "node scripts/evaluatePostventaValidationSet.js --ci"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

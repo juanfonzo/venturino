@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import {
   DEFAULT_POSTVENTA_MIN_SCORE,
   DEFAULT_POSTVENTA_PRICE_BAND,
+  DEFAULT_POSTVENTA_SIMILARITY_THRESHOLD,
   DEFAULT_POSTVENTA_TOP_N,
   POSTVENTA_ALGORITHM_VERSION,
   buildPostventaMatch,
@@ -29,6 +30,7 @@ export type RunPostventaAnalysisResult = {
     topN: number;
     priceBand: number;
     minScore: number;
+    similarityThreshold: number;
   };
   summary: PostventaAnalysisSummary;
 };
@@ -95,6 +97,7 @@ export async function runPostventaAnalysis(optionsInput: AnalyzePostventaOptions
       importRunId: latestImportRun?.id ?? null,
       algorithmVersion: POSTVENTA_ALGORITHM_VERSION,
       priceBand: options.priceBand,
+      similarityThreshold: options.similarityThreshold,
       topN: options.topN,
       minScore: options.minScore,
       venturinoDate: latestImportRun?.venturinoDate ?? null,
@@ -216,4 +219,5 @@ export const DEFAULT_PERSISTED_POSTVENTA_ANALYSIS_OPTIONS = {
   topN: DEFAULT_POSTVENTA_TOP_N,
   priceBand: DEFAULT_POSTVENTA_PRICE_BAND,
   minScore: DEFAULT_POSTVENTA_MIN_SCORE,
+  similarityThreshold: DEFAULT_POSTVENTA_SIMILARITY_THRESHOLD,
 };

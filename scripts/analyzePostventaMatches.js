@@ -12,6 +12,7 @@ const COLLECTION_NAME = process.env.POSTVENTA_MONGO_COLLECTION || "productos";
 const DEFAULT_SAMPLE_SIZE = 15;
 const DEFAULT_TOP_N = 20;
 const DEFAULT_PRICE_BAND = 0.4;
+const DEFAULT_SIMILARITY_THRESHOLD = 0.1;
 const MIN_SCORE = 20;
 
 const REPORT_PATH = path.join(__dirname, "..", "reports", "postventa-match-analysis.md");
@@ -103,6 +104,10 @@ const TOKEN_SYNONYMS = new Map([
   ["boquillas", "boquilla"],
   ["botellas", "botella"],
   ["jarros", "jarro"],
+  ["taza", "jarro"],
+  ["tazas", "jarro"],
+  ["mug", "jarro"],
+  ["mugs", "jarro"],
   ["mates", "mate"],
   ["materos", "mate"],
   ["matero", "mate"],
@@ -127,6 +132,7 @@ const PRODUCT_TYPE_BY_TOKEN = new Map([
   ["bateria", "BATERIA"],
   ["generador", "GENERADOR"],
   ["soplador", "SOPLADOR"],
+  ["motor", "MOTOR"],
   ["bomba", "BOMBA"],
   ["enfriador", "ENFRIADOR"],
   ["cuchilla", "CUCHILLA"],
@@ -147,6 +153,7 @@ const PRODUCT_TYPE_BY_TOKEN = new Map([
   ["boquilla", "INYECCION"],
   ["botella", "BOTELLA"],
   ["jarro", "JARRO"],
+  ["taza", "JARRO"],
   ["mate", "MATE"],
   ["bombilla", "MATE"],
   ["mochila", "MOCHILA"],
@@ -182,6 +189,7 @@ const TECHNICAL_DETAIL_TYPES = new Set([
   "MOTOBOMBA",
   "MOTOGUADANA",
   "CORTADORA",
+  "MOTOR",
   "GENERADOR",
   "SOPLADOR",
   "MANOMETRO",
@@ -204,6 +212,7 @@ function parseArgs(argv) {
     sampleSize: DEFAULT_SAMPLE_SIZE,
     topN: DEFAULT_TOP_N,
     priceBand: DEFAULT_PRICE_BAND,
+    similarityThreshold: DEFAULT_SIMILARITY_THRESHOLD,
   };
 
   argv.forEach((arg, index) => {
@@ -211,6 +220,7 @@ function parseArgs(argv) {
     if (arg === "--sample" && next) out.sampleSize = Number(next);
     if (arg === "--top" && next) out.topN = Number(next);
     if (arg === "--price-band" && next) out.priceBand = Number(next);
+    if (arg === "--similarity-threshold" && next) out.similarityThreshold = Number(next);
   });
 
   out.sampleSize = Number.isFinite(out.sampleSize)
@@ -222,6 +232,9 @@ function parseArgs(argv) {
   out.priceBand = Number.isFinite(out.priceBand)
     ? Math.max(0.05, Math.min(out.priceBand, 2))
     : DEFAULT_PRICE_BAND;
+  out.similarityThreshold = Number.isFinite(out.similarityThreshold)
+    ? Math.max(0, Math.min(out.similarityThreshold, 1))
+    : DEFAULT_SIMILARITY_THRESHOLD;
 
   return out;
 }
@@ -267,6 +280,8 @@ function extractFeatures(name, origin) {
   const strongTokens = tokens.filter(isStrongToken);
   const primaryTokens = tokens.filter((token) => !BRAND_TOKENS.has(token));
   const batteryAh = extractBatteryAh(normalizeBase(name));
+  const fluidLiters = extractFluidLiters(normalizeBase(name));
+  const modelTokens = tokens.filter(isModelToken);
   return {
     normalized: normalizeBase(name),
     tokens,
@@ -276,6 +291,9 @@ function extractFeatures(name, origin) {
     strongTokens,
     primaryTokens,
     batteryAh,
+    fluidLiters,
+    modelTokens,
+    technicalCodes: unique([...modelTokens, ...tokens.filter(isTechnicalCodeToken)]),
   };
 }
 
@@ -356,8 +374,10 @@ function inferProductTypes(tokens, normalizedName, origin) {
     "ISG",
     "MANOMETRO",
     "BATERIA",
+    "ACEITE",
     "GENERADOR",
     "SOPLADOR",
+    "MOTOR",
     "FILTRO",
     "BOMBA",
     "ENFRIADOR",
@@ -379,7 +399,15 @@ function inferProductTypes(tokens, normalizedName, origin) {
 }
 
 function extractBatteryAh(normalizedName) {
-  const match = normalizedName.match(/\b(\d{2,3})\s*ah\b/);
+  let match = normalizedName.match(/\b(\d{2,3})\s*ah\b/);
+  if (!match) match = normalizedName.match(/\b12\s*x\s*(\d{2,3})\b/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function extractFluidLiters(normalizedName) {
+  const match = normalizedName.match(/\b(\d+(?:\.\d+)?)\s*(?:l|lt|lts|litro|litros)\b/);
   if (!match) return null;
   const value = Number(match[1]);
   return Number.isFinite(value) ? value : null;
@@ -390,6 +418,14 @@ function isStrongToken(token) {
   if (/[a-z]/.test(token) && /\d/.test(token)) return true;
   if (/[.x-]/.test(token)) return true;
   return token.length >= 3;
+}
+
+function isModelToken(token) {
+  return token.length >= 4 && /[a-z]/.test(token) && /\d/.test(token);
+}
+
+function isTechnicalCodeToken(token) {
+  return /^\d+(?:mm|ah|kva|hp|cc|l)$/.test(token);
 }
 
 function parsePrice(value, textValue) {
@@ -455,7 +491,22 @@ function getRecordDate(doc) {
 function getStableId(doc) {
   const origin = (doc.origen || "").toString().trim().toLowerCase();
   if (origin === "venturino") return doc.producto_id ? String(doc.producto_id) : null;
-  if (origin === "ml") return doc.ml_item_id ? String(doc.ml_item_id) : null;
+  if (origin === "ml") return doc.ml_item_id ? String(doc.ml_item_id) : extractMlExternalIdFromUrl(doc.url);
+  return null;
+}
+
+function extractMlExternalIdFromUrl(value) {
+  if (!value) return null;
+  const url = String(value);
+  const widMatch = url.match(/[?&#]wid=(MLA\d+)/i);
+  if (widMatch) return widMatch[1].toUpperCase();
+
+  const itemPathMatch = url.match(/\/(MLA-\d+)-/i);
+  if (itemPathMatch) return itemPathMatch[1].replace("-", "").toUpperCase();
+
+  const catalogMatch = url.match(/\/p\/(MLA\d+)/i);
+  if (catalogMatch) return `CATALOG-${catalogMatch[1].toUpperCase()}`;
+
   return null;
 }
 
@@ -504,6 +555,15 @@ function scoreCandidate(venturino, ml) {
   );
   const commonStrong = intersection(vf.strongTokens, new Set(mf.strongTokens));
   const commonTypes = intersection(vf.types, new Set(mf.types));
+  const guardrailRejection = getGuardrailRejection(vf, mf, commonPrimary, commonStrong);
+  if (guardrailRejection) {
+    return {
+      score: 0,
+      confidence: "descartar",
+      reasons: [guardrailRejection],
+    };
+  }
+
   const typeMismatch = vf.types.length > 0 && mf.types.length > 0 && commonTypes.length === 0;
   const brandMatch = vf.brand && mf.brand;
 
@@ -580,7 +640,13 @@ function scoreCandidate(venturino, ml) {
   }
 
   score = Math.max(0, Math.round(score));
-  const confidence = score >= 70 ? "alta" : score >= 45 ? "media" : score >= MIN_SCORE ? "baja" : "descartar";
+  const confidenceCap = getGuardrailConfidenceCap(vf, mf, commonPrimary, commonStrong);
+  const confidenceOrder = { alta: 3, media: 2, baja: 1, descartar: 0 };
+  let confidence = score >= 70 ? "alta" : score >= 45 ? "media" : score >= MIN_SCORE ? "baja" : "descartar";
+  if (confidenceCap && confidenceOrder[confidence] > confidenceOrder[confidenceCap]) {
+    confidence = confidenceCap;
+    reasons.push(`guardrail confianza: ${confidenceCap}`);
+  }
 
   return {
     score,
@@ -589,9 +655,120 @@ function scoreCandidate(venturino, ml) {
   };
 }
 
-function buildCandidates(venturino, mlProducts, topN, priceBand) {
-  const minPrice = venturino.price * (1 - priceBand);
-  const maxPrice = venturino.price * (1 + priceBand);
+function getGuardrailRejection(venturino, ml, commonPrimary, commonStrong) {
+  if (venturino.types.includes("ISG") && !ml.types.includes("ISG")) {
+    return "guardrail ISG: no comparar contra llaves físicas o accesorios genéricos";
+  }
+
+  if (isFluidProduct(venturino)) {
+    const venturinoLine = getFluidLine(venturino);
+    const mlLine = getFluidLine(ml);
+    if (venturinoLine && mlLine && venturinoLine !== mlLine) {
+      return `guardrail fluido: línea distinta (${venturinoLine} vs ${mlLine})`;
+    }
+    if (venturinoLine && !mlLine) {
+      return `guardrail fluido: candidato sin línea ${venturinoLine}`;
+    }
+    if (venturino.fluidLiters !== null) {
+      if (ml.fluidLiters === null) return "guardrail fluido: candidato sin litros";
+      if (!sameNumericSpec(venturino.fluidLiters, ml.fluidLiters, 0.05)) {
+        return `guardrail fluido: litros distintos (${venturino.fluidLiters}L vs ${ml.fluidLiters}L)`;
+      }
+    }
+  }
+
+  if (venturino.types.includes("BATERIA")) {
+    if (venturino.batteryAh !== null && ml.batteryAh !== venturino.batteryAh) {
+      return `guardrail batería: capacidad distinta o ausente (${venturino.batteryAh}Ah)`;
+    }
+  }
+
+  if (requiresExactHondaModel(venturino)) {
+    if (!ml.tokens.includes("honda")) return "guardrail Honda: candidato sin marca Honda";
+    if (!hasSharedModelToken(venturino, ml)) return "guardrail Honda: modelo no equivalente";
+  }
+
+  if (venturino.types.includes("CORREA") && venturino.tokens.includes("draper") && !ml.tokens.includes("draper")) {
+    return "guardrail correa Draper: candidato sin Draper";
+  }
+
+  if (venturino.types.includes("CINCEL") && !hasSharedTechnicalCode(venturino, ml, commonStrong)) {
+    return "guardrail cincel: medida/código no equivalente";
+  }
+
+  if (
+    venturino.types.includes("PUNZON") &&
+    !hasSharedTechnicalCode(venturino, ml, commonStrong) &&
+    !hasTokenPair(commonPrimary, "punton", "cosechadora")
+  ) {
+    return "guardrail punzón: falta código o contexto cosechadora";
+  }
+
+  return null;
+}
+
+function getGuardrailConfidenceCap(venturino, ml, commonPrimary, commonStrong) {
+  if (venturino.types.includes("FILTRO") && !hasSharedTechnicalCode(venturino, ml, commonStrong)) {
+    return "baja";
+  }
+
+  if (venturino.types.includes("INYECCION") && !hasSharedTechnicalCode(venturino, ml, commonStrong)) {
+    return "baja";
+  }
+
+  if (
+    venturino.types.includes("CUCHILLA") &&
+    !hasSharedTechnicalCode(venturino, ml, commonStrong) &&
+    !hasTokenPair(commonPrimary, "punton", "cosechadora") &&
+    !hasTokenPair(commonPrimary, "seccion", "cuchilla")
+  ) {
+    return "baja";
+  }
+
+  return null;
+}
+
+function isFluidProduct(features) {
+  return features.types.includes("ACEITE") || features.types.includes("REFRIGERANTE");
+}
+
+function getFluidLine(features) {
+  const normalized = features.normalized;
+  if (normalized.includes("plus-50") || normalized.includes("plus 50")) return "plus-50";
+  if (normalized.includes("torq-gard") || normalized.includes("torq gard")) return "torq-gard";
+  if (normalized.includes("hy-gard") || normalized.includes("hy gard")) return "hy-gard";
+  if (normalized.includes("cool-gard") || normalized.includes("cool gard")) return "cool-gard";
+  return null;
+}
+
+function requiresExactHondaModel(features) {
+  const hondaMachineTypes = ["GENERADOR", "SOPLADOR", "MOTOBOMBA", "MOTOGUADANA", "CORTADORA", "MOTOR", "MOCHILA"];
+  return features.tokens.includes("honda") && features.types.some((type) => hondaMachineTypes.includes(type));
+}
+
+function hasSharedModelToken(venturino, ml) {
+  if (venturino.modelTokens.length === 0) return false;
+  const candidateModels = new Set(ml.modelTokens);
+  return venturino.modelTokens.some((token) => candidateModels.has(token));
+}
+
+function hasSharedTechnicalCode(venturino, ml, commonStrong) {
+  if (commonStrong.length > 0) return true;
+  if (venturino.technicalCodes.length === 0) return false;
+  const candidateCodes = new Set(ml.technicalCodes);
+  return venturino.technicalCodes.some((token) => candidateCodes.has(token));
+}
+
+function hasTokenPair(tokens, first, second) {
+  return tokens.includes(first) && tokens.includes(second);
+}
+
+function sameNumericSpec(a, b, tolerancePct) {
+  const base = Math.max(Math.abs(a), Math.abs(b), 1);
+  return Math.abs(a - b) / base <= tolerancePct;
+}
+
+function buildCandidates(venturino, mlProducts, topN, priceBand, similarityThreshold = DEFAULT_SIMILARITY_THRESHOLD) {
   const evaluated = [];
   let excludedByPrice = 0;
   let excludedByScore = 0;
@@ -599,6 +776,9 @@ function buildCandidates(venturino, mlProducts, topN, priceBand) {
   for (const ml of mlProducts) {
     if (!venturino.price || !ml.price) continue;
     const diffPct = (ml.price - venturino.price) / venturino.price;
+    const effectivePriceBand = getEffectivePriceBand(venturino, ml, priceBand);
+    const minPrice = venturino.price * (1 - effectivePriceBand);
+    const maxPrice = venturino.price * (1 + effectivePriceBand);
     if (ml.price < minPrice || ml.price > maxPrice) {
       excludedByPrice += 1;
       continue;
@@ -655,6 +835,8 @@ function buildCandidates(venturino, mlProducts, topN, priceBand) {
       ? "sin comparable"
       : bestConfidence === "baja" || strongCandidateCount === 0
         ? "baja confianza"
+        : ventVsMedianPct !== null && Math.abs(ventVsMedianPct) <= similarityThreshold
+          ? "similar a ML"
         : ventVsMedianPct !== null && ventVsMedianPct > 0
           ? "Venturino más caro que ML"
           : ventVsMedianPct !== null && ventVsMedianPct < 0
@@ -672,6 +854,17 @@ function buildCandidates(venturino, mlProducts, topN, priceBand) {
     excludedByScore,
     totalValidBeforeTop: evaluated.length,
   };
+}
+
+function getEffectivePriceBand(venturino, ml, defaultPriceBand) {
+  const sameBatteryCapacity =
+    venturino.features.types.includes("BATERIA") &&
+    ml.features.types.includes("BATERIA") &&
+    venturino.features.batteryAh !== null &&
+    venturino.features.batteryAh === ml.features.batteryAh;
+
+  if (sameBatteryCapacity) return Math.max(defaultPriceBand, 0.9);
+  return defaultPriceBand;
 }
 
 function pickEvenly(items, count) {
@@ -753,16 +946,17 @@ function renderMarkdown(payload) {
   lines.push(`- Muestra Venturino: ${payload.params.sampleSize}`);
   lines.push(`- Top candidatos por producto: ${payload.params.topN}`);
   lines.push(`- Banda de precio: ±${Math.round(payload.params.priceBand * 100)}%`);
+  lines.push(`- Umbral similar a ML: ±${Math.round(payload.params.similarityThreshold * 100)}%`);
   lines.push(`- Score mínimo: ${MIN_SCORE}`);
   lines.push("");
   lines.push("## Criterios Del Algoritmo");
   lines.push("");
   lines.push("- Se usan sólo productos activos de la última extracción de cada origen.");
-  lines.push("- Venturino se deduplica por `producto_id`; ML se deduplica por `ml_item_id`.");
+  lines.push("- Venturino se deduplica por `producto_id`; ML se deduplica por `ml_item_id` o fallback estable desde URL.");
   lines.push("- Los candidatos ML fuera de la banda de precio configurada se excluyen antes del scoring.");
   lines.push("- El scoring combina tipo de producto, tokens técnicos, tokens comunes, compatibilidad de marca y penalizaciones por tipos incompatibles.");
   lines.push("- La mediana ML se calcula con los candidatos aceptados dentro del top configurado.");
-  lines.push("- Los estados del análisis priorizan confianza: sin candidatos, baja confianza, y luego comparación contra mediana ML.");
+  lines.push("- Los estados del análisis priorizan confianza: sin candidatos, baja confianza, similar a ML, y luego comparación contra mediana ML.");
   lines.push("");
   lines.push("## Perfil De Datos");
   lines.push("");
@@ -875,7 +1069,7 @@ async function main() {
   const sample = selectSample(venturinoActive, params.sampleSize);
   const results = sample.map((product) => ({
     venturino: product,
-    match: buildCandidates(product, mlActive, params.topN, params.priceBand),
+    match: buildCandidates(product, mlActive, params.topN, params.priceBand, params.similarityThreshold),
   }));
 
   const payload = {

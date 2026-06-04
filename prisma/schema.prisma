@@ -230,18 +230,19 @@ model PostventaPriceSnapshot {
 }
 
 model PostventaAnalysisRun {
-  id               Int                 @id @default(autoincrement())
-  importRunId      Int?                @map("import_run_id")
-  importRun        PostventaImportRun? @relation(fields: [importRunId], references: [id])
-  algorithmVersion String              @default("postventa-v0") @map("algorithm_version")
-  priceBand        Decimal             @default(0.4) @map("price_band") @db.Decimal(5, 4)
-  topN             Int                 @default(20) @map("top_n")
-  minScore         Int                 @default(20) @map("min_score")
-  venturinoDate    DateTime?           @map("venturino_date") @db.Date
-  mlDate           DateTime?           @map("ml_date") @db.Date
-  status           String              @default("success")
-  summary          Json?
-  createdAt        DateTime            @default(now()) @map("created_at")
+  id                  Int                 @id @default(autoincrement())
+  importRunId         Int?                @map("import_run_id")
+  importRun           PostventaImportRun? @relation(fields: [importRunId], references: [id])
+  algorithmVersion    String              @default("postventa-v0") @map("algorithm_version")
+  priceBand           Decimal             @default(0.4) @map("price_band") @db.Decimal(5, 4)
+  similarityThreshold Decimal             @default(0.1) @map("similarity_threshold") @db.Decimal(5, 4)
+  topN                Int                 @default(20) @map("top_n")
+  minScore            Int                 @default(20) @map("min_score")
+  venturinoDate       DateTime?           @map("venturino_date") @db.Date
+  mlDate              DateTime?           @map("ml_date") @db.Date
+  status              String              @default("success")
+  summary             Json?
+  createdAt           DateTime            @default(now()) @map("created_at")
 
   productAnalyses PostventaProductAnalysis[]
 

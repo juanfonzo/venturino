@@ -77,6 +77,12 @@ Endpoints operativos protegidos por host local:
 
 Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficiente para cron local controlado, pero no para exposición externa.
 
+Endpoint operativo protegido por sesión:
+
+- `POST /api/admin/processes`
+
+Este endpoint se usa desde el control discreto del dashboard para ejecutar únicamente procesos allowlist: `pipeline:live` y `pipeline:postventa`. Requiere cookie de sesión válida, no acepta comandos arbitrarios, usa mutex por acción y timeout. Riesgo residual: como no existen roles, cualquier usuario autenticado puede verlo/ejecutarlo; si se agregan usuarios reales, debe restringirse a rol/admin.
+
 ## Datos Sensibles
 
 | Dato | Sensibilidad | Estado |
@@ -101,6 +107,7 @@ Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficie
 |---|---|---|---|
 | Fallback `JWT_SECRET` dev hardcodeado | media | Variables en deploy | Exigir `JWT_SECRET` en producción y documentar `.env.example`. |
 | Sin roles/permisos | media | Uso interno single-tenant | No agregar capacidades sensibles sin auth granular. |
+| Control manual de pipelines sin rol admin | media | Requiere sesión y allowlist server-side | Restringir por rol/admin cuando exista modelo de usuarios. |
 | Endpoints locales por host | media | Cron dentro de contenedor/host | Usar header secreto si se exponen desde UI o red externa. |
 | `/api/postventa/analyze` público en middleware | media | Handler exige localhost | Revisar antes de UI postventa. |
 | Sin rate limiting login | baja/media | App interna | Agregar si se expone públicamente. |

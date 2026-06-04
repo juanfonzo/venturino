@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       topN: asNumber(body.topN),
       priceBand: asNumber(body.priceBand),
       minScore: asNumber(body.minScore),
+      similarityThreshold: asNumber(body.similarityThreshold),
     });
 
     console.log(
