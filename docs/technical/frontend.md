@@ -38,6 +38,7 @@ Respetar identidad Venturino/John Deere, paleta `jd`, topbar actual, paneles, ta
 | `/acara` | herramienta operativa | Buscador, tabla paginada, detalle con chart, sugerencias, import/export JSON. |
 | `/analisis-1` | análisis | Filtros compactos, rankings, tabla, drawer lateral de equivalentes. |
 | `/analisis-2` | análisis | MultiSelect, KPIs, tablas paginadas, drawer inferior, modal de detalle por empresa. |
+| `/postventa` | benchmark | KPIs, filtros, tabla paginada de ancho completo, acción `Ver` por fila y modal simple de candidatos ML. |
 
 ## Componentes Reutilizables
 

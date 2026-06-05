@@ -8,7 +8,6 @@ import { Select } from "@/components/ui/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import { KpiCard } from "@/components/KpiCard";
 import { formatNumber, formatPercent } from "@/lib/utils/format";
-import { cn } from "@/lib/utils/cn";
 
 type AnalysisRunInfo = {
   id: number;
@@ -159,11 +158,6 @@ export function PostventaDashboard() {
       .then((payload) => {
         if (cancelled) return;
         setProducts(payload);
-        const firstId = payload.items[0]?.id ?? null;
-        setSelectedId((current) => {
-          if (current && payload.items.some((item) => item.id === current)) return current;
-          return firstId;
-        });
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "No se pudieron cargar productos");
@@ -179,6 +173,7 @@ export function PostventaDashboard() {
   useEffect(() => {
     if (!selectedId) {
       setDetail(null);
+      setLoadingDetail(false);
       return;
     }
     let cancelled = false;
@@ -199,6 +194,17 @@ export function PostventaDashboard() {
     };
   }, [selectedId]);
 
+  useEffect(() => {
+    if (!selectedId) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setSelectedId(null);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedId]);
+
   const totalPages = products ? Math.max(1, Math.ceil(products.total / products.pageSize)) : 1;
   const analysisRun = summary?.analysisRun ?? products?.analysisRun ?? null;
 
@@ -215,6 +221,15 @@ export function PostventaDashboard() {
     setSortBy("comparableFirst");
     setSortDir("desc");
     setPage(1);
+  }
+
+  function openDetail(id: number) {
+    setDetail(null);
+    setSelectedId(id);
+  }
+
+  function closeDetail() {
+    setSelectedId(null);
   }
 
   async function downloadPdf() {
@@ -386,15 +401,14 @@ export function PostventaDashboard() {
             </div>
           ) : null}
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
-            <div className="overflow-hidden rounded-lg border border-jd-black/10 bg-white/70">
-              {loadingProducts ? (
-                <div className="flex min-h-64 items-center justify-center">
-                  <Spinner />
-                </div>
-              ) : products && products.items.length > 0 ? (
+          <div className="overflow-hidden rounded-lg border border-jd-black/10 bg-white/70">
+            {loadingProducts ? (
+              <div className="flex min-h-64 items-center justify-center">
+                <Spinner />
+              </div>
+            ) : products && products.items.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="table-base min-w-[920px]">
+                  <table className="table-base min-w-[980px]">
                     <thead>
                       <tr>
                         <th>Producto</th>
@@ -404,20 +418,14 @@ export function PostventaDashboard() {
                         <th>Brecha</th>
                         <th>Conf.</th>
                         <th>Cand.</th>
+                        <th className="text-right">Acción</th>
                       </tr>
                     </thead>
                     <tbody>
                       {products.items.map((item) => (
-                        <tr
-                          key={item.id}
-                          className={cn(
-                            "cursor-pointer transition hover:bg-jd-yellow/10",
-                            selectedId === item.id ? "bg-jd-green/5" : "",
-                          )}
-                          onClick={() => setSelectedId(item.id)}
-                        >
+                        <tr key={item.id} className="transition hover:bg-jd-yellow/10">
                           <td>
-                            <div className="max-w-md">
+                            <div className="max-w-xl">
                               <p className="font-medium text-jd-black">{item.name}</p>
                               <p className="text-xs text-jd-black/45">#{item.externalId}</p>
                             </div>
@@ -434,6 +442,11 @@ export function PostventaDashboard() {
                             <ConfidenceBadge confidence={item.bestConfidence} />
                           </td>
                           <td>{item.totalCandidates}</td>
+                          <td className="text-right">
+                            <Button type="button" size="sm" variant="outline" onClick={() => openDetail(item.id)}>
+                              Ver
+                            </Button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -445,7 +458,7 @@ export function PostventaDashboard() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between border-t border-jd-black/10 px-4 py-3 text-sm">
+            <div className="flex items-center justify-between border-t border-jd-black/10 px-4 py-3 text-sm">
                 <span className="text-jd-black/55">
                   {products ? `${formatNumber(products.total)} resultados` : "-"}
                 </span>
@@ -470,99 +483,131 @@ export function PostventaDashboard() {
                     Siguiente
                   </Button>
                 </div>
-              </div>
             </div>
-
-            <DetailPanel detail={detail} loading={loadingDetail} />
           </div>
         </div>
       </section>
+
+      {selectedId ? <DetailModal detail={detail} loading={loadingDetail} onClose={closeDetail} /> : null}
     </div>
   );
 }
 
-function DetailPanel({ detail, loading }: { detail: ProductDetail | null; loading: boolean }) {
+function DetailModal({
+  detail,
+  loading,
+  onClose,
+}: {
+  detail: ProductDetail | null;
+  loading: boolean;
+  onClose: () => void;
+}) {
   if (loading) {
     return (
-      <aside className="panel min-h-80">
-        <div className="panel-body flex min-h-80 items-center justify-center">
-          <Spinner />
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-jd-black/40 px-4 py-6">
+        <div className="panel w-full max-w-3xl">
+          <div className="panel-body flex min-h-64 items-center justify-center">
+            <Spinner />
+          </div>
         </div>
-      </aside>
+      </div>
     );
   }
 
   if (!detail) {
     return (
-      <aside className="panel min-h-80">
-        <div className="panel-body text-sm text-jd-black/60">Seleccioná un producto para ver candidatos.</div>
-      </aside>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-jd-black/40 px-4 py-6">
+        <div className="panel w-full max-w-3xl">
+          <div className="panel-header">
+            <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>
+            <Button type="button" size="sm" variant="ghost" onClick={onClose}>
+              Cerrar
+            </Button>
+          </div>
+          <div className="panel-body text-sm text-jd-black/60">No se pudo cargar el detalle del producto.</div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <aside className="panel min-h-80">
-      <div className="panel-header">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>
-          <h3 className="text-base font-semibold text-jd-black">{detail.name}</h3>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-jd-black/40 px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="postventa-detail-title"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="panel max-h-[90vh] w-full max-w-3xl overflow-hidden">
+        <div className="panel-header gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Detalle</p>
+            <h3 id="postventa-detail-title" className="text-base font-semibold text-jd-black">
+              {detail.name}
+            </h3>
+          </div>
+          <Button type="button" size="sm" variant="ghost" onClick={onClose}>
+            Cerrar
+          </Button>
         </div>
-      </div>
-      <div className="panel-body flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <Metric label="Precio" value={formatArs(detail.priceArs)} />
-          <Metric label="Mediana ML" value={formatArs(detail.medianMlPriceArs)} />
-          <Metric label="Brecha" value={formatSignedPercent(detail.ventVsMedianPct)} />
-          <Metric label="Candidatos" value={formatNumber(detail.totalCandidates)} />
-        </div>
+        <div className="panel-body flex max-h-[calc(90vh-84px)] flex-col gap-4 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <Metric label="Precio" value={formatArs(detail.priceArs)} />
+            <Metric label="Mediana ML" value={formatArs(detail.medianMlPriceArs)} />
+            <Metric label="Brecha" value={formatSignedPercent(detail.ventVsMedianPct)} />
+            <Metric label="Candidatos" value={formatNumber(detail.totalCandidates)} />
+          </div>
 
-        <div className="flex flex-wrap gap-2">
-          <StatusBadge status={detail.status} />
-          <ConfidenceBadge confidence={detail.bestConfidence} />
-        </div>
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge status={detail.status} />
+            <ConfidenceBadge confidence={detail.bestConfidence} />
+          </div>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Candidatos ML</p>
-          {detail.candidates.length > 0 ? (
-            detail.candidates.map((candidate) => (
-              <div key={candidate.id} className="rounded-lg border border-jd-black/10 bg-white/70 p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-jd-black">
-                      {candidate.url ? (
-                        <a href={candidate.url} target="_blank" rel="noreferrer" className="hover:text-jd-green">
-                          {candidate.name}
-                        </a>
-                      ) : (
-                        candidate.name
-                      )}
-                    </p>
-                    <p className="mt-1 text-xs text-jd-black/45">#{candidate.mlExternalId}</p>
+          <div className="flex flex-col gap-3">
+            <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Candidatos ML</p>
+            {detail.candidates.length > 0 ? (
+              detail.candidates.map((candidate) => (
+                <div key={candidate.id} className="rounded-lg border border-jd-black/10 bg-white/70 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-jd-black">
+                        {candidate.url ? (
+                          <a href={candidate.url} target="_blank" rel="noreferrer" className="hover:text-jd-green">
+                            {candidate.name}
+                          </a>
+                        ) : (
+                          candidate.name
+                        )}
+                      </p>
+                      <p className="mt-1 text-xs text-jd-black/45">#{candidate.mlExternalId}</p>
+                    </div>
+                    <span className="rounded bg-jd-cream px-2 py-1 text-xs font-semibold text-jd-black/70">
+                      {candidate.score}
+                    </span>
                   </div>
-                  <span className="rounded bg-jd-cream px-2 py-1 text-xs font-semibold text-jd-black/70">
-                    {candidate.score}
-                  </span>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-jd-black/60">
+                    <span>{formatArs(candidate.priceArs)}</span>
+                    <span className={gapClass(candidate.diffPct)}>{formatSignedPercent(candidate.diffPct)}</span>
+                    <ConfidenceBadge confidence={candidate.confidence} />
+                  </div>
+                  {candidate.reasons.length > 0 ? (
+                    <p className="mt-2 text-xs leading-relaxed text-jd-black/55">
+                      {candidate.reasons.slice(0, 4).join(" · ")}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-jd-black/60">
-                  <span>{formatArs(candidate.priceArs)}</span>
-                  <span className={gapClass(candidate.diffPct)}>{formatSignedPercent(candidate.diffPct)}</span>
-                  <ConfidenceBadge confidence={candidate.confidence} />
-                </div>
-                {candidate.reasons.length > 0 ? (
-                  <p className="mt-2 text-xs leading-relaxed text-jd-black/55">
-                    {candidate.reasons.slice(0, 4).join(" · ")}
-                  </p>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <p className="rounded-lg border border-jd-black/10 bg-white/70 p-3 text-sm text-jd-black/60">
-              Sin candidatos para los parámetros de la corrida.
-            </p>
-          )}
+              ))
+            ) : (
+              <p className="rounded-lg border border-jd-black/10 bg-white/70 p-3 text-sm text-jd-black/60">
+                Sin candidatos para los parámetros de la corrida.
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 

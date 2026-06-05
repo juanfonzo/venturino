@@ -42,8 +42,8 @@ El sistema debe:
 | Modelo de datos | Productos, snapshots de precio, corridas de importación, corridas de análisis, candidatos | `prisma/schema.prisma`, migración Prisma |
 | Matching | Normalizar nombres, inferir tipos, puntuar candidatos, excluir outliers de precio y calcular mediana | `lib/postventa/matching.ts` |
 | API web | Listados, detalle por producto, resumen, ejecución de análisis y descarga PDF | `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
-| UI postventa | Dashboard compacto, filtros, tabla de productos y detalle con candidatos | `app/(pages)/postventa/page.tsx`, `components/postventa/**` |
-| Reporte PDF | PDF de productos comparables con estado, mediana, brecha y candidatos usados | `app/api/reports/postventa/route.ts`, `scripts/generatePostventaReport.js` |
+| UI postventa | Dashboard compacto, filtros, tabla de productos completa y detalle de candidatos en modal | `app/(pages)/postventa/page.tsx`, `components/postventa/**` |
+| Reporte PDF | PDF compacto de productos comparables con estado, mediana, brecha y candidato principal | `app/api/reports/postventa/route.ts`, `scripts/generatePostventaReport.js` |
 | MCP candidato | Herramientas para consultar resumen, listar productos y ver detalle | `mcp/app/tools/postventa.py` |
 
 ## Flujo De Datos
@@ -357,7 +357,8 @@ Layout operativo:
 - KPIs superiores: productos Venturino, comparables, más caro, más barato, baja confianza, sin comparable.
 - Filtros compactos: búsqueda, estado, confianza, rango de diferencia, cantidad de candidatos.
 - Tabla paginada server-side con columnas: producto, precio Venturino, estado, mediana ML, brecha, confianza, candidatos.
-- Panel o modal de detalle con candidatos usados, motivos de score, links a ML y trazabilidad de precio.
+- Tabla de ancho completo con acción `Ver` por registro.
+- Modal de detalle con candidatos usados, motivos de score, links a ML y trazabilidad de precio.
 - Acción de descarga PDF.
 - Estado vacío para primera importación y para filtros sin resultados.
 - Estado de error si no hay corrida de análisis persistida.
@@ -394,5 +395,5 @@ Permisos:
 - ML conserva historial y productos inactivos no participan del análisis vigente.
 - La última corrida reproduce conteos similares a la calibración v0 con los datos actuales.
 - El listado web nunca carga todos los productos/candidatos sin límite.
-- El PDF muestra todos los candidatos usados por producto.
+- El PDF prioriza lectura ejecutiva: muestra el candidato principal por producto; el detalle completo queda en la UI.
 - El algoritmo queda testeado con casos de tipos específicos, precio fuera de banda y baja confianza.

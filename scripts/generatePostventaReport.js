@@ -123,11 +123,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 0.5,
     borderTopColor: COLORS.border,
-    minHeight: 28,
+    minHeight: 21,
   },
-  td: { padding: 4, fontSize: 7.7, color: COLORS.black },
+  td: { padding: 3, fontSize: 7.1, color: COLORS.black },
   tdBold: { fontFamily: 'Helvetica-Bold' },
-  productName: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: COLORS.black },
+  productName: { fontSize: 7.4, fontFamily: 'Helvetica-Bold', color: COLORS.black },
   statusPill: {
     alignSelf: 'flex-start',
     paddingVertical: 2,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusText: { color: COLORS.white, fontSize: 6.8, fontFamily: 'Helvetica-Bold' },
-  candidateLine: { fontSize: 6.8, color: COLORS.muted, marginTop: 2, lineHeight: 1.25 },
+  candidateLine: { fontSize: 6.3, color: COLORS.muted, marginTop: 1, lineHeight: 1.15 },
   filterBox: {
     backgroundColor: COLORS.white,
     borderWidth: 1,
@@ -160,13 +160,13 @@ const styles = StyleSheet.create({
 });
 
 const COLS = [
-  { key: 'product', label: 'Producto Venturino', width: '31%' },
+  { key: 'product', label: 'Producto Venturino', width: '33%' },
   { key: 'status', label: 'Estado', width: '16%' },
   { key: 'price', label: 'Precio', width: '10%' },
   { key: 'median', label: 'Mediana ML', width: '11%' },
   { key: 'gap', label: 'Brecha', width: '8%' },
   { key: 'conf', label: 'Conf.', width: '8%' },
-  { key: 'cands', label: 'Candidatos ML principales', width: '16%' },
+  { key: 'cands', label: 'Candidato ML principal', width: '14%' },
 ];
 
 function e(tag, props, ...children) {
@@ -312,6 +312,7 @@ function StatusBadge({ status }) {
 
 function ProductRow({ item, zebra }) {
   const bg = zebra ? COLORS.zebra : COLORS.white;
+  const bestCandidate = item.candidates[0] || null;
   return e(
     View,
     { style: [styles.tr, { backgroundColor: bg }], wrap: false },
@@ -334,20 +335,20 @@ function ProductRow({ item, zebra }) {
       View,
       { style: [styles.td, { width: COLS[6].width }] },
       e(Text, { style: styles.tdBold }, `${item.totalCandidates} cand.`),
-      ...item.candidates.map((candidate) =>
-        e(
-          Text,
-          { key: candidate.id, style: styles.candidateLine },
-          `${candidate.rank}. ${clean(candidate.name, 26)} · ${fmtArs(candidate.priceArs)} · ${candidate.score} pts`,
-        ),
-      ),
+      bestCandidate
+        ? e(
+            Text,
+            { style: styles.candidateLine },
+            `${clean(bestCandidate.name, 22)} · ${fmtArs(bestCandidate.priceArs)} · ${bestCandidate.score} pts`,
+          )
+        : null,
     ),
   );
 }
 
 function DetailPages({ data }) {
   const pages = [];
-  const chunkSize = 14;
+  const chunkSize = 20;
   for (let i = 0; i < data.items.length; i += chunkSize) {
     const chunk = data.items.slice(i, i + chunkSize);
     pages.push(
