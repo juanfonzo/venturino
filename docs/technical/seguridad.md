@@ -81,7 +81,7 @@ Endpoint operativo protegido por sesión:
 
 - `POST /api/admin/processes`
 
-Este endpoint se usa desde el control discreto del dashboard para ejecutar únicamente procesos allowlist: `pipeline:live` y `pipeline:postventa`. Requiere cookie de sesión válida, no acepta comandos arbitrarios, usa mutex por acción y timeout. Riesgo residual: como no existen roles, cualquier usuario autenticado puede verlo/ejecutarlo; si se agregan usuarios reales, debe restringirse a rol/admin.
+Este endpoint se usa desde el control discreto del dashboard para ejecutar únicamente procesos allowlist: `pipeline:live` y `pipeline:postventa`. Requiere cookie de sesión válida, no acepta comandos arbitrarios, usa mutex por acción y timeout. La ejecución se dispara en segundo plano y la UI consulta estado con `GET /api/admin/processes` para evitar timeouts HTTP/proxy durante pipelines largos. Riesgo residual: como no existen roles, cualquier usuario autenticado puede verlo/ejecutarlo; si se agregan usuarios reales, debe restringirse a rol/admin.
 
 ## Datos Sensibles
 

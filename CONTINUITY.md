@@ -83,6 +83,7 @@
   - Validacion Postventa UI: `npx tsc --noEmit`, `npm run lint` (4 warnings preexistentes), `npm run build`, login HTTP local y GET autenticado de `/postventa` y `/api/postventa/summary` OK. Navegador integrado no disponible en esta sesion (`iab` unavailable).
   - 2026-06-04 reporte PDF Postventa implementado: `/api/reports/postventa`, `scripts/generatePostventaReport.js`, boton `Descargar PDF` en `/postventa` y servicio `getPostventaReportData` con mismos filtros server-side.
   - Validacion Reporte Postventa: `node --check`, `npx tsc --noEmit`, `npm run lint` (mismas 4 warnings preexistentes), `npm run build`, render PDF con fixture temporal (`%PDF`) y endpoint local autenticado responde 404 JSON controlado porque la DB local no tiene corrida Postventa persistida.
+  - 2026-06-05 control de procesos ajustado: los botones muestran solo `Maquinaria` y `Postventa`; `/api/admin/processes` inicia pipelines en segundo plano y expone `GET` de estado para evitar 504 por requests largas. Dry-run de `pipeline:live` validado contra Mongo: conecta, detecta ultimas fechas y procesa 11591 registros sin escribir DB.
   - Contexto canónico actualizado para futuras tareas del kit. App real: Next.js 16.2.7, PostgreSQL/Prisma, MongoDB pipelines, ACARA CSV activo, auth JWT simple, diseño propio Venturino/John Deere.
   - Analisis postventa ejecutado sobre 127 productos activos Venturino y ML ultima extraccion.
   - Resultado final calibracion: 46 Venturino mas caro, 19 mas barato, 60 sin comparable, 2 baja confianza.

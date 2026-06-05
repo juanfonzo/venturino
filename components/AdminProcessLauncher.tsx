@@ -1,33 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ProcessAction = "maquinaria" | "postventa";
 
 type ProcessOption = {
   action: ProcessAction;
   label: string;
-  description: string;
 };
 
-type ProcessResponse = {
-  ok?: boolean;
-  label?: string;
+type ProcessState = {
+  action: ProcessAction;
+  label: string;
+  status: "running" | "success" | "failed";
+  startedAt: string;
+  finishedAt?: string;
+  exitCode?: number | null;
   error?: string;
   output?: string;
 };
 
+type ProcessResponse = {
+  ok?: boolean;
+  error?: string;
+  process?: ProcessState | null;
+};
+
 const PROCESS_OPTIONS: ProcessOption[] = [
-  {
-    action: "maquinaria",
-    label: "Maquinaria",
-    description: "Mongo maquinaria -> Postgres",
-  },
-  {
-    action: "postventa",
-    label: "Postventa",
-    description: "Mongo postventa -> Postgres + análisis",
-  },
+  { action: "maquinaria", label: "Maquinaria" },
+  { action: "postventa", label: "Postventa" },
 ];
 
 export function AdminProcessLauncher() {
@@ -35,13 +36,21 @@ export function AdminProcessLauncher() {
   const [running, setRunning] = useState<ProcessAction | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const pollingRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) window.clearInterval(pollingRef.current);
+    };
+  }, []);
 
   async function runProcess(option: ProcessOption) {
     const confirmed = window.confirm(`Ejecutar proceso: ${option.label}?`);
     if (!confirmed) return;
 
+    stopPolling();
     setRunning(option.action);
-    setMessage(null);
+    setMessage(`${option.label} iniciado.`);
     setError(null);
 
     try {
@@ -51,16 +60,59 @@ export function AdminProcessLauncher() {
         body: JSON.stringify({ action: option.action }),
       });
       const payload = (await response.json().catch(() => ({}))) as ProcessResponse;
-      if (!response.ok || !payload.ok) {
+      if (!response.ok || !payload.ok || !payload.process) {
         throw new Error(payload.error || `Error ${response.status}`);
       }
 
-      setMessage(`${payload.label || option.label} finalizó correctamente.`);
+      handleProcessState(payload.process);
+      if (payload.process.status === "running") {
+        startPolling(option.action);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
       setRunning(null);
+      setMessage(null);
+      setError(err instanceof Error ? err.message : "Error desconocido");
     }
+  }
+
+  function startPolling(action: ProcessAction) {
+    pollingRef.current = window.setInterval(async () => {
+      try {
+        const response = await fetch(`/api/admin/processes?action=${action}`);
+        const payload = (await response.json().catch(() => ({}))) as ProcessResponse;
+        if (!response.ok || !payload.ok) throw new Error(payload.error || `Error ${response.status}`);
+        if (payload.process) handleProcessState(payload.process);
+      } catch (err) {
+        stopPolling();
+        setRunning(null);
+        setError(err instanceof Error ? err.message : "No se pudo consultar el estado del proceso");
+      }
+    }, 4000);
+  }
+
+  function stopPolling() {
+    if (!pollingRef.current) return;
+    window.clearInterval(pollingRef.current);
+    pollingRef.current = null;
+  }
+
+  function handleProcessState(process: ProcessState) {
+    if (process.status === "running") {
+      setRunning(process.action);
+      setMessage(`${process.label} en ejecución.`);
+      return;
+    }
+
+    stopPolling();
+    setRunning(null);
+    if (process.status === "success") {
+      setMessage(`${process.label} finalizó correctamente.`);
+      setError(null);
+      return;
+    }
+
+    setMessage(null);
+    setError(process.error || `${process.label} terminó con error`);
   }
 
   return (
@@ -86,12 +138,11 @@ export function AdminProcessLauncher() {
                 type="button"
                 onClick={() => runProcess(option)}
                 disabled={running !== null}
-                className="rounded border border-jd-black/10 bg-jd-cream/60 px-3 py-2 text-left transition hover:border-jd-green/40 hover:bg-jd-yellow/30 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded border border-jd-black/10 bg-jd-cream/60 px-3 py-3 text-left transition hover:border-jd-green/40 hover:bg-jd-yellow/30 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span className="block font-semibold text-jd-black">
                   {running === option.action ? "Ejecutando..." : option.label}
                 </span>
-                <span className="block text-[11px] text-jd-black/55">{option.description}</span>
               </button>
             ))}
           </div>
