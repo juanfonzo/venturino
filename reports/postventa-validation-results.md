@@ -1,17 +1,17 @@
 # Resultado Validation Set Postventa
 
-Generado: 2026-06-04T19:23:21.140Z
+Generado: 2026-06-05T16:06:10.933Z
 Validation set: postventa-validation-set-v1
-Análisis base: 2026-06-04T19:22:59.254Z
+Análisis base: 2026-06-05T16:04:14.016Z
 
 ## KPIs
 
-- Casos evaluados: 28
-- Pass: 27
+- Casos evaluados: 29
+- Pass: 28
 - Warnings: 1
 - Fail: 0
 - Missing: 0
-- Positivos correctos: 2/2
+- Positivos correctos: 3/3
 - Falsos positivos accionables: 0
 
 ## Gates
@@ -19,7 +19,7 @@ Análisis base: 2026-06-04T19:22:59.254Z
 | Gate | Estado | Evidencia |
 |---|---|---|
 | all_items_present | OK | Casos ausentes en análisis: 0 |
-| positive_recall | OK | Positivos correctos 2/2 |
+| positive_recall | OK | Positivos correctos 3/3 |
 | no_actionable_false_positives | OK | Falsos positivos accionables: 0 |
 | no_rejected_ml_actionable | OK | Candidatos ML rechazados en estados accionables: 0 |
 | no_strict_failures | OK | Fallos estrictos: 0 |
@@ -56,3 +56,4 @@ Análisis base: 2026-06-04T19:22:59.254Z
 | PV-VAL-026 | HONDA | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-027 | HONDA | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-028 | HONDA | sin comparable | sin comparable | pass | - | OK |
+| PV-VAL-029 | HERRAMIENTA | comparable | Venturino más caro que ML | pass | Caja De Herramientas John Deere, 18 Piezas | OK |

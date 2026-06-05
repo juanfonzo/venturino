@@ -33,7 +33,7 @@
 | `/api/analisis-2/items` | GET | Detalle de publicaciones por empresa | `listAnalisis2Items` |
 | `/api/reports/venturino` | GET | Descargar PDF Venturino vs mercado | `scripts/generateVenturinoReport.js` vía proceso Node aislado |
 | `/api/sync-fx-rate` | GET/POST | Leer/sincronizar FX y recalcular ARS | `lib/fx-rate.ts` |
-| `/api/postventa/analyze` | POST | Ejecutar análisis postventa persistido | `runPostventaAnalysis` |
+| `/api/postventa/analyze` | POST | Ejecutar análisis postventa persistido desde host local | `runPostventaAnalysis` |
 | `/api/geo/provincias` | GET | Devolver GeoJSON local | FS local |
 
 ## Servicios Internos
@@ -55,8 +55,8 @@
 | Script npm | Archivo | Uso |
 |---|---|---|
 | `pipeline:live` | `scripts/pipeline-live.js` | Ingesta Mongo `algorym.venturino` a PostgreSQL. |
-| `pipeline:postventa` | `scripts/pipeline-postventa.js` | Ingesta Mongo `algorym.productos` a tablas `postventa_*`. |
-| `analysis:postventa-persist` | `scripts/run-postventa-analysis.js` | Ejecutar matching postventa persistido. |
+| `pipeline:postventa` | `scripts/pipeline-postventa.js` | Ingesta Mongo `algorym.productos` a tablas `postventa_*` y luego ejecuta análisis persistido directo. |
+| `analysis:postventa-persist` | `scripts/run-postventa-analysis.js` | Ejecutar matching postventa persistido directo, sin depender de HTTP local. |
 | `fx:sync` | `scripts/syncFxRate.js` | Sincronizar dólar oficial y recalcular precios. |
 | `report:venturino` | `scripts/generateVenturinoReport.js` | Generar PDF local. |
 
@@ -102,6 +102,7 @@
 - Los CSVs legacy del MVP fueron retirados y no deben consumirse en runtime.
 - `market-evolution` consulta `priceHistory` y deduplica por unidad en memoria.
 - `recalculateListingsPrices` usa SQL raw para actualización masiva.
+- Los scripts Postventa cargan servicios TypeScript compartidos con `scripts/register-ts.js`; producción debe incluir `lib/` en la imagen Docker.
 
 ## Tests
 

@@ -1,6 +1,6 @@
 # Project Context
 
-Última revisión de onboarding: 2026-06-04.
+Última revisión de onboarding: 2026-06-05.
 
 ## Proyecto
 
@@ -104,7 +104,10 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 - Análisis 1 excluye Venturino como competidor y compara por marca/modelo, con opciones de año/horas/fuzzy.
 - Análisis 2 excluye marketplaces sin vendedor real y calcula capital sólo sobre unidades únicas con precio.
 - ACARA es referencia, no fuente transaccional; el match puede ser manual o sugerido por similitud.
-- Postventa compara sólo productos activos de la última extracción por origen, con banda de precio por defecto ±40%.
+- Postventa compara sólo productos activos de la última extracción por origen, con banda de precio por defecto ±40% y estado `similar a ML` en ±10%.
+- `pipeline:postventa` importa Mongo a PostgreSQL y luego ejecuta `runPostventaAnalysis` directo; no requiere `POSTVENTA_ANALYSIS_URL`.
+- La calibración offline `analysis:postventa-matches` usa el mismo runtime productivo `lib/postventa/matching.ts`.
+- El PDF comercial Postventa exporta sólo `similar a ML`, `Venturino más caro que ML` y `Venturino más barato que ML`; excluye `sin comparable` y `baja confianza`.
 - Los CSVs de MVP no son fuente vigente. La excepción actual es ACARA, que todavía se lee desde `data/acara_precios_maquinaria_agricola_wide.csv` hasta migrar esa referencia a DB u otra fuente.
 
 ## Fuera De Alcance / No Implementado

@@ -84,6 +84,13 @@
   - 2026-06-04 reporte PDF Postventa implementado: `/api/reports/postventa`, `scripts/generatePostventaReport.js`, boton `Descargar PDF` en `/postventa` y servicio `getPostventaReportData` con mismos filtros server-side.
   - Validacion Reporte Postventa: `node --check`, `npx tsc --noEmit`, `npm run lint` (mismas 4 warnings preexistentes), `npm run build`, render PDF con fixture temporal (`%PDF`) y endpoint local autenticado responde 404 JSON controlado porque la DB local no tiene corrida Postventa persistida.
   - 2026-06-05 control de procesos ajustado: los botones muestran solo `Maquinaria` y `Postventa`; `/api/admin/processes` inicia pipelines en segundo plano y expone `GET` de estado para evitar 504 por requests largas. Dry-run de `pipeline:live` validado contra Mongo: conecta, detecta ultimas fechas y procesa 11591 registros sin escribir DB.
+  - 2026-06-05 ajustes Postventa: listado ordena por defecto comparables/candidatos primero y deja `sin comparable` al final; busqueda tokenizada reforzada con variantes simples; reporte PDF fuerza export comparable-only excluyendo `sin comparable`.
+  - 2026-06-05 matching Postventa refinado para herramientas: separa `CAJA_HERRAMIENTAS` de `KIT_HERRAMIENTAS`, evita mezclar caja con kits/switch/llaves de arranque, bloquea comparacion juguete vs articulo operativo y restringe `kit/set/caja` a contexto real de herramientas.
+  - Validacion Postventa tras ajustes: `analysis:postventa-matches -- --sample 1000` => 127 productos, 69 con comparable (54,3%), 58 sin comparable (45,7%), 6 baja confianza (4,7%). `test:postventa` 5/5 gates OK; `test:postventa-validation-set` 5/5 gates OK con 29 casos, 3/3 positivos y 0 falsos positivos accionables.
+  - 2026-06-05 revision pre-subida Postventa con kit dev IA: hallazgo corregido en metadata `similarityThreshold` de la API de lectura; matching productivo y calibracion offline unificados sobre `lib/postventa/matching.ts`.
+  - 2026-06-05 pipeline Postventa ajustado: `pipeline:postventa` y `analysis:postventa-persist` ejecutan `runPostventaAnalysis` directo via runtime TS local, sin depender de `POSTVENTA_ANALYSIS_URL` ni endpoint HTTP local.
+  - 2026-06-05 reporte PDF Postventa definido como benchmark comercial: exporta solo estados accionables (`similar a ML`, `Venturino mas caro que ML`, `Venturino mas barato que ML`) y excluye `sin comparable` y `baja confianza`.
+  - 2026-06-05 validacion final Postventa: `node --check` scripts tocados OK, `npx tsc --noEmit` OK, `analysis:postventa-matches -- --sample 1000` OK, `test:postventa` 5/5, `test:postventa-validation-set` 5/5, `pipeline:postventa -- --dry-run --no-sample` OK, `npm run lint` OK con 4 warnings preexistentes, `npm run build` OK.
   - Contexto canónico actualizado para futuras tareas del kit. App real: Next.js 16.2.7, PostgreSQL/Prisma, MongoDB pipelines, ACARA CSV activo, auth JWT simple, diseño propio Venturino/John Deere.
   - Analisis postventa ejecutado sobre 127 productos activos Venturino y ML ultima extraccion.
   - Resultado final calibracion: 46 Venturino mas caro, 19 mas barato, 60 sin comparable, 2 baja confianza.
@@ -103,7 +110,6 @@
   - Reglas de outliers y umbral YEAR_CONDITION_CONFLICT.
 
 ## Open questions (UNCONFIRMED):
-- Alcance del PDF Postventa: todos los productos, solo comparables o export segun filtros.
 - Si los vínculos ACARA deben seguir en localStorage o migrar a DB.
 - Si la app seguirá single-tenant interna o requerirá roles/permisos.
 - Si el control de procesos debe quedar para todos los usuarios autenticados o restringirse a rol/admin cuando exista modelo de usuarios.

@@ -119,15 +119,22 @@ export type ListPostventaProductsInput = {
   confidence?: string | null;
   sortBy?: string | null;
   sortDir?: string | null;
+  comparableOnly?: boolean | null;
 };
 
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 const REPORT_MAX_ROWS = 500;
+const REPORTABLE_POSTVENTA_STATUSES = [
+  "Venturino más caro que ML",
+  "Venturino más barato que ML",
+  "similar a ML",
+] as const;
 const analysisRunSelect = {
   id: true,
   algorithmVersion: true,
   priceBand: true,
+  similarityThreshold: true,
   topN: true,
   minScore: true,
   venturinoDate: true,
@@ -272,7 +279,7 @@ export async function getPostventaReportData(
     };
   }
 
-  const where = buildProductAnalysisWhere(analysisRun.id, input);
+  const where = buildProductAnalysisWhere(analysisRun.id, { ...input, comparableOnly: true });
   const orderBy = buildProductAnalysisOrderBy(input.sortBy, input.sortDir);
   const [total, rows] = await Promise.all([
     prisma.postventaProductAnalysis.count({ where }),
@@ -345,14 +352,19 @@ function buildProductAnalysisWhere(
     and.push({ bestConfidence: input.confidence });
   }
 
+  if (input.comparableOnly) {
+    and.push({ status: { in: [...REPORTABLE_POSTVENTA_STATUSES] } });
+  }
+
   const tokens = tokenizeSearch(input.search);
   tokens.forEach((token) => {
+    const variants = searchTokenVariants(token);
     and.push({
       venturinoProduct: {
-        OR: [
-          { name: { contains: token, mode: "insensitive" } },
-          { externalId: { contains: token, mode: "insensitive" } },
-        ],
+        OR: variants.flatMap((variant) => [
+          { name: { contains: variant, mode: "insensitive" } },
+          { externalId: { contains: variant, mode: "insensitive" } },
+        ]),
       },
     });
   });
@@ -368,6 +380,14 @@ function buildProductAnalysisOrderBy(sortBy?: string | null, sortDir?: string | 
   }
   if (sortBy === "status") return [{ status: direction }, { id: "asc" as Prisma.SortOrder }];
   if (sortBy === "confidence") return [{ bestConfidence: direction }, { id: "asc" as Prisma.SortOrder }];
+  if (!sortBy || sortBy === "comparableFirst") {
+    return [
+      { totalCandidates: "desc" as Prisma.SortOrder },
+      { strongCandidateCount: "desc" as Prisma.SortOrder },
+      { ventVsMedianPct: "desc" as Prisma.SortOrder },
+      { id: "asc" as Prisma.SortOrder },
+    ];
+  }
   return [{ ventVsMedianPct: direction }, { id: "asc" as Prisma.SortOrder }];
 }
 
@@ -411,7 +431,7 @@ function toAnalysisRunInfo(row: AnalysisRunRow): PostventaAnalysisRunInfo {
     id: row.id,
     algorithmVersion: row.algorithmVersion,
     priceBand: decimalToNumber(row.priceBand) ?? 0,
-    similarityThreshold: 0.1,
+    similarityThreshold: decimalToNumber(row.similarityThreshold) ?? 0.1,
     topN: row.topN,
     minScore: row.minScore,
     venturinoDate: formatDate(row.venturinoDate),
@@ -455,6 +475,24 @@ function tokenizeSearch(value?: string | null) {
     .split(/\s+/)
     .filter((token) => token.length >= 2)
     .slice(0, 6);
+}
+
+function searchTokenVariants(token: string) {
+  const variants = new Set([token]);
+  const synonyms: Record<string, string[]> = {
+    jhon: ["john"],
+    herramientas: ["herramienta"],
+    llaves: ["llave"],
+    correas: ["correa"],
+    filtros: ["filtro"],
+    baterias: ["bateria"],
+    aceites: ["aceite"],
+  };
+
+  synonyms[token]?.forEach((value) => variants.add(value));
+  if (token.length > 4 && token.endsWith("es")) variants.add(token.slice(0, -2));
+  if (token.length > 4 && token.endsWith("s")) variants.add(token.slice(0, -1));
+  return Array.from(variants).filter((value) => value.length >= 2);
 }
 
 function decimalToNumber(value: Prisma.Decimal | null | undefined) {

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-04T19:23:21.140Z",
+  "generatedAt": "2026-06-05T16:06:10.933Z",
   "validationSet": {
     "version": "postventa-validation-set-v1",
     "createdAt": "2026-06-04",
     "sourceAnalysisFile": "data/postventa_match_analysis.json"
   },
   "source": {
-    "analysisGeneratedAt": "2026-06-04T19:22:59.254Z",
+    "analysisGeneratedAt": "2026-06-05T16:04:14.016Z",
     "mongo": {
       "db": "algorym",
       "collection": "productos",
@@ -16,9 +16,10 @@
       }
     },
     "params": {
-      "sampleSize": 127,
+      "sampleSize": 1000,
       "topN": 20,
       "priceBand": 0.4,
+      "minScore": 20,
       "similarityThreshold": 0.1
     },
     "counts": {
@@ -32,13 +33,13 @@
     }
   },
   "kpis": {
-    "total": 28,
-    "passed": 27,
+    "total": 29,
+    "passed": 28,
     "warnings": 1,
     "failed": 0,
     "missing": 0,
-    "validComparableTotal": 2,
-    "validComparablePassed": 2,
+    "validComparableTotal": 3,
+    "validComparablePassed": 3,
     "actionableFalsePositives": 0,
     "rejectedMlActionable": 0
   },
@@ -51,7 +52,7 @@
     {
       "id": "positive_recall",
       "pass": true,
-      "evidence": "Positivos correctos 2/2"
+      "evidence": "Positivos correctos 3/3"
     },
     {
       "id": "no_actionable_false_positives",
@@ -625,6 +626,27 @@
       "actualBestCandidateId": null,
       "actualBestConfidence": "descartar",
       "actualStrongCandidateCount": 0,
+      "message": "OK",
+      "actionableFalsePositive": false,
+      "rejectedMlActionable": false
+    },
+    {
+      "id": "PV-VAL-029",
+      "venturinoProductId": "276171332",
+      "name": "Caja de herramientas John Deere de acero",
+      "family": "HERRAMIENTA",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "result": "pass",
+      "actualStatus": "Venturino más caro que ML",
+      "actualCandidateIds": [
+        "MLA3242261346",
+        "MLA2033573986"
+      ],
+      "actualBestCandidate": "Caja De Herramientas John Deere, 18 Piezas",
+      "actualBestCandidateId": "MLA3242261346",
+      "actualBestConfidence": "media",
+      "actualStrongCandidateCount": 2,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false

@@ -99,7 +99,7 @@ export function PostventaDashboard() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [confidence, setConfidence] = useState("");
-  const [sortBy, setSortBy] = useState("ventVsMedianPct");
+  const [sortBy, setSortBy] = useState("comparableFirst");
   const [sortDir, setSortDir] = useState("desc");
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -212,7 +212,7 @@ export function PostventaDashboard() {
     setSearch("");
     setStatus("");
     setConfidence("");
-    setSortBy("ventVsMedianPct");
+    setSortBy("comparableFirst");
     setSortDir("desc");
     setPage(1);
   }
@@ -353,6 +353,7 @@ export function PostventaDashboard() {
                 setPage(1);
               }}
             >
+              <option value="comparableFirst">Comparables primero</option>
               <option value="ventVsMedianPct">Brecha</option>
               <option value="name">Nombre</option>
               <option value="priceArs">Precio</option>

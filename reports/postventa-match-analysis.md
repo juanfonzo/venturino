@@ -1,13 +1,15 @@
 # Análisis de Matches Postventa
 
-Generado: 2026-06-04T19:22:59.254Z
+Generado: 2026-06-05T16:04:14.016Z
 
 ## Parámetros
 
 - Colección Mongo: `algorym.productos`
+- Algoritmo: `postventa-v0`
+- Runtime: lib/postventa/matching.ts
 - Venturino activo: 2026-05-30
 - ML activo: 2026-05-31
-- Muestra Venturino: 127
+- Muestra Venturino: 1000
 - Top candidatos por producto: 20
 - Banda de precio: ±40%
 - Umbral similar a ML: ±10%
@@ -18,7 +20,7 @@ Generado: 2026-06-04T19:22:59.254Z
 - Se usan sólo productos activos de la última extracción de cada origen.
 - Venturino se deduplica por `producto_id`; ML se deduplica por `ml_item_id` o fallback estable desde URL.
 - Los candidatos ML fuera de la banda de precio configurada se excluyen antes del scoring.
-- El scoring combina tipo de producto, tokens técnicos, tokens comunes, compatibilidad de marca y penalizaciones por tipos incompatibles.
+- El scoring se ejecuta desde `lib/postventa/matching.ts`, el mismo módulo que usa el análisis persistido.
 - La mediana ML se calcula con los candidatos aceptados dentro del top configurado.
 - Los estados del análisis priorizan confianza: sin candidatos, baja confianza, similar a ML, y luego comparación contra mediana ML.
 
@@ -31,16 +33,16 @@ Generado: 2026-06-04T19:22:59.254Z
 
 ## Resumen De La Muestra
 
-- sin comparable: 57
-- Venturino más barato que ML: 12
-- Venturino más caro que ML: 19
-- similar a ML: 34
-- baja confianza: 5
+- sin comparable: 58
+- Venturino más barato que ML: 8
+- Venturino más caro que ML: 22
+- similar a ML: 33
+- baja confianza: 6
 
 Confianza de candidatos usados:
 - alta: 16
-- media: 602
-- baja: 368
+- media: 547
+- baja: 235
 
 ## Muestra Y Candidatos
 
@@ -187,9 +189,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 165 válidos antes de top
+- Candidatos usados: 20 de 161 válidos antes de top
 - Candidatos excluidos por precio: 2998
-- Candidatos excluidos por score: 948
+- Candidatos excluidos por score: 952
 - Mediana ML: $144.823
 - Venturino vs mediana ML: 0.1%
 
@@ -241,33 +243,26 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: juego, tubo, sae, set, 21, pieza
 - Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 8
-- Candidatos usados: 18 de 18 válidos antes de top
+- Candidatos media/alta: 7
+- Candidatos usados: 11 de 11 válidos antes de top
 - Candidatos excluidos por precio: 3016
-- Candidatos excluidos por score: 1077
-- Mediana ML: $118.392
-- Venturino vs mediana ML: 25.9%
+- Candidatos excluidos por score: 1084
+- Mediana ML: $114.799
+- Venturino vs mediana ML: 29.8%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -19.5% | tipo: HERRAMIENTA; tokens comunes: juego, tubo, pieza |
-| 2 | media | 57 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | -33.2% | tipo: HERRAMIENTA; tokens comunes: juego, tubo, pieza |
-| 3 | media | 56 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -9.0% | tipo: HERRAMIENTA; tokens comunes: juego, tubo, pieza |
-| 4 | media | 56 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -25.5% | tipo: HERRAMIENTA; tokens comunes: juego, pieza; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -6.4% | tipo: HERRAMIENTA; tokens comunes: pieza; compatibilidad/marca: John Deere |
-| 6 | media | 49 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -20.1% | tipo: HERRAMIENTA; tokens comunes: juego, tubo |
-| 7 | media | 49 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -36.6% | tipo: HERRAMIENTA; tokens comunes: juego; compatibilidad/marca: John Deere |
-| 8 | media | 48 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | 30.3% | tipo: HERRAMIENTA; tokens comunes: pieza; compatibilidad/marca: John Deere |
-| 9 | baja | 43 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -23.0% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 10 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -11.5% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 11 | baja | 42 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -26.0% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 12 | baja | 41 | [Switch Tambor De Arranque Sin Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-sin-llave-tractores-john-deere/up/MLAU155926304#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1245977771&sid=search) | $151.758 | 1.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 41 | [John Deere Pop Up Upp Tractor Playhouse Para Niños \| Llave Y](https://www.mercadolibre.com.ar/john-deere-pop-up-upp-tractor-playhouse-para-ninos-llave-y/p/MLA2068378549#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=47&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2382371904&sid=search) | $117.784 | -21.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 14 | baja | 41 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -26.0% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 15 | baja | 41 | [Switch Tambor De Arranque Con Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-con-llave-tractores-john-deere/up/MLAU3120846470#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA2050159868&sid=search) | $189.097 | 26.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 16 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | -37.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 17 | baja | 31 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -17.6% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 18 | baja | 31 | [John Deere Power Tools Motosierra De Juguete, Herramienta De](https://www.mercadolibre.com.ar/john-deere-power-tools-chainsaw-toy-construction-tool-with/p/MLA2045929485#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=16&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947932&sid=search) | $93.190 | -37.5% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
+| 1 | media | 57 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -19.5% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo, pieza |
+| 2 | media | 57 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | -33.2% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo, pieza |
+| 3 | media | 56 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -9.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo, pieza |
+| 4 | media | 56 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -25.5% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, pieza; compatibilidad/marca: John Deere |
+| 5 | media | 49 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -20.1% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo |
+| 6 | media | 49 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -36.6% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego; compatibilidad/marca: John Deere |
+| 7 | media | 48 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | 30.3% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza; compatibilidad/marca: John Deere |
+| 8 | baja | 43 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -23.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza |
+| 9 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -11.5% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza |
+| 10 | baja | 42 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -26.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza |
+| 11 | baja | 41 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -26.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza |
 
 ### 11. Tractor con empacadora, vagón y 12 pacas de heno John Deere
 
@@ -469,19 +464,16 @@ _Sin candidatos válidos con los parámetros actuales._
 - ID Venturino: `276130213`
 - Precio Venturino: $110.000
 - Tokens: bolso, duomo, bag
-- Estado análisis: **baja confianza**
-- Mejor confianza: baja
+- Estado análisis: **sin comparable**
+- Mejor confianza: descartar
 - Candidatos media/alta: 0
-- Candidatos usados: 2 de 2 válidos antes de top
+- Candidatos usados: 0 de 0 válidos antes de top
 - Candidatos excluidos por precio: 2961
-- Candidatos excluidos por score: 1148
-- Mediana ML: $76.500
-- Venturino vs mediana ML: 43.8%
+- Candidatos excluidos por score: 1150
+- Mediana ML: -
+- Venturino vs mediana ML: -
 
-| # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
-|---:|---|---:|---|---:|---:|---|
-| 1 | baja | 33 | [Kit De Herramienta 28 Piezas + Bolso Jdhs1m28 Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas--bolso-jdhs1m28-jadever/up/MLAU2956199503#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1471463061&sid=search) | $84.000 | -23.6% | tipo: BOLSO; penalización tipo adicional candidato: HERRAMIENTA; tokens comunes: bolso |
-| 2 | baja | 33 | [Juego Herramientas Jadever 28 Piezas Jdhs1m28 Con Bolso](https://www.mercadolibre.com.ar/juego-herramientas-jadever-28-piezas-jdhs1m28-con-bolso/up/MLAU3405463290#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=39&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2316492036&sid=search) | $69.000 | -37.3% | tipo: BOLSO; penalización tipo adicional candidato: HERRAMIENTA; tokens comunes: bolso |
+_Sin candidatos válidos con los parámetros actuales._
 
 ### 22. Botella Atuel Blanca John Deere
 
@@ -585,35 +577,17 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: caja, herramienta, acero
 - Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 6
-- Candidatos usados: 20 de 22 válidos antes de top
+- Candidatos media/alta: 2
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 2986
-- Candidatos excluidos por score: 1103
-- Mediana ML: $116.292
-- Venturino vs mediana ML: 20.4%
+- Candidatos excluidos por score: 1123
+- Mediana ML: $112.902
+- Venturino vs mediana ML: 24.0%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 61 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -0.4% | tipo: HERRAMIENTA; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
-| 2 | media | 59 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | -38.3% | tipo: HERRAMIENTA; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
-| 3 | media | 50 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -32.5% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 4 | media | 50 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | -33.2% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | 38.7% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 6 | media | 47 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -12.3% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
-| 7 | baja | 44 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -18.0% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 8 | baja | 43 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -21.2% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 9 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -5.8% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 10 | baja | 42 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -21.2% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 11 | baja | 41 | [Switch Tambor De Arranque Sin Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-sin-llave-tractores-john-deere/up/MLAU155926304#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1245977771&sid=search) | $151.758 | 8.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 12 | baja | 41 | [John Deere Pop Up Upp Tractor Playhouse Para Niños \| Llave Y](https://www.mercadolibre.com.ar/john-deere-pop-up-upp-tractor-playhouse-para-ninos-llave-y/p/MLA2068378549#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=47&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2382371904&sid=search) | $117.784 | -15.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 41 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -20.7% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 14 | baja | 41 | [Switch Tambor De Arranque Con Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-con-llave-tractores-john-deere/up/MLAU3120846470#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA2050159868&sid=search) | $189.097 | 35.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 15 | baja | 40 | [John Deere Power Tools Motosierra De Juguete, Herramienta De](https://www.mercadolibre.com.ar/john-deere-power-tools-chainsaw-toy-construction-tool-with/p/MLA2045929485#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=16&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947932&sid=search) | $93.190 | -33.4% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 16 | baja | 40 | [Juguete Para Armar Skid Steer John Deere Con Herramienta De](https://www.mercadolibre.com.ar/john-deere-skid-steer-building-toy-with-ratchet-tool-13-pc/p/MLA2073743520#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=11&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA3004308200&sid=search) | $85.241 | -39.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 17 | baja | 35 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -3.2% | tipo: HERRAMIENTA |
-| 18 | baja | 35 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -14.3% | tipo: HERRAMIENTA |
-| 19 | baja | 35 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -15.0% | tipo: HERRAMIENTA |
-| 20 | baja | 35 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | -28.9% | tipo: HERRAMIENTA |
+| 1 | media | 61 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -0.4% | tipo: CAJA_HERRAMIENTAS; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
+| 2 | media | 59 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | -38.3% | tipo: CAJA_HERRAMIENTAS; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
 
 ### 28. Caja de herramientas John Deere verde con bandeja amarilla
 
@@ -622,35 +596,16 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: caja, herramienta, verde, bandeja, amarilla
 - Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 6
-- Candidatos usados: 20 de 21 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 1 de 1 válidos antes de top
 - Candidatos excluidos por precio: 3151
-- Candidatos excluidos por score: 939
-- Mediana ML: $137.511
-- Venturino vs mediana ML: 33.1%
+- Candidatos excluidos por score: 959
+- Mediana ML: $139.438
+- Venturino vs mediana ML: 31.2%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 58 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -23.8% | tipo: HERRAMIENTA; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Banco De Trabajo Infantil John Deere, Taller De Herramientas](https://www.mercadolibre.com.ar/john-deere-kids-workbench-power-tools-workshop-build-your/p/MLA2048863444#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=15&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA1567156299&sid=search) | $219.881 | 20.2% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -27.9% | tipo: HERRAMIENTA; tokens comunes: herramienta, verde |
-| 4 | media | 48 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | 6.1% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 5 | media | 48 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -39.7% | tipo: HERRAMIENTA; tokens comunes: herramienta, verde |
-| 6 | media | 46 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -32.9% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
-| 7 | baja | 43 | [Bandeja Cocacola Original Made In Usa](https://www.mercadolibre.com.ar/bandeja-cocacola-original-made-in-usa/up/MLAU224563901#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=78722cfd-820f-4991-a793-d0b24fba0460&wid=MLA1136594485&sid=search) | $175.000 | -4.4% | tipo: BANDEJA; tokens comunes: bandeja |
-| 8 | baja | 43 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -37.3% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 9 | baja | 42 | [Set De Herramientas Stardom 218 Piezas Maletín Profesional](https://www.mercadolibre.com.ar/set-de-herramientas-stardom-218-piezas-maletin-profesional/up/MLAU3982921993#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=26&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3360168322&sid=search) | $220.000 | 20.2% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 10 | baja | 42 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -39.7% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 11 | baja | 41 | [Switch Tambor De Arranque Con Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-con-llave-tractores-john-deere/up/MLAU3120846470#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA2050159868&sid=search) | $189.097 | 3.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 12 | baja | 41 | [Switch Tambor De Arranque Sin Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-sin-llave-tractores-john-deere/up/MLAU155926304#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1245977771&sid=search) | $151.758 | -17.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 41 | [John Deere Pop Up Upp Tractor Playhouse Para Niños \| Llave Y](https://www.mercadolibre.com.ar/john-deere-pop-up-upp-tractor-playhouse-para-ninos-llave-y/p/MLA2068378549#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=47&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2382371904&sid=search) | $117.784 | -35.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 14 | baja | 41 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -39.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 15 | baja | 35 | [Juego Llaves Tubo Crique 121 Pzs Mecanica Profesional](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-121-pzs-mecanica-profesional/up/MLAU3962621953#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323733620&sid=search) | $223.999 | 22.4% | tipo: HERRAMIENTA |
-| 16 | baja | 35 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -25.9% | tipo: HERRAMIENTA |
-| 17 | baja | 35 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -34.4% | tipo: HERRAMIENTA |
-| 18 | baja | 35 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -35.0% | tipo: HERRAMIENTA |
-| 19 | baja | 31 | [Set Ertl 1:64 John Deere 24 Piezas - A Pedido_exkarg](https://www.mercadolibre.com.ar/set-ertl-164-john-deere-24-piezas--a-pedidoexkarg/up/MLAU3223535397#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=product&tracking_id=157a59ac-0888-4a44-83e5-fe9337e3e88c&wid=MLA2105563026&sid=search) | $233.008 | 27.3% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 20 | baja | 24 | [Correa De Herramientas Interactiva Con Sonidos John Deere](https://www.mercadolibre.com.ar/correa-de-herramientas-interactiva-con-sonidos-john-deere/up/MLAU3868845007#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1729007443&sid=search) | $194.218 | 6.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: CORREA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
+| 1 | media | 58 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -23.8% | tipo: CAJA_HERRAMIENTAS; tokens comunes: caja, herramienta; compatibilidad/marca: John Deere |
 
 ### 29. Camión Volcador John Deere Big Scoop Dump Truck
 
@@ -659,35 +614,35 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: camion, volcador, big, scoop, dump, truck
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
-- Candidatos media/alta: 17
-- Candidatos usados: 20 de 165 válidos antes de top
+- Candidatos media/alta: 16
+- Candidatos usados: 20 de 161 válidos antes de top
 - Candidatos excluidos por precio: 2937
-- Candidatos excluidos por score: 1009
-- Mediana ML: $123.377
-- Venturino vs mediana ML: 5.4%
+- Candidatos excluidos por score: 1013
+- Mediana ML: $125.520
+- Venturino vs mediana ML: 3.6%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 62 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -5.5% | tipo: JUGUETE; penalización tipo adicional candidato: HERRAMIENTA; tokens comunes: big, scoop, dump, truck; compatibilidad/marca: John Deere |
-| 2 | media | 56 | [Tomy John Deere Sandbox Big Scoop Excavadora De Juguete Con](https://www.mercadolibre.com.ar/tomy-john-deere-sandbox-big-scoop-excavadora-de-juguete-con/up/MLAU4031048978#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=8&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA3384748312&sid=search) | $123.605 | -4.9% | tipo: JUGUETE; tokens comunes: big, scoop; compatibilidad/marca: John Deere |
-| 3 | media | 56 | [John Deere Build A Buddy Green Dump Truck Toy Lp](https://www.mercadolibre.com.ar/john-deere-build-a-buddy-green-dump-truck-toy-lp/up/MLAU3986738139#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA1536008371&sid=search) | $123.149 | -5.3% | tipo: JUGUETE; tokens comunes: dump, truck; compatibilidad/marca: John Deere |
-| 4 | media | 56 | [Tomy John Deere Sandbox Big Scoop Excavadora De Juguete Con](https://www.mercadolibre.com.ar/john-deere-sandbox-big-scoop-excavator-toy-with-tilting-d/p/MLA2062616370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA2596748172&sid=search) | $110.868 | -14.7% | tipo: JUGUETE; tokens comunes: big, scoop; compatibilidad/marca: John Deere |
-| 5 | media | 55 | [Set De Vehículos John Deere Dump Truck And Tractor Kids 18m+](https://www.mercadolibre.com.ar/john-deere-sandbox-toys-dump-truck-toy-tractor/p/MLA2062906056#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1556138081&sid=search) | $107.098 | -17.6% | tipo: JUGUETE; tokens comunes: dump, truck; compatibilidad/marca: John Deere |
-| 6 | media | 49 | [Camion De Juguete John Deere 46510](https://www.mercadolibre.com.ar/john-deere-big-scoop-dump-truck-toy-con-herramientas-de-caja/p/MLA2049650343#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=7&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2170188784&sid=search) | $116.020 | -10.8% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 7 | media | 49 | [Juguete Cosechadora John Deere S780 Con Camión Freightliner](https://www.mercadolibre.com.ar/toy-john-deere-s780-combine-w-freightliner-lowboy-trailer/p/MLA2061396612#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA3004486122&sid=search) | $159.796 | 22.9% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 8 | media | 49 | [Set De Transporte De Camiones De Juguete John Deere Farmin'](https://www.mercadolibre.com.ar/john-deere-farmin-friends-toy-hauling-set-kids-vehicle/p/MLA2076277978#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA3339182498&sid=search) | $90.865 | -30.1% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 9 | media | 48 | [Tractor Monster Truck John Deere De Juguete Con Luces Y Soni](https://www.mercadolibre.com.ar/toy-john-deere-monster-truck-tractor-w-lights-sounds/p/MLA2039435135#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA2142655686&sid=search) | $127.435 | -2.0% | tipo: JUGUETE; tokens comunes: truck; compatibilidad/marca: John Deere |
-| 10 | media | 48 | [Réplica Camión De Grano John Deere Ertl 1:64 Metal Y](https://www.mercadolibre.com.ar/replica-camion-de-grano-john-deere-ertl-164-metal-y/up/MLAU3269069622#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=14&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA2149534314&sid=search) | $139.199 | 7.1% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 11 | media | 48 | [Set Vehaculos John Deere Tomy Camian Volcador Tractor](https://www.mercadolibre.com.ar/sandboxes-john-deere-35874az-verde/p/MLA2070467658#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3036951256&sid=search) | $109.135 | -16.1% | tipo: JUGUETE; tokens comunes: volcador; compatibilidad/marca: John Deere |
-| 12 | media | 48 | [Réplica De Camión Semirremolque Grain Escala 1:64 John Deere](https://articulo.mercadolibre.com.ar/MLA-2535939168-replica-de-camion-semirremolque-grain-escala-164-john-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=item&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f) | $103.237 | -20.6% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 13 | media | 48 | [Tractor De Juguete Tomy John Deere Big Farm Con Luces Y Soni](https://www.mercadolibre.com.ar/tractor-de-juguete-tomy-john-deere-big-farm-con-luces-y-soni/p/MLA2062292510#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=9&type=product&tracking_id=bf2a25e5-4a22-4e44-8e10-2dd29b12c0ae&wid=&sid=search) | $96.260 | -26.0% | tipo: JUGUETE; tokens comunes: big; compatibilidad/marca: John Deere |
-| 14 | media | 48 | [Ertl John Deere Grain Semi Truck Toy Replica Escala 1:64 De](https://www.mercadolibre.com.ar/ertl-john-deere-grain-semi-truck-toy-replica-164-scale/p/MLA2063214672#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=33&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2587960862&sid=search) | $91.427 | -29.7% | tipo: JUGUETE; tokens comunes: truck; compatibilidad/marca: John Deere |
-| 15 | media | 48 | [Réplica Camión De Grano John Deere Ertl 1:64 Metal Y](https://www.mercadolibre.com.ar/replica-camion-de-grano-john-deere-ertl-164-metal-y/up/MLAU3890736594#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3154241320&sid=search) | $172.306 | 32.5% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 16 | media | 48 | [Set De Juguetes John Deere Big Farm 318 G Skid Steer 1:16 A](https://www.mercadolibre.com.ar/toy-set-john-deere-big-farm-318g-skid-steer-116-scale-3/p/MLA2039778299#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA1774875161&sid=search) | $177.443 | 36.5% | tipo: JUGUETE; tokens comunes: big; compatibilidad/marca: John Deere |
-| 17 | media | 48 | [Camion John Deere Ertl 1/64 Yellow Farm - A Pedido_exkarg](https://www.mercadolibre.com.ar/camion-john-deere-ertl-164-yellow-farm--a-pedidoexkarg/up/MLAU2863081376#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=d100933a-8745-47ee-90c9-19d40406f603&wid=MLA1462714353&sid=search) | $180.998 | 39.2% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 18 | baja | 42 | [Set De Juguetes, Tractores, Camiones Tomy, 20 Pzs, De Granja](https://www.mercadolibre.com.ar/toy-set-john-deere-tractor-and-truck-w-20-farm-toys-5-year/p/MLA2040633234#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3254753964&sid=search) | $136.571 | 5.1% | tipo: JUGUETE; tokens comunes: camion |
-| 19 | baja | 42 | [Ertl 1/32 Camión Vintage & Tractor](https://www.mercadolibre.com.ar/ertl-132-camion-vintage--tractor/up/MLAU2798551609#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=3&type=product&tracking_id=da44d555-ec5a-4f70-8317-f8fa0fe3bc57&wid=MLA1461113825&sid=search) | $140.000 | 7.7% | tipo: JUGUETE; tokens comunes: camion |
-| 20 | baja | 41 | [John Deere 8600 Spfh 1/64 Escala Con Cabezal De Maíz](https://www.mercadolibre.com.ar/john-deere-8600-spfh-164-escala-con-cabezal-de-maiz/up/MLAU3263326141#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1507784499&sid=search) | $130.399 | 0.3% | tipo: JUGUETE; compatibilidad/marca: John Deere |
+| 1 | media | 56 | [Tomy John Deere Sandbox Big Scoop Excavadora De Juguete Con](https://www.mercadolibre.com.ar/tomy-john-deere-sandbox-big-scoop-excavadora-de-juguete-con/up/MLAU4031048978#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=8&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA3384748312&sid=search) | $123.605 | -4.9% | tipo: JUGUETE; tokens comunes: big, scoop; compatibilidad/marca: John Deere |
+| 2 | media | 56 | [John Deere Build A Buddy Green Dump Truck Toy Lp](https://www.mercadolibre.com.ar/john-deere-build-a-buddy-green-dump-truck-toy-lp/up/MLAU3986738139#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA1536008371&sid=search) | $123.149 | -5.3% | tipo: JUGUETE; tokens comunes: dump, truck; compatibilidad/marca: John Deere |
+| 3 | media | 56 | [Tomy John Deere Sandbox Big Scoop Excavadora De Juguete Con](https://www.mercadolibre.com.ar/john-deere-sandbox-big-scoop-excavator-toy-with-tilting-d/p/MLA2062616370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA2596748172&sid=search) | $110.868 | -14.7% | tipo: JUGUETE; tokens comunes: big, scoop; compatibilidad/marca: John Deere |
+| 4 | media | 55 | [Set De Vehículos John Deere Dump Truck And Tractor Kids 18m+](https://www.mercadolibre.com.ar/john-deere-sandbox-toys-dump-truck-toy-tractor/p/MLA2062906056#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1556138081&sid=search) | $107.098 | -17.6% | tipo: JUGUETE; tokens comunes: dump, truck; compatibilidad/marca: John Deere |
+| 5 | media | 49 | [Camion De Juguete John Deere 46510](https://www.mercadolibre.com.ar/john-deere-big-scoop-dump-truck-toy-con-herramientas-de-caja/p/MLA2049650343#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=7&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2170188784&sid=search) | $116.020 | -10.8% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 6 | media | 49 | [Juguete Cosechadora John Deere S780 Con Camión Freightliner](https://www.mercadolibre.com.ar/toy-john-deere-s780-combine-w-freightliner-lowboy-trailer/p/MLA2061396612#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA3004486122&sid=search) | $159.796 | 22.9% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 7 | media | 49 | [Set De Transporte De Camiones De Juguete John Deere Farmin'](https://www.mercadolibre.com.ar/john-deere-farmin-friends-toy-hauling-set-kids-vehicle/p/MLA2076277978#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA3339182498&sid=search) | $90.865 | -30.1% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 8 | media | 48 | [Tractor Monster Truck John Deere De Juguete Con Luces Y Soni](https://www.mercadolibre.com.ar/toy-john-deere-monster-truck-tractor-w-lights-sounds/p/MLA2039435135#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA2142655686&sid=search) | $127.435 | -2.0% | tipo: JUGUETE; tokens comunes: truck; compatibilidad/marca: John Deere |
+| 9 | media | 48 | [Réplica Camión De Grano John Deere Ertl 1:64 Metal Y](https://www.mercadolibre.com.ar/replica-camion-de-grano-john-deere-ertl-164-metal-y/up/MLAU3269069622#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=14&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA2149534314&sid=search) | $139.199 | 7.1% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 10 | media | 48 | [Set Vehaculos John Deere Tomy Camian Volcador Tractor](https://www.mercadolibre.com.ar/sandboxes-john-deere-35874az-verde/p/MLA2070467658#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3036951256&sid=search) | $109.135 | -16.1% | tipo: JUGUETE; tokens comunes: volcador; compatibilidad/marca: John Deere |
+| 11 | media | 48 | [Réplica De Camión Semirremolque Grain Escala 1:64 John Deere](https://articulo.mercadolibre.com.ar/MLA-2535939168-replica-de-camion-semirremolque-grain-escala-164-john-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=item&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f) | $103.237 | -20.6% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 12 | media | 48 | [Tractor De Juguete Tomy John Deere Big Farm Con Luces Y Soni](https://www.mercadolibre.com.ar/tractor-de-juguete-tomy-john-deere-big-farm-con-luces-y-soni/p/MLA2062292510#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=9&type=product&tracking_id=bf2a25e5-4a22-4e44-8e10-2dd29b12c0ae&wid=&sid=search) | $96.260 | -26.0% | tipo: JUGUETE; tokens comunes: big; compatibilidad/marca: John Deere |
+| 13 | media | 48 | [Ertl John Deere Grain Semi Truck Toy Replica Escala 1:64 De](https://www.mercadolibre.com.ar/ertl-john-deere-grain-semi-truck-toy-replica-164-scale/p/MLA2063214672#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=33&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2587960862&sid=search) | $91.427 | -29.7% | tipo: JUGUETE; tokens comunes: truck; compatibilidad/marca: John Deere |
+| 14 | media | 48 | [Réplica Camión De Grano John Deere Ertl 1:64 Metal Y](https://www.mercadolibre.com.ar/replica-camion-de-grano-john-deere-ertl-164-metal-y/up/MLAU3890736594#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3154241320&sid=search) | $172.306 | 32.5% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 15 | media | 48 | [Set De Juguetes John Deere Big Farm 318 G Skid Steer 1:16 A](https://www.mercadolibre.com.ar/toy-set-john-deere-big-farm-318g-skid-steer-116-scale-3/p/MLA2039778299#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA1774875161&sid=search) | $177.443 | 36.5% | tipo: JUGUETE; tokens comunes: big; compatibilidad/marca: John Deere |
+| 16 | media | 48 | [Camion John Deere Ertl 1/64 Yellow Farm - A Pedido_exkarg](https://www.mercadolibre.com.ar/camion-john-deere-ertl-164-yellow-farm--a-pedidoexkarg/up/MLAU2863081376#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=d100933a-8745-47ee-90c9-19d40406f603&wid=MLA1462714353&sid=search) | $180.998 | 39.2% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
+| 17 | baja | 42 | [Set De Juguetes, Tractores, Camiones Tomy, 20 Pzs, De Granja](https://www.mercadolibre.com.ar/toy-set-john-deere-tractor-and-truck-w-20-farm-toys-5-year/p/MLA2040633234#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3254753964&sid=search) | $136.571 | 5.1% | tipo: JUGUETE; tokens comunes: camion |
+| 18 | baja | 42 | [Ertl 1/32 Camión Vintage & Tractor](https://www.mercadolibre.com.ar/ertl-132-camion-vintage--tractor/up/MLAU2798551609#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=3&type=product&tracking_id=da44d555-ec5a-4f70-8317-f8fa0fe3bc57&wid=MLA1461113825&sid=search) | $140.000 | 7.7% | tipo: JUGUETE; tokens comunes: camion |
+| 19 | baja | 41 | [John Deere 8600 Spfh 1/64 Escala Con Cabezal De Maíz](https://www.mercadolibre.com.ar/john-deere-8600-spfh-164-escala-con-cabezal-de-maiz/up/MLAU3263326141#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1507784499&sid=search) | $130.399 | 0.3% | tipo: JUGUETE; compatibilidad/marca: John Deere |
+| 20 | baja | 41 | [Ertl Prestige Collection Réplica De John Deere 843l-ii 1:50](https://www.mercadolibre.com.ar/farm-toy-john-deere-prestige-collection-feller-buncher-150/p/MLA2059115172#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=33&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1588489533&sid=search) | $129.533 | -0.4% | tipo: JUGUETE; compatibilidad/marca: John Deere |
 
 ### 30. Camión volquete Big Scoop John Deere
 
@@ -696,12 +651,12 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: camion, volquete, big, scoop
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
-- Candidatos media/alta: 16
-- Candidatos usados: 20 de 165 válidos antes de top
+- Candidatos media/alta: 15
+- Candidatos usados: 20 de 160 válidos antes de top
 - Candidatos excluidos por precio: 3003
-- Candidatos excluidos por score: 943
-- Mediana ML: $137.885
-- Venturino vs mediana ML: 7.3%
+- Candidatos excluidos por score: 948
+- Mediana ML: $139.600
+- Venturino vs mediana ML: 6.0%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
@@ -720,11 +675,11 @@ _Sin candidatos válidos con los parámetros actuales._
 | 13 | media | 49 | [Juego De Juguetes Sandbox Tomy John Deere, Volquete Y Pala](https://www.mercadolibre.com.ar/sandbox-toy-set-tomy-john-deere-dump-truck-bucket-shovel/p/MLA2039843792#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2362783516&sid=search) | $90.105 | -39.1% | tipo: JUGUETE; tokens comunes: volquete; compatibilidad/marca: John Deere |
 | 14 | media | 48 | [Set De Juguetes John Deere Big Farm 318 G Skid Steer 1:16 A](https://www.mercadolibre.com.ar/toy-set-john-deere-big-farm-318g-skid-steer-116-scale-3/p/MLA2039778299#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA1774875161&sid=search) | $177.443 | 19.9% | tipo: JUGUETE; tokens comunes: big; compatibilidad/marca: John Deere |
 | 15 | media | 48 | [Camion John Deere Ertl 1/64 Yellow Farm - A Pedido_exkarg](https://www.mercadolibre.com.ar/camion-john-deere-ertl-164-yellow-farm--a-pedidoexkarg/up/MLAU2863081376#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=d100933a-8745-47ee-90c9-19d40406f603&wid=MLA1462714353&sid=search) | $180.998 | 22.3% | tipo: JUGUETE; tokens comunes: camion; compatibilidad/marca: John Deere |
-| 16 | media | 47 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -17.0% | tipo: JUGUETE; penalización tipo adicional candidato: HERRAMIENTA; tokens comunes: big, scoop; compatibilidad/marca: John Deere |
-| 17 | baja | 43 | [Ertl 1/32 Camión Vintage & Tractor](https://www.mercadolibre.com.ar/ertl-132-camion-vintage--tractor/up/MLAU2798551609#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=3&type=product&tracking_id=da44d555-ec5a-4f70-8317-f8fa0fe3bc57&wid=MLA1461113825&sid=search) | $140.000 | -5.4% | tipo: JUGUETE; tokens comunes: camion |
-| 18 | baja | 42 | [Set De Juguetes, Tractores, Camiones Tomy, 20 Pzs, De Granja](https://www.mercadolibre.com.ar/toy-set-john-deere-tractor-and-truck-w-20-farm-toys-5-year/p/MLA2040633234#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3254753964&sid=search) | $136.571 | -7.7% | tipo: JUGUETE; tokens comunes: camion |
-| 19 | baja | 41 | [Juguete John Deere 1/64 Cp770 Cosechador Algodón Lp82816](https://www.mercadolibre.com.ar/juguete-john-deere-164-cp770-cosechador-algodon-lp82816/up/MLAU3986975849#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=12&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA3347732102&sid=search) | $147.864 | -0.1% | tipo: JUGUETE; compatibilidad/marca: John Deere |
-| 20 | baja | 41 | [Regador De Tanque John Deere 876v 1/64 - A Pedido_exkarg](https://www.mercadolibre.com.ar/regador-de-tanque-john-deere-876v-164--a-pedidoexkarg/up/MLAU2927589938#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=16&type=product&tracking_id=04810f27-2c80-4d63-b474-07d217ac0aa2&wid=MLA1988293942&sid=search) | $147.574 | -0.3% | tipo: JUGUETE; compatibilidad/marca: John Deere |
+| 16 | baja | 43 | [Ertl 1/32 Camión Vintage & Tractor](https://www.mercadolibre.com.ar/ertl-132-camion-vintage--tractor/up/MLAU2798551609#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=3&type=product&tracking_id=da44d555-ec5a-4f70-8317-f8fa0fe3bc57&wid=MLA1461113825&sid=search) | $140.000 | -5.4% | tipo: JUGUETE; tokens comunes: camion |
+| 17 | baja | 42 | [Set De Juguetes, Tractores, Camiones Tomy, 20 Pzs, De Granja](https://www.mercadolibre.com.ar/toy-set-john-deere-tractor-and-truck-w-20-farm-toys-5-year/p/MLA2040633234#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA3254753964&sid=search) | $136.571 | -7.7% | tipo: JUGUETE; tokens comunes: camion |
+| 18 | baja | 41 | [Juguete John Deere 1/64 Cp770 Cosechador Algodón Lp82816](https://www.mercadolibre.com.ar/juguete-john-deere-164-cp770-cosechador-algodon-lp82816/up/MLAU3986975849#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=12&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA3347732102&sid=search) | $147.864 | -0.1% | tipo: JUGUETE; compatibilidad/marca: John Deere |
+| 19 | baja | 41 | [Regador De Tanque John Deere 876v 1/64 - A Pedido_exkarg](https://www.mercadolibre.com.ar/regador-de-tanque-john-deere-876v-164--a-pedidoexkarg/up/MLAU2927589938#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=16&type=product&tracking_id=04810f27-2c80-4d63-b474-07d217ac0aa2&wid=MLA1988293942&sid=search) | $147.574 | -0.3% | tipo: JUGUETE; compatibilidad/marca: John Deere |
+| 20 | baja | 41 | [Juguete Tractor John Deere 7630 A Escala](https://www.mercadolibre.com.ar/juguete-tractor-john-deere-7630-a-escala/up/MLAU3180320859#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&tracking_id=bf2a25e5-4a22-4e44-8e10-2dd29b12c0ae&wid=MLA1498485099&sid=search) | $150.000 | 1.4% | tipo: JUGUETE; compatibilidad/marca: John Deere |
 
 ### 31. Camioneta y tractor John Deere
 
@@ -1138,23 +1093,16 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **baja confianza**
 - Mejor confianza: baja
 - Candidatos media/alta: 0
-- Candidatos usados: 9 de 9 válidos antes de top
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3391
-- Candidatos excluidos por score: 711
-- Mediana ML: $20.428
-- Venturino vs mediana ML: -2.1%
+- Candidatos excluidos por score: 718
+- Mediana ML: $19.695
+- Venturino vs mediana ML: 1.5%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | baja | 41 | [Llaves De Encendido H800 For Excavadora John Deere Case Doz](https://www.mercadolibre.com.ar/10pcs-ignition-keys-h800-for-excavator-case-dozer/p/MLA2053284803#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=21&type=product&tracking_id=c4c75979-e67e-4926-a9cd-41397bab0b0a&wid=MLA1715698005&sid=search) | $19.851 | -0.7% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 2 | baja | 41 | [. Llaves De Encendido H800 For Excavadora John Deere Case](https://articulo.mercadolibre.com.ar/MLA-3179045208--llaves-de-encendido-h800-for-excavadora-john-deere-case-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $20.428 | 2.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 3 | baja | 41 | [` Llaves De Encendido H800 For Excavadora John Deere Case](https://www.mercadolibre.com.ar/10pcs-ignition-keys-h800-for-excavator-case-new-at194969-at1/p/MLA2067030969#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=b122451e-12a1-424a-bc4e-22c203fb007f&wid=MLA2920752684&sid=search) | $21.355 | 6.8% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Palancas Apertura Ventana Cabina John Deere Sg2](https://www.mercadolibre.com.ar/palancas-apertura-ventana-cabina-john-deere-sg2/up/MLAU319169472#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=10&type=product&tracking_id=6ec69507-a4cd-4275-b713-3ac16864e3ac&wid=MLA1409671591&sid=search) | $23.076 | 15.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 41 | [Palanca Acelerador John Deere Mini Tractor](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-mini-tractor/up/MLAU317170387#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1670269286&sid=search) | $16.314 | -18.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 6 | baja | 41 | [Tecla De Encendido De Arranque Con Llaves For John Deere L1](https://articulo.mercadolibre.com.ar/MLA-3341141512-tecla-de-encendido-de-arranque-con-llaves-for-john-deere-l1-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=1fd4e731-c4a7-4ff4-a60b-db83922068d8) | $24.988 | 24.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 7 | baja | 41 | [2 Llaves De Encendido 198360-52160 Para John Deere 2305](https://www.mercadolibre.com.ar/2x-ignition-keys-198360-52160-for-john-deere-2305-/p/MLA2057954004#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=47&type=product&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2&wid=MLA1656311673&sid=search) | $13.999 | -30.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 8 | baja | 41 | [(6) For Llaves De Excavadora De Encendido John Deere Igniti](https://articulo.mercadolibre.com.ar/MLA-1757506671-6-for-llaves-de-excavadora-de-encendido-john-deere-igniti-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=item&tracking_id=6db00a3b-687e-4324-b8da-d3779850b856) | $27.785 | 38.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 9 | baja | 35 | [Llaves De Encendido H800 De 10 Piezas Para Excavadora Case D](https://www.mercadolibre.com.ar/-llaves-de-encendido-h800-for-excavadora-john-deere-case/p/MLA2025754994#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=53&type=product&tracking_id=a001626c-ed32-4939-ab79-5879b49a9b1e&wid=MLA2739125474&sid=search) | $19.349 | -3.3% | tipo: HERRAMIENTA |
+| 1 | baja | 41 | [Palancas Apertura Ventana Cabina John Deere Sg2](https://www.mercadolibre.com.ar/palancas-apertura-ventana-cabina-john-deere-sg2/up/MLAU319169472#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=10&type=product&tracking_id=6ec69507-a4cd-4275-b713-3ac16864e3ac&wid=MLA1409671591&sid=search) | $23.076 | 15.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 2 | baja | 41 | [Palanca Acelerador John Deere Mini Tractor](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-mini-tractor/up/MLAU317170387#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1670269286&sid=search) | $16.314 | -18.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 48. Inyector Electrónico de Combustible. John Deere
 
@@ -1275,71 +1223,42 @@ _Sin candidatos válidos con los parámetros actuales._
 - ID Venturino: `276681817`
 - Precio Venturino: $97.000
 - Tokens: juego, gancho, 4, pieza
-- Estado análisis: **similar a ML**
-- Mejor confianza: media
-- Candidatos media/alta: 11
-- Candidatos usados: 20 de 30 válidos antes de top
+- Estado análisis: **baja confianza**
+- Mejor confianza: baja
+- Candidatos media/alta: 0
+- Candidatos usados: 3 de 3 válidos antes de top
 - Candidatos excluidos por precio: 3040
-- Candidatos excluidos por score: 1041
-- Mediana ML: $94.001
-- Venturino vs mediana ML: 3.2%
+- Candidatos excluidos por score: 1068
+- Mediana ML: $62.523
+- Venturino vs mediana ML: 55.1%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | 14.4% | tipo: HERRAMIENTA; tokens comunes: juego, pieza; compatibilidad/marca: John Deere |
-| 2 | media | 50 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | 2.7% | tipo: HERRAMIENTA; tokens comunes: juego, pieza |
-| 3 | media | 50 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | -20.0% | tipo: HERRAMIENTA; tokens comunes: pieza; compatibilidad/marca: John Deere |
-| 4 | media | 50 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | 23.7% | tipo: HERRAMIENTA; tokens comunes: juego, pieza |
-| 5 | media | 50 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | -32.7% | tipo: HERRAMIENTA; tokens comunes: juego, pieza |
-| 6 | media | 50 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | 39.8% | tipo: HERRAMIENTA; tokens comunes: juego, pieza |
-| 7 | media | 49 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -2.6% | tipo: HERRAMIENTA; tokens comunes: juego; compatibilidad/marca: John Deere |
-| 8 | media | 49 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | -11.0% | tipo: HERRAMIENTA; tokens comunes: pieza; compatibilidad/marca: John Deere |
-| 9 | media | 49 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | -21.6% | tipo: HERRAMIENTA; tokens comunes: juego; compatibilidad/marca: John Deere |
-| 10 | media | 49 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | -21.6% | tipo: HERRAMIENTA; tokens comunes: juego; compatibilidad/marca: John Deere |
-| 11 | media | 48 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | -22.7% | tipo: HERRAMIENTA; tokens comunes: 4; compatibilidad/marca: John Deere |
-| 12 | baja | 43 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | 18.3% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 13 | baja | 43 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | -24.2% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 14 | baja | 43 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | -25.1% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 15 | baja | 42 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | 13.7% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 16 | baja | 42 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | 13.7% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 17 | baja | 42 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | 22.7% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 18 | baja | 42 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | -31.9% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 19 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | 36.0% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 20 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | -3.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 1 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | -3.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 2 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | -36.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 3 | baja | 22 | [Set Equipo Matero 6 Piezas Bolso Rigido, Autos Marcas](https://www.mercadolibre.com.ar/set-equipo-matero-6-piezas-bolso-rigido-autos-marcas/up/MLAU3885943617#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d8252390-a90f-4316-9143-159e23acf2f8&wid=MLA3168357158&sid=search) | $62.523 | -35.5% | tipo: HERRAMIENTA; penalización tipo adicional candidato: MATE, BOLSO; tokens comunes: pieza |
 
 ### 55. Juego de herramientas SAE y Métricos de ¼” John Deere
 
 - ID Venturino: `276196679`
 - Precio Venturino: $282.000
 - Tokens: juego, herramienta, sae, metrico
-- Estado análisis: **similar a ML**
+- Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 6
-- Candidatos usados: 17 de 17 válidos antes de top
+- Candidatos media/alta: 2
+- Candidatos usados: 5 de 5 válidos antes de top
 - Candidatos excluidos por precio: 3557
-- Candidatos excluidos por score: 537
-- Mediana ML: $260.000
-- Venturino vs mediana ML: 8.5%
+- Candidatos excluidos por score: 549
+- Mediana ML: $223.999
+- Venturino vs mediana ML: 25.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 50 | [Caja De Herramientas John Deere Original](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-original/up/MLAU146025313#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=3&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1135238079&sid=search) | $284.000 | 0.7% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 2 | media | 50 | [Caja De Herramientas Verde John Deere Original](https://www.mercadolibre.com.ar/caja-de-herramientas-verde-john-deere-original/up/MLAU3425786104#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=1&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2498585162&sid=search) | $316.000 | 12.1% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Juego De Tubos 3/8 John Deere Original 20 Piezas](https://www.mercadolibre.com.ar/juego-de-tubos-38-john-deere-original-20-piezas/up/MLAU182216083#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1399304181&sid=search) | $260.000 | -7.8% | tipo: HERRAMIENTA; tokens comunes: juego; compatibilidad/marca: John Deere |
-| 4 | media | 49 | [Banco De Trabajo Infantil John Deere, Taller De Herramientas](https://www.mercadolibre.com.ar/john-deere-kids-workbench-power-tools-workshop-build-your/p/MLA2048863444#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=15&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA1567156299&sid=search) | $219.881 | -22.0% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | -31.1% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 6 | media | 48 | [Caja de herramientas John Deere AJM2019 de metal 20.5cm x 51cm x 18cm](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-ajm2019-de-metal-205cm-x-51cm-x-18cm/p/MLA9796751#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=21&type=product&float_highlight=last_unit&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1359105369&sid=search) | $284.000 | 0.7% | tipo: HERRAMIENTA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 7 | baja | 43 | [Set De Herramientas Stardom 218 Piezas Maletín Profesional](https://www.mercadolibre.com.ar/set-de-herramientas-stardom-218-piezas-maletin-profesional/up/MLAU3982921993#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=26&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3360168322&sid=search) | $220.000 | -22.0% | tipo: HERRAMIENTA; tokens comunes: herramienta |
-| 8 | baja | 43 | [Set De Juego Granero Redondo Con 73 Piezas Accesorios](https://www.mercadolibre.com.ar/set-de-juego-granero-redondo-con-73-piezas-accesorios/up/MLAU3629077811#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA1594155585&sid=search) | $364.628 | 29.3% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 9 | baja | 42 | [Juego Llaves Tubo Crique 121 Pzs Mecanica Profesional](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-121-pzs-mecanica-profesional/up/MLAU3962621953#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323733620&sid=search) | $223.999 | -20.6% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 10 | baja | 42 | [Juego De Tubos Enc 3/4 De 21 Pz C/ Maletin Wembley 0180](https://www.mercadolibre.com.ar/juego-de-tubos-enc-34-de-21-pz--c-maletin-wembley-0180/up/MLAU152264621#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1154134844&sid=search) | $360.030 | 27.7% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 11 | baja | 41 | [Switch Tambor De Arranque Con Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-con-llave-tractores-john-deere/up/MLAU3120846470#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA2050159868&sid=search) | $189.097 | -32.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 12 | baja | 33 | [Juguete Preescolar Cinturón De Herramientas Hablando John De](https://www.mercadolibre.com.ar/juguete-preescolar-cinturon-de-herramientas-hablando-john-de/up/MLAU3210473159#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA1793731219&sid=search) | $271.894 | -3.6% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: herramienta |
-| 13 | baja | 31 | [Set Ertl 1:64 John Deere 24 Piezas - A Pedido_exkarg](https://www.mercadolibre.com.ar/set-ertl-164-john-deere-24-piezas--a-pedidoexkarg/up/MLAU3223535397#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=product&tracking_id=157a59ac-0888-4a44-83e5-fe9337e3e88c&wid=MLA2105563026&sid=search) | $233.008 | -17.4% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 14 | baja | 31 | [Set Tractores 1/64 John Deere 3 Piezas - A Pedido_exkarg](https://www.mercadolibre.com.ar/set-tractores-164-john-deere-3-piezas--a-pedidoexkarg/up/MLAU2967666199#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=17&type=product&tracking_id=157a59ac-0888-4a44-83e5-fe9337e3e88c&wid=MLA1472549201&sid=search) | $346.581 | 22.9% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 15 | baja | 25 | [Set De Juguetes De Granja 70 Piezas Con Tractores Y Animales](https://www.mercadolibre.com.ar/set-de-juguetes-de-granja-70-piezas-con-tractores-y-animales/up/MLAU3573489279#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=4&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA2584095554&sid=search) | $293.556 | 4.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE |
-| 16 | baja | 25 | [Correa De Herramientas Interactiva Con Sonidos John Deere](https://www.mercadolibre.com.ar/correa-de-herramientas-interactiva-con-sonidos-john-deere/up/MLAU3967723569#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA3331425306&sid=search) | $247.399 | -12.3% | tipo: HERRAMIENTA; penalización tipo adicional candidato: CORREA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
-| 17 | baja | 25 | [Correa De Herramientas Interactiva Con Sonidos John Deere](https://www.mercadolibre.com.ar/correa-de-herramientas-interactiva-con-sonidos-john-deere/up/MLAU3868845007#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=526e68ba-8364-4b29-a84c-4357785a91c5&wid=MLA1729007443&sid=search) | $194.218 | -31.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: CORREA; tokens comunes: herramienta; compatibilidad/marca: John Deere |
+| 1 | media | 49 | [Juego De Tubos 3/8 John Deere Original 20 Piezas](https://www.mercadolibre.com.ar/juego-de-tubos-38-john-deere-original-20-piezas/up/MLAU182216083#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1399304181&sid=search) | $260.000 | -7.8% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego; compatibilidad/marca: John Deere |
+| 2 | media | 49 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | -31.1% | tipo: KIT_HERRAMIENTAS; tokens comunes: herramienta; compatibilidad/marca: John Deere |
+| 3 | baja | 43 | [Set De Herramientas Stardom 218 Piezas Maletín Profesional](https://www.mercadolibre.com.ar/set-de-herramientas-stardom-218-piezas-maletin-profesional/up/MLAU3982921993#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=26&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3360168322&sid=search) | $220.000 | -22.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: herramienta |
+| 4 | baja | 42 | [Juego Llaves Tubo Crique 121 Pzs Mecanica Profesional](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-121-pzs-mecanica-profesional/up/MLAU3962621953#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323733620&sid=search) | $223.999 | -20.6% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
+| 5 | baja | 42 | [Juego De Tubos Enc 3/4 De 21 Pz C/ Maletin Wembley 0180](https://www.mercadolibre.com.ar/juego-de-tubos-enc-34-de-21-pz--c-maletin-wembley-0180/up/MLAU152264621#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1154134844&sid=search) | $360.030 | 27.7% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
 
 ### 56. Juego de llaves Métricas John Deere Set de 7 piezas
 
@@ -1348,29 +1267,22 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: juego, llave, metrica, set, 7, pieza
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
-- Candidatos media/alta: 10
-- Candidatos usados: 14 de 14 válidos antes de top
+- Candidatos media/alta: 6
+- Candidatos usados: 7 de 7 válidos antes de top
 - Candidatos excluidos por precio: 3222
-- Candidatos excluidos por score: 875
-- Mediana ML: $191.658
-- Venturino vs mediana ML: 4.4%
+- Candidatos excluidos por score: 882
+- Mediana ML: $194.218
+- Venturino vs mediana ML: 3.0%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -40.0% | tipo: HERRAMIENTA; tokens comunes: juego, llave, pieza |
-| 2 | media | 56 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | -2.9% | tipo: HERRAMIENTA; tokens comunes: 7, pieza; compatibilidad/marca: John Deere |
-| 3 | media | 56 | [Juego De Tubos 3/8 John Deere Original 20 Piezas](https://www.mercadolibre.com.ar/juego-de-tubos-38-john-deere-original-20-piezas/up/MLAU182216083#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1399304181&sid=search) | $260.000 | 30.0% | tipo: HERRAMIENTA; tokens comunes: juego, pieza; compatibilidad/marca: John Deere |
-| 4 | media | 56 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -32.2% | tipo: HERRAMIENTA; tokens comunes: juego, llave, pieza |
-| 5 | media | 50 | [Set De Herramientas Stardom 218 Piezas Maletín Profesional](https://www.mercadolibre.com.ar/set-de-herramientas-stardom-218-piezas-maletin-profesional/up/MLAU3982921993#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=26&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3360168322&sid=search) | $220.000 | 10.0% | tipo: HERRAMIENTA; tokens comunes: set, pieza |
-| 6 | media | 49 | [Switch Tambor De Arranque Con Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-con-llave-tractores-john-deere/up/MLAU3120846470#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=23&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA2050159868&sid=search) | $189.097 | -5.5% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 7 | media | 49 | [Juego Llaves Tubo Crique 121 Pzs Mecanica Profesional](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-121-pzs-mecanica-profesional/up/MLAU3962621953#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323733620&sid=search) | $223.999 | 12.0% | tipo: HERRAMIENTA; tokens comunes: juego, llave |
-| 8 | media | 49 | [Switch Tambor De Arranque Sin Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-sin-llave-tractores-john-deere/up/MLAU155926304#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1245977771&sid=search) | $151.758 | -24.1% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 9 | media | 49 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | -30.3% | tipo: HERRAMIENTA; tokens comunes: pieza; compatibilidad/marca: John Deere |
-| 10 | media | 45 | [Set Ertl 1:64 John Deere 24 Piezas - A Pedido_exkarg](https://www.mercadolibre.com.ar/set-ertl-164-john-deere-24-piezas--a-pedidoexkarg/up/MLAU3223535397#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=product&tracking_id=157a59ac-0888-4a44-83e5-fe9337e3e88c&wid=MLA2105563026&sid=search) | $233.008 | 16.5% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; tokens comunes: set, pieza; compatibilidad/marca: John Deere |
-| 11 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -34.0% | tipo: HERRAMIENTA; tokens comunes: pieza |
-| 12 | baja | 41 | [Banco De Trabajo Infantil John Deere, Taller De Herramientas](https://www.mercadolibre.com.ar/john-deere-kids-workbench-power-tools-workshop-build-your/p/MLA2048863444#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=15&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA1567156299&sid=search) | $219.881 | 9.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 31 | [John Deere Big Scoop Dump Truck Toy Con Herramientas De Caja](https://www.mercadolibre.com.ar/john-deere-35766-big-scoop-dump-truck-38cm-vehicle-green/p/MLA2063937914#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2587948022&sid=search) | $122.799 | -38.6% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 14 | baja | 25 | [Juguete Preescolar Cinturón De Herramientas Hablando John De](https://www.mercadolibre.com.ar/juguete-preescolar-cinturon-de-herramientas-hablando-john-de/up/MLAU3210473159#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=ad1d7b7f-a6f0-44c0-a14c-1be588976f34&wid=MLA1793731219&sid=search) | $271.894 | 35.9% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE |
+| 1 | media | 57 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | -40.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, llave, pieza |
+| 2 | media | 56 | [Cinturón De Herramientas John Deere Para Niños - 7 Piezas Con Embalaje Adicional](https://www.mercadolibre.com.ar/cinturon-de-herramientas-john-deere-para-ninos-7-piezas/p/MLA2051401324#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=44&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3126102700&sid=search) | $194.218 | -2.9% | tipo: KIT_HERRAMIENTAS; tokens comunes: 7, pieza; compatibilidad/marca: John Deere |
+| 3 | media | 56 | [Juego De Tubos 3/8 John Deere Original 20 Piezas](https://www.mercadolibre.com.ar/juego-de-tubos-38-john-deere-original-20-piezas/up/MLAU182216083#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=48&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1399304181&sid=search) | $260.000 | 30.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, pieza; compatibilidad/marca: John Deere |
+| 4 | media | 56 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | -32.2% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, llave, pieza |
+| 5 | media | 50 | [Set De Herramientas Stardom 218 Piezas Maletín Profesional](https://www.mercadolibre.com.ar/set-de-herramientas-stardom-218-piezas-maletin-profesional/up/MLAU3982921993#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=26&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3360168322&sid=search) | $220.000 | 10.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: set, pieza |
+| 6 | media | 49 | [Juego Llaves Tubo Crique 121 Pzs Mecanica Profesional](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-121-pzs-mecanica-profesional/up/MLAU3962621953#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323733620&sid=search) | $223.999 | 12.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, llave |
+| 7 | baja | 42 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | -34.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: pieza |
 
 ### 57. Juego de transporte Farmin Friends John Deere
 
@@ -1417,34 +1329,29 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 4
-- Candidatos usados: 20 de 25 válidos antes de top
+- Candidatos usados: 15 de 15 válidos antes de top
 - Candidatos excluidos por precio: 2936
-- Candidatos excluidos por score: 1150
+- Candidatos excluidos por score: 1160
 - Mediana ML: $110.268
 - Venturino vs mediana ML: 7.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 50 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -0.0% | tipo: HERRAMIENTA; tokens comunes: juego, tubo |
-| 2 | media | 50 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | 0.8% | tipo: HERRAMIENTA; tokens comunes: juego, tubo |
-| 3 | media | 50 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | 13.9% | tipo: HERRAMIENTA; tokens comunes: juego, tubo |
-| 4 | media | 50 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | -16.3% | tipo: HERRAMIENTA; tokens comunes: juego, tubo |
-| 5 | baja | 43 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -6.7% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 6 | baja | 43 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -20.6% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 7 | baja | 43 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | -36.1% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 8 | baja | 43 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | -36.1% | tipo: HERRAMIENTA; tokens comunes: juego |
-| 9 | baja | 35 | [John Deere Pop Up Upp Tractor Playhouse Para Niños \| Llave Y](https://www.mercadolibre.com.ar/john-deere-pop-up-upp-tractor-playhouse-para-ninos-llave-y/p/MLA2068378549#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=47&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA2382371904&sid=search) | $117.784 | -1.0% | tipo: HERRAMIENTA |
-| 10 | baja | 35 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -3.5% | tipo: HERRAMIENTA |
-| 11 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -7.3% | tipo: HERRAMIENTA |
-| 12 | baja | 35 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -7.3% | tipo: HERRAMIENTA |
-| 13 | baja | 35 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | 10.8% | tipo: HERRAMIENTA |
-| 14 | baja | 35 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/caja-de-herramientas-john-deere-18-piezas/p/MLA47952586#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=302098b5-ddc0-4624-aeb1-0b4377ada9ab&wid=MLA3242261346&sid=search) | $139.438 | 17.2% | tipo: HERRAMIENTA |
-| 15 | baja | 35 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | -21.4% | tipo: HERRAMIENTA |
-| 16 | baja | 35 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | -27.4% | tipo: HERRAMIENTA |
-| 17 | baja | 35 | [Switch Tambor De Arranque Sin Llave Tractores John Deere](https://www.mercadolibre.com.ar/switch-tambor-de-arranque-sin-llave-tractores-john-deere/up/MLAU155926304#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1245977771&sid=search) | $151.758 | 27.5% | tipo: HERRAMIENTA |
-| 18 | baja | 35 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | -34.8% | tipo: HERRAMIENTA |
-| 19 | baja | 35 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | -37.0% | tipo: HERRAMIENTA |
-| 20 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | -38.2% | tipo: HERRAMIENTA |
+| 1 | media | 50 | [Juego Llaves Tubo Crique 82 Pzs Profesional Mecanica](https://www.mercadolibre.com.ar/juego-llaves-tubo-crique-82-pzs-profesional-mecanica/up/MLAU3974934124#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA3323710072&sid=search) | $118.999 | -0.0% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo |
+| 2 | media | 50 | [Juego De Llaves De Tubo Chrome Vanadium 82 Pieza Con Maletin](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-chrome-vanadium-82-pieza-con-maletin/up/MLAU4016064543#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=25&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1807348547&sid=search) | $120.000 | 0.8% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo |
+| 3 | media | 50 | [Juego De Tubos Llaves Y Puntas Kroner 108 Piezas Cr. Vanadio](https://www.mercadolibre.com.ar/juego-de-tubos-llaves-y-puntas-kroner-108-piezas-cr-vanadio/p/MLA52746870#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=22&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1510545543&sid=search) | $135.583 | 13.9% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo |
+| 4 | media | 50 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | -16.3% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego, tubo |
+| 5 | baja | 43 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | -6.7% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
+| 6 | baja | 43 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | -20.6% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
+| 7 | baja | 43 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | -36.1% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
+| 8 | baja | 43 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | -36.1% | tipo: KIT_HERRAMIENTAS; tokens comunes: juego |
+| 9 | baja | 35 | [Kit De Herramientas 85 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-85-piezas-jadever/up/MLAU3392505793#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=40&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2308233004&sid=search) | $114.799 | -3.5% | tipo: KIT_HERRAMIENTAS |
+| 10 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | -7.3% | tipo: KIT_HERRAMIENTAS |
+| 11 | baja | 35 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | -7.3% | tipo: KIT_HERRAMIENTAS |
+| 12 | baja | 35 | [Kit Herramientas 85 Piezas Jadever Fábrica Jdhs3b85 Verde Oscuro](https://www.mercadolibre.com.ar/kit-herramientas-85-piezas-jadever-fabrica-jdhs3b85-verde-oscuro/p/MLA41528131#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1562325653&sid=search) | $131.905 | 10.8% | tipo: KIT_HERRAMIENTAS |
+| 13 | baja | 35 | [Kit De Herramienta 28 Piezas + Bolso Jdhs1m28 Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas--bolso-jdhs1m28-jadever/up/MLAU2956199503#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1471463061&sid=search) | $84.000 | -29.4% | tipo: KIT_HERRAMIENTAS |
+| 14 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | -38.2% | tipo: KIT_HERRAMIENTAS |
+| 15 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | -39.0% | tipo: KIT_HERRAMIENTAS |
 
 ### 59. Juego de vehiculos John Deere
 
@@ -1454,9 +1361,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 14
-- Candidatos usados: 20 de 105 válidos antes de top
+- Candidatos usados: 20 de 104 válidos antes de top
 - Candidatos excluidos por precio: 3038
-- Candidatos excluidos por score: 968
+- Candidatos excluidos por score: 969
 - Mediana ML: $90.517
 - Venturino vs mediana ML: -0.6%
 
@@ -1671,35 +1578,17 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: llave, ajustabl, 10, pulgada
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
-- Candidatos media/alta: 8
-- Candidatos usados: 20 de 21 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3151
-- Candidatos excluidos por score: 939
-- Mediana ML: $73.068
-- Venturino vs mediana ML: -2.8%
+- Candidatos excluidos por score: 958
+- Mediana ML: $77.517
+- Venturino vs mediana ML: -8.4%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | 7.0% | tipo: HERRAMIENTA; tokens comunes: llave, pulgada; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | 7.0% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | -13.3% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 4 | media | 49 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | -17.9% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | -21.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 6 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | -22.0% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 7 | media | 49 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | -36.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 8 | media | 48 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | 5.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 9 | baja | 43 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | -16.4% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 10 | baja | 42 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | -8.0% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 11 | baja | 41 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | 9.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 12 | baja | 41 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | 21.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | 31.7% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 14 | baja | 41 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | 33.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 15 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | 2.3% | tipo: HERRAMIENTA |
-| 16 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | 3.5% | tipo: HERRAMIENTA |
-| 17 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | -6.9% | tipo: HERRAMIENTA |
-| 18 | baja | 31 | [Juguete Para Armar Skid Steer John Deere Con Herramienta De](https://www.mercadolibre.com.ar/john-deere-skid-steer-building-toy-with-ratchet-tool-13-pc/p/MLA2073743520#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=11&type=product&tracking_id=55a2e4f4-1bcb-40ee-baeb-5543e0a7393f&wid=MLA3004308200&sid=search) | $85.241 | 20.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 19 | baja | 31 | [John Deere Power Tools Motosierra De Juguete, Herramienta De](https://www.mercadolibre.com.ar/john-deere-power-tools-chainsaw-toy-construction-tool-with/p/MLA2045929485#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=16&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947932&sid=search) | $93.190 | 31.3% | tipo: HERRAMIENTA; penalización tipo adicional candidato: JUGUETE; compatibilidad/marca: John Deere |
-| 20 | baja | 25 | [Juego Herramientas Jadever 28 Piezas Jdhs1m28 Con Bolso](https://www.mercadolibre.com.ar/juego-herramientas-jadever-28-piezas-jdhs1m28-con-bolso/up/MLAU3405463290#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=39&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2316492036&sid=search) | $69.000 | -2.8% | tipo: HERRAMIENTA; penalización tipo adicional candidato: BOLSO |
+| 1 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | -13.3% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
+| 2 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | 31.7% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 71. Llaves ajustables John Deere 12 pulgadas
 
@@ -1708,84 +1597,56 @@ _Sin candidatos válidos con los parámetros actuales._
 - Tokens: llave, ajustabl, 12, pulgada
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
-- Candidatos media/alta: 8
-- Candidatos usados: 20 de 25 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3066
-- Candidatos excluidos por score: 1020
-- Mediana ML: $75.500
-- Venturino vs mediana ML: 9.9%
+- Candidatos excluidos por score: 1043
+- Mediana ML: $77.517
+- Venturino vs mediana ML: 7.1%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | -8.4% | tipo: HERRAMIENTA; tokens comunes: llave, pulgada; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | -8.4% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | -25.9% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 4 | media | 49 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | -29.8% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | -32.9% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 6 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | -33.3% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 7 | media | 49 | [Juego De Llaves Allen John Deere 30 Piezas Pulg Y Milimetros](https://www.mercadolibre.com.ar/juego-de-llaves-allen-john-deere-30-piezas-pulg-y-milimetros/up/MLAU203876655#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=43&type=product&float_highlight=last_units&tracking_id=f297829a-ae1d-413e-850a-526f6e8a76ff&wid=MLA922576085&sid=search) | $111.000 | 33.7% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 8 | media | 48 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | -9.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 9 | baja | 43 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | -28.5% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 10 | baja | 42 | [Juego De Llaves De Tubo Stardom 94 Piezas Cromo Vanadio](https://www.mercadolibre.com.ar/juego-de-llaves-de-tubo-stardom-94-piezas-cromo-vanadio/up/MLAU3859129851#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=27&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1721056741&sid=search) | $99.590 | 20.0% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 11 | baja | 42 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | -21.3% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 12 | baja | 41 | [Caja De Herramientas De Lujo John Deere De 18 Piezas,...](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2033573986#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=31&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1978680112&sid=search) | $86.365 | 4.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 13 | baja | 41 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | -6.5% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 14 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | 12.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 15 | baja | 41 | [Cinturón De Herramientas Parlante De Lujo John Deere - Juego](https://www.mercadolibre.com.ar/tool-set-john-deere-deluxe-talking-toolbelt-kids-2-years/p/MLA2032158922#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=dea0220a-dd9a-4747-ba3e-6a1c7ce43ad6&wid=MLA2491947770&sid=search) | $94.512 | 13.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 16 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | -11.4% | tipo: HERRAMIENTA |
-| 17 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | -12.5% | tipo: HERRAMIENTA |
-| 18 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | -20.4% | tipo: HERRAMIENTA |
-| 19 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Cutter](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter/up/MLAU1036087437#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=35&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1448971691&sid=search) | $110.268 | 32.9% | tipo: HERRAMIENTA |
-| 20 | baja | 35 | [Kit de herramienta 28 piezas martillo tijera puntas cutter color verde con amarillo Jadever jdhs1m28](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-cutter-color-verde-con-amarillo-jadever-jdhs1m28/p/MLA41437180#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=2&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1946973092&sid=search) | $110.268 | 32.9% | tipo: HERRAMIENTA |
+| 1 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | -25.9% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
+| 2 | baja | 41 | [Porta Herramienta Cuero John Deere - A Pedido_exkarg](https://www.mercadolibre.com.ar/porta-herramienta-cuero-john-deere--a-pedidoexkarg/up/MLAU162614465#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=46&type=product&tracking_id=2c427bd6-77e0-4011-a14d-996e27d52c48&wid=MLA1399126385&sid=search) | $93.489 | 12.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 72. Llaves ajustables John Deere 6 pulgadas
 
 - ID Venturino: `276187350`
 - Precio Venturino: $39.000
 - Tokens: llave, ajustabl, 6, pulgada
-- Estado análisis: **Venturino más caro que ML**
-- Mejor confianza: media
-- Candidatos media/alta: 3
-- Candidatos usados: 5 de 5 válidos antes de top
+- Estado análisis: **baja confianza**
+- Mejor confianza: baja
+- Candidatos media/alta: 0
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3250
-- Candidatos excluidos por score: 856
-- Mediana ML: $31.767
-- Venturino vs mediana ML: 22.8%
+- Candidatos excluidos por score: 859
+- Mediana ML: $36.483
+- Venturino vs mediana ML: 6.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 57 | [(6) For Llaves De Excavadora De Encendido John Deere Igniti](https://articulo.mercadolibre.com.ar/MLA-1757506671-6-for-llaves-de-excavadora-de-encendido-john-deere-igniti-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=item&tracking_id=6db00a3b-687e-4324-b8da-d3779850b856) | $27.785 | -28.8% | tipo: HERRAMIENTA; tokens comunes: llave, 6; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | 15.4% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Tecla De Encendido De Arranque Con Llaves For John Deere L1](https://articulo.mercadolibre.com.ar/MLA-3341141512-tecla-de-encendido-de-arranque-con-llaves-for-john-deere-l1-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=1fd4e731-c4a7-4ff4-a60b-db83922068d8) | $24.988 | -35.9% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | 5.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | -18.5% | tipo: HERRAMIENTA |
+| 1 | baja | 41 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | 5.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 2 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | -18.5% | tipo: HERRAMIENTA |
 
 ### 73. Llaves ajustables John Deere 8 pulgadas
 
 - ID Venturino: `276187353`
 - Precio Venturino: $49.000
 - Tokens: llave, ajustabl, 8, pulgada
-- Estado análisis: **Venturino más barato que ML**
+- Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 5
-- Candidatos usados: 10 de 10 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 3 de 3 válidos antes de top
 - Candidatos excluidos por precio: 3322
-- Candidatos excluidos por score: 779
-- Mediana ML: $56.992
-- Venturino vs mediana ML: -14.0%
+- Candidatos excluidos por score: 786
+- Mediana ML: $41.198
+- Venturino vs mediana ML: 18.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
-| 1 | media | 49 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | -8.2% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | 13.0% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 3 | media | 49 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | 13.7% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 4 | media | 49 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | 19.0% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 5 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 25.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
-| 6 | baja | 43 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | 21.2% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 7 | baja | 42 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | 33.3% | tipo: HERRAMIENTA; tokens comunes: llave |
-| 8 | baja | 41 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | -15.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 9 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | 34.9% | tipo: HERRAMIENTA |
-| 10 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | -35.2% | tipo: HERRAMIENTA |
+| 1 | media | 49 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 25.6% | tipo: HERRAMIENTA; tokens comunes: llave; compatibilidad/marca: John Deere |
+| 2 | baja | 41 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | -15.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
+| 3 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | -35.2% | tipo: HERRAMIENTA |
 
 ### 74. Manómetro con aguja John Deere doble
 
@@ -2157,125 +2018,77 @@ _Sin candidatos válidos con los parámetros actuales._
 - ID Venturino: `276681802`
 - Precio Venturino: $58.000
 - Tokens: palanca, barra, 25, pulgada
-- Estado análisis: **Venturino más barato que ML**
+- Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 2
-- Candidatos usados: 16 de 16 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3210
-- Candidatos excluidos por score: 885
-- Mediana ML: $65.710
-- Venturino vs mediana ML: -11.7%
+- Candidatos excluidos por score: 899
+- Mediana ML: $51.371
+- Venturino vs mediana ML: 12.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
 | 1 | media | 49 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | -29.0% | tipo: HERRAMIENTA; tokens comunes: palanca; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | 31.0% | tipo: HERRAMIENTA; tokens comunes: pulgada; compatibilidad/marca: John Deere |
-| 3 | baja | 41 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | 0.5% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | -4.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | -4.5% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 6 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 6.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 7 | baja | 41 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | -22.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 8 | baja | 41 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | 29.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 9 | baja | 41 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | 31.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 10 | baja | 41 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | 33.8% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 11 | baja | 35 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | 2.4% | tipo: HERRAMIENTA |
-| 12 | baja | 35 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | 12.6% | tipo: HERRAMIENTA |
-| 13 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | 14.0% | tipo: HERRAMIENTA |
-| 14 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | 25.2% | tipo: HERRAMIENTA |
-| 15 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | 26.7% | tipo: HERRAMIENTA |
-| 16 | baja | 25 | [Juego Herramientas Jadever 28 Piezas Jdhs1m28 Con Bolso](https://www.mercadolibre.com.ar/juego-herramientas-jadever-28-piezas-jdhs1m28-con-bolso/up/MLAU3405463290#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=39&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2316492036&sid=search) | $69.000 | 19.0% | tipo: HERRAMIENTA; penalización tipo adicional candidato: BOLSO |
+| 2 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 6.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 96. Palanca Barra John Deere 8 pulgadas
 
 - ID Venturino: `276681809`
 - Precio Venturino: $30.000
 - Tokens: palanca, barra, 8, pulgada
-- Estado análisis: **Venturino más caro que ML**
+- Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 2
-- Candidatos usados: 9 de 9 válidos antes de top
+- Candidatos usados: 3 de 3 válidos antes de top
 - Candidatos excluidos por precio: 3197
-- Candidatos excluidos por score: 905
-- Mediana ML: $23.076
-- Venturino vs mediana ML: 30.0%
+- Candidatos excluidos por score: 911
+- Mediana ML: $31.767
+- Venturino vs mediana ML: -5.6%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
 | 1 | media | 49 | [Palancas Apertura Ventana Cabina John Deere Sg2](https://www.mercadolibre.com.ar/palancas-apertura-ventana-cabina-john-deere-sg2/up/MLAU319169472#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=10&type=product&tracking_id=6ec69507-a4cd-4275-b713-3ac16864e3ac&wid=MLA1409671591&sid=search) | $23.076 | -23.1% | tipo: HERRAMIENTA; tokens comunes: palanca; compatibilidad/marca: John Deere |
 | 2 | media | 49 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | 37.3% | tipo: HERRAMIENTA; tokens comunes: palanca; compatibilidad/marca: John Deere |
-| 3 | baja | 41 | [(6) For Llaves De Excavadora De Encendido John Deere Igniti](https://articulo.mercadolibre.com.ar/MLA-1757506671-6-for-llaves-de-excavadora-de-encendido-john-deere-igniti-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=item&tracking_id=6db00a3b-687e-4324-b8da-d3779850b856) | $27.785 | -7.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Tecla De Encendido De Arranque Con Llaves For John Deere L1](https://articulo.mercadolibre.com.ar/MLA-3341141512-tecla-de-encendido-de-arranque-con-llaves-for-john-deere-l1-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=1fd4e731-c4a7-4ff4-a60b-db83922068d8) | $24.988 | -16.7% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 41 | [` Llaves De Encendido H800 For Excavadora John Deere Case](https://www.mercadolibre.com.ar/10pcs-ignition-keys-h800-for-excavator-case-new-at194969-at1/p/MLA2067030969#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=b122451e-12a1-424a-bc4e-22c203fb007f&wid=MLA2920752684&sid=search) | $21.355 | -28.8% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 6 | baja | 41 | [. Llaves De Encendido H800 For Excavadora John Deere Case](https://articulo.mercadolibre.com.ar/MLA-3179045208--llaves-de-encendido-h800-for-excavadora-john-deere-case-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=45&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $20.428 | -31.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 7 | baja | 41 | [Llaves De Encendido H800 For Excavadora John Deere Case Doz](https://www.mercadolibre.com.ar/10pcs-ignition-keys-h800-for-excavator-case-dozer/p/MLA2053284803#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=21&type=product&tracking_id=c4c75979-e67e-4926-a9cd-41397bab0b0a&wid=MLA1715698005&sid=search) | $19.851 | -33.8% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 8 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | 5.9% | tipo: HERRAMIENTA |
-| 9 | baja | 35 | [Llaves De Encendido H800 De 10 Piezas Para Excavadora Case D](https://www.mercadolibre.com.ar/-llaves-de-encendido-h800-for-excavadora-john-deere-case/p/MLA2025754994#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=53&type=product&tracking_id=a001626c-ed32-4939-ab79-5879b49a9b1e&wid=MLA2739125474&sid=search) | $19.349 | -35.5% | tipo: HERRAMIENTA |
+| 3 | baja | 35 | [Herramienta De Extracción Del Extractor De Embrague, Embragu](https://www.mercadolibre.com.ar/clutch-puller-removal-tool-black-jdg1641-for-john-deere/p/MLA2028613650#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=41&type=product&tracking_id=3bc856ec-888b-4200-b09c-6646382738bf&wid=MLA1704310265&sid=search) | $31.767 | 5.9% | tipo: HERRAMIENTA |
 
 ### 97. Palanca John Deere 25 pulgadas
 
 - ID Venturino: `276681805`
 - Precio Venturino: $57.000
 - Tokens: palanca, 25, pulgada
-- Estado análisis: **Venturino más barato que ML**
+- Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 2
-- Candidatos usados: 16 de 16 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3234
-- Candidatos excluidos por score: 861
-- Mediana ML: $65.710
-- Venturino vs mediana ML: -13.3%
+- Candidatos excluidos por score: 875
+- Mediana ML: $51.371
+- Venturino vs mediana ML: 11.0%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
 | 1 | media | 50 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | -27.7% | tipo: HERRAMIENTA; tokens comunes: palanca; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | 33.3% | tipo: HERRAMIENTA; tokens comunes: pulgada; compatibilidad/marca: John Deere |
-| 3 | baja | 41 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | 2.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | -2.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | -2.9% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 6 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 8.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 7 | baja | 41 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | -21.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 8 | baja | 41 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | 31.6% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 9 | baja | 41 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | 33.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 10 | baja | 41 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | 36.2% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 11 | baja | 35 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | 4.2% | tipo: HERRAMIENTA |
-| 12 | baja | 35 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | 14.6% | tipo: HERRAMIENTA |
-| 13 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | 16.0% | tipo: HERRAMIENTA |
-| 14 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | 27.4% | tipo: HERRAMIENTA |
-| 15 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | 28.9% | tipo: HERRAMIENTA |
-| 16 | baja | 25 | [Juego Herramientas Jadever 28 Piezas Jdhs1m28 Con Bolso](https://www.mercadolibre.com.ar/juego-herramientas-jadever-28-piezas-jdhs1m28-con-bolso/up/MLAU3405463290#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=39&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2316492036&sid=search) | $69.000 | 21.1% | tipo: HERRAMIENTA; penalización tipo adicional candidato: BOLSO |
+| 2 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 8.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 98. Palanca John Deere 31 pulgadas
 
 - ID Venturino: `276681807`
 - Precio Venturino: $58.000
 - Tokens: palanca, 31, pulgada
-- Estado análisis: **Venturino más barato que ML**
+- Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
-- Candidatos media/alta: 2
-- Candidatos usados: 16 de 16 válidos antes de top
+- Candidatos media/alta: 1
+- Candidatos usados: 2 de 2 válidos antes de top
 - Candidatos excluidos por precio: 3210
-- Candidatos excluidos por score: 885
-- Mediana ML: $65.710
-- Venturino vs mediana ML: -11.7%
+- Candidatos excluidos por score: 899
+- Mediana ML: $51.371
+- Venturino vs mediana ML: 12.9%
 
 | # | Confianza | Score | Candidato ML | Precio ML | Dif. vs Venturino | Motivos |
 |---:|---|---:|---|---:|---:|---|
 | 1 | media | 50 | [Palanca Acelerador John Deere Reparacion John Deere 135 Otro](https://www.mercadolibre.com.ar/palanca-acelerador-john-deere-reparacion-john-deere-135-otro/up/MLAU3254990858#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=51&type=product&tracking_id=f895b97a-76e2-4077-a1b4-541231f0aa40&wid=MLA1506435419&sid=search) | $41.198 | -29.0% | tipo: HERRAMIENTA; tokens comunes: palanca; compatibilidad/marca: John Deere |
-| 2 | media | 49 | [Juego De Llaves Allen Sae Pulgadas John Deere Original!](https://www.mercadolibre.com.ar/juego-de-llaves-allen-sae-pulgadas-john-deere-original/up/MLAU155664316#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=32&type=product&tracking_id=3fa4f6c5-c90a-48c5-b984-de0b179070fc&wid=MLA1230826554&sid=search) | $76.000 | 31.0% | tipo: HERRAMIENTA; tokens comunes: pulgada; compatibilidad/marca: John Deere |
-| 3 | baja | 41 | [Interruptor De Encendido Con Llaves Para John Deere 250 2350](https://articulo.mercadolibre.com.ar/MLA-1732101729-interruptor-de-encendido-con-llaves-para-john-deere-250-2350-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=29&type=item&tracking_id=a7359448-a67d-4214-b1ce-29a098e1d8c2) | $58.291 | 0.5% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 4 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-3367229008-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=19&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.692 | -4.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 5 | baja | 41 | [Llave De Encendido De Repuesto Para Tractor John Deere Equip](https://articulo.mercadolibre.com.ar/MLA-1801694319-llave-de-encendido-de-repuesto-para-tractor-john-deere-equip-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=38&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $55.373 | -4.5% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 6 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 6.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 7 | baja | 41 | [Llave De Contacto Original Tractor Jardin Jhon Deere](https://www.mercadolibre.com.ar/llave-de-contacto-original-tractor-jardin-jhon-deere/up/MLAU3805278690#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1679042279&sid=search) | $44.999 | -22.4% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 8 | baja | 41 | [Llave Luces 4 Puntos C/resistencia Tractor John Deere Deutz](https://www.mercadolibre.com.ar/llave-luces-4-puntos-cresistencia-tractor-john-deere-deutz/up/MLAU247313276#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=28&type=product&float_highlight=last_unit&tracking_id=deb70988-7e86-4221-987e-5b57e366835f&wid=MLA1402792783&sid=search) | $75.000 | 29.3% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 9 | baja | 41 | [Juego Llaves Hexagonales Milimétricas John Deere Original!](https://www.mercadolibre.com.ar/juego-llaves-hexagonales-milimetricas-john-deere-original/up/MLAU155712370#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=34&type=product&tracking_id=7684258a-4920-4a7b-9a87-47e9b164d70d&wid=MLA1230896639&sid=search) | $76.000 | 31.0% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 10 | baja | 41 | [Caja De Herramientas John Deere, 18 Piezas](https://www.mercadolibre.com.ar/john-deere-18-piece-deluxe-tool-box-construction-playset/p/MLA2032359776#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=30&type=product&tracking_id=d67adfaa-5752-4fc8-92bb-5da1e1153497&wid=MLA1466942207&sid=search) | $77.625 | 33.8% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
-| 11 | baja | 35 | [Reemplazo De Llaves De Encendido Para Excavadora Jo-hn Deere](https://articulo.mercadolibre.com.ar/MLA-3349739026-reemplazo-de-llaves-de-encendido-para-excavadora-jo-hn-deere-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=56&type=item&tracking_id=db12aa1e-3855-4972-9e40-317a234aed60) | $59.370 | 2.4% | tipo: HERRAMIENTA |
-| 12 | baja | 35 | [Set Juego Herramientas Tubos Y Llaves Kroner De 110 Piezas](https://www.mercadolibre.com.ar/set-juego-herramientas-tubos-y-llaves-kroner-de-110-piezas/p/MLA37511538#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=24&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA1801786466&sid=search) | $65.314 | 12.6% | tipo: HERRAMIENTA |
-| 13 | baja | 35 | [Kit De Herramienta 28 Piezas Martillo Tijera Puntas Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-martillo-tijera-puntas-jadever/up/MLAU3167172048#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=42&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2074609676&sid=search) | $66.105 | 14.0% | tipo: HERRAMIENTA |
-| 14 | baja | 35 | [Kit De Herramientas 28 Piezas Jadever](https://www.mercadolibre.com.ar/kit-de-herramientas-28-piezas-jadever/up/MLAU3265761238#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2144663316&sid=search) | $72.637 | 25.2% | tipo: HERRAMIENTA |
-| 15 | baja | 35 | [Kit De Herramienta 28 Piezas Manuales Jadever](https://www.mercadolibre.com.ar/kit-de-herramienta-28-piezas-manuales-jadever/up/MLAU3177802237#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=37&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2084295182&sid=search) | $73.499 | 26.7% | tipo: HERRAMIENTA |
-| 16 | baja | 25 | [Juego Herramientas Jadever 28 Piezas Jdhs1m28 Con Bolso](https://www.mercadolibre.com.ar/juego-herramientas-jadever-28-piezas-jdhs1m28-con-bolso/up/MLAU3405463290#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=39&type=product&tracking_id=24a5f4cf-4789-44a7-934a-ad03bbf5f0a1&wid=MLA2316492036&sid=search) | $69.000 | 19.0% | tipo: HERRAMIENTA; penalización tipo adicional candidato: BOLSO |
+| 2 | baja | 41 | [Llaves De Equipamiento Original John Deere Gy20680, Paquete](https://articulo.mercadolibre.com.ar/MLA-1805686341-llaves-de-equipamiento-original-john-deere-gy20680-paquete-_JM#polycard_client=search-desktop&be_origin=backend&search_layout=grid&position=36&type=item&tracking_id=ae5ebc13-fd8c-4d4d-ae90-59d1a581887a) | $61.544 | 6.1% | tipo: HERRAMIENTA; compatibilidad/marca: John Deere |
 
 ### 99. Pinza múltiple de acero inoxidable John Deere
 
@@ -2516,9 +2329,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **Venturino más barato que ML**
 - Mejor confianza: media
 - Candidatos media/alta: 14
-- Candidatos usados: 20 de 32 válidos antes de top
+- Candidatos usados: 20 de 30 válidos antes de top
 - Candidatos excluidos por precio: 3278
-- Candidatos excluidos por score: 801
+- Candidatos excluidos por score: 803
 - Mediana ML: $69.729
 - Venturino vs mediana ML: -14.0%
 
@@ -2659,9 +2472,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: alta
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 159 válidos antes de top
+- Candidatos usados: 20 de 155 válidos antes de top
 - Candidatos excluidos por precio: 3246
-- Candidatos excluidos por score: 706
+- Candidatos excluidos por score: 710
 - Mediana ML: $189.291
 - Venturino vs mediana ML: 6.7%
 
@@ -2696,9 +2509,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: alta
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 141 válidos antes de top
+- Candidatos usados: 20 de 140 válidos antes de top
 - Candidatos excluidos por precio: 3498
-- Candidatos excluidos por score: 472
+- Candidatos excluidos por score: 473
 - Mediana ML: $256.997
 - Venturino vs mediana ML: 1.9%
 
@@ -2733,9 +2546,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 109 válidos antes de top
+- Candidatos usados: 20 de 108 válidos antes de top
 - Candidatos excluidos por precio: 3037
-- Candidatos excluidos por score: 965
+- Candidatos excluidos por score: 966
 - Mediana ML: $94.772
 - Venturino vs mediana ML: -2.9%
 
@@ -2807,9 +2620,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: alta
 - Candidatos media/alta: 4
-- Candidatos usados: 20 de 128 válidos antes de top
+- Candidatos usados: 20 de 125 válidos antes de top
 - Candidatos excluidos por precio: 3008
-- Candidatos excluidos por score: 975
+- Candidatos excluidos por score: 978
 - Mediana ML: $100.000
 - Venturino vs mediana ML: 2.0%
 
@@ -2844,9 +2657,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 115 válidos antes de top
+- Candidatos usados: 20 de 114 válidos antes de top
 - Candidatos excluidos por precio: 3046
-- Candidatos excluidos por score: 950
+- Candidatos excluidos por score: 951
 - Mediana ML: $100.000
 - Venturino vs mediana ML: -5.0%
 
@@ -2918,9 +2731,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 113 válidos antes de top
+- Candidatos usados: 20 de 112 válidos antes de top
 - Candidatos excluidos por precio: 3055
-- Candidatos excluidos por score: 943
+- Candidatos excluidos por score: 944
 - Mediana ML: $94.772
 - Venturino vs mediana ML: -0.8%
 
@@ -2992,9 +2805,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **Venturino más caro que ML**
 - Mejor confianza: media
 - Candidatos media/alta: 16
-- Candidatos usados: 20 de 76 válidos antes de top
+- Candidatos usados: 20 de 75 válidos antes de top
 - Candidatos excluidos por precio: 3812
-- Candidatos excluidos por score: 223
+- Candidatos excluidos por score: 224
 - Mediana ML: $464.070
 - Venturino vs mediana ML: 25.0%
 
@@ -3029,9 +2842,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 143 válidos antes de top
+- Candidatos usados: 20 de 139 válidos antes de top
 - Candidatos excluidos por precio: 2945
-- Candidatos excluidos por score: 1023
+- Candidatos excluidos por score: 1027
 - Mediana ML: $108.618
 - Venturino vs mediana ML: 3.1%
 
@@ -3066,9 +2879,9 @@ _Sin candidatos válidos con los parámetros actuales._
 - Estado análisis: **similar a ML**
 - Mejor confianza: media
 - Candidatos media/alta: 20
-- Candidatos usados: 20 de 154 válidos antes de top
+- Candidatos usados: 20 de 150 válidos antes de top
 - Candidatos excluidos por precio: 2932
-- Candidatos excluidos por score: 1025
+- Candidatos excluidos por score: 1029
 - Mediana ML: $119.333
 - Venturino vs mediana ML: 2.2%
 

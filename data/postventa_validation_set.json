@@ -354,6 +354,19 @@
       "acceptedMlIds": [],
       "rejectedMlPatterns": ["cortadora Honda sin modelo", "cortadora genérica 4.8HP"],
       "rationale": "Debe exigir HRX476VYEH o equivalencia explícita, no sólo marca Honda."
+    },
+    {
+      "id": "PV-VAL-029",
+      "venturinoProductId": "276171332",
+      "name": "Caja de herramientas John Deere de acero",
+      "family": "HERRAMIENTA",
+      "currentStatus": "Venturino más caro que ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA3242261346", "MLA2033573986"],
+      "rejectedMlIds": ["MLA1562325653", "MLA1946973092", "MLA1245977771"],
+      "rejectedMlPatterns": ["kit de herramientas", "switch tambor de arranque", "llave de contacto"],
+      "rationale": "Debe compararse sólo contra cajas de herramientas equivalentes; no contra kits de herramientas ni llaves/switch de arranque por compartir familia amplia."
     }
   ]
 }

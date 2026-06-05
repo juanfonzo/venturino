@@ -525,6 +525,22 @@ function getGuardrailRejection(
     return "guardrail ISG: no comparar contra llaves físicas o accesorios genéricos";
   }
 
+  if (venturino.types.includes("CAJA_HERRAMIENTAS") && !ml.types.includes("CAJA_HERRAMIENTAS")) {
+    return "guardrail caja de herramientas: no comparar contra kits, llaves o accesorios genéricos";
+  }
+
+  if (ml.types.includes("CAJA_HERRAMIENTAS") && !venturino.types.includes("CAJA_HERRAMIENTAS")) {
+    return "guardrail caja de herramientas: candidato no equivalente";
+  }
+
+  if (isVehicleKeyOrSwitch(venturino) !== isVehicleKeyOrSwitch(ml)) {
+    return "guardrail llave/switch: no comparar contacto o arranque contra herramientas genéricas";
+  }
+
+  if (isToyLike(venturino) !== isToyLike(ml)) {
+    return "guardrail juguete: no comparar juguetes/merchandising contra artículos operativos";
+  }
+
   if (isFluidProduct(venturino)) {
     const venturinoLine = getFluidLine(venturino);
     const mlLine = getFluidLine(ml);
@@ -602,6 +618,37 @@ function getGuardrailConfidenceCap(
   }
 
   return null;
+}
+
+function isVehicleKeyOrSwitch(features: ProductFeatures) {
+  const tokens = new Set(features.tokens);
+  return (
+    tokens.has("switch") ||
+    tokens.has("interruptor") ||
+    tokens.has("tambor") ||
+    tokens.has("arranque") ||
+    tokens.has("encendido") ||
+    tokens.has("contacto") ||
+    (tokens.has("llave") && (tokens.has("tractor") || tokens.has("tractores")))
+  );
+}
+
+function isToyLike(features: ProductFeatures) {
+  const toyTokens = [
+    "juguete",
+    "toy",
+    "llavero",
+    "miniatura",
+    "replica",
+    "escala",
+    "ertl",
+    "bruder",
+    "tomy",
+    "tommy",
+    "bif",
+    "pedal",
+  ];
+  return features.types.includes("JUGUETE") || toyTokens.some((token) => features.tokens.includes(token));
 }
 
 function isFluidProduct(features: ProductFeatures) {
@@ -691,6 +738,7 @@ function inferProductTypes(tokens: string[], normalizedName: string, source: Pos
   const toyHints = [
     "juguete",
     "toy",
+    "toy",
     "armar",
     "paca",
     "heno",
@@ -742,6 +790,15 @@ function inferProductTypes(tokens: string[], normalizedName: string, source: Pos
     types.push("JUGUETE");
   }
 
+  if (tokens.includes("caja") && tokens.includes("herramienta")) {
+    types.push("CAJA_HERRAMIENTAS");
+  }
+  if (
+    (tokens.includes("kit") || tokens.includes("set") || tokens.includes("juego") || tokens.includes("pieza")) &&
+    (tokens.includes("herramienta") || tokens.includes("llave") || tokens.includes("tubo"))
+  ) {
+    types.push("KIT_HERRAMIENTAS");
+  }
   if (
     tokens.includes("herramienta") ||
     ((tokens.includes("juego") || tokens.includes("set")) &&
@@ -775,6 +832,8 @@ function inferProductTypes(tokens: string[], normalizedName: string, source: Pos
     "CINCEL",
     "PUNZON",
     "PINZA",
+    "CAJA_HERRAMIENTAS",
+    "KIT_HERRAMIENTAS",
     "MOTOBOMBA",
     "MOTOGUADANA",
     "CORTADORA",

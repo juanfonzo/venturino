@@ -161,7 +161,7 @@ function buildRecommendations({ kpis, byType }) {
   const weakTypes = byType.filter((item) => item.total >= 2 && item.noComparableRate >= 0.8).slice(0, 8);
   const strongTypes = byType.filter((item) => item.total >= 2 && item.comparableRate >= 0.7).slice(0, 8);
 
-  recommendations.push("Usar el reporte como benchmark comercial cuando el estado sea similar, más caro, más barato o baja confianza; separar explícitamente sin comparable.");
+  recommendations.push("Usar el reporte como benchmark comercial cuando el estado sea similar, más caro o más barato; separar explícitamente baja confianza y sin comparable.");
   recommendations.push("Priorizar revisión de productos más caros con brecha >= 10% y confianza media/alta; son las oportunidades comerciales más accionables.");
   recommendations.push("No usar productos sin comparable como señal de precio; usarlos como backlog de mejora del diccionario o como evidencia de falta de mercado comparable.");
 

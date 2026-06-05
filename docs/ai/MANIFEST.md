@@ -1,6 +1,6 @@
 # Manifest
 
-Última revisión coordinada: 2026-06-04.
+Última revisión coordinada: 2026-06-05.
 
 ## Estado General
 
@@ -55,7 +55,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | Reporte Venturino PDF | implementado | `app/api/reports/venturino/route.ts`, `scripts/generateVenturinoReport.js` |
 | Ingesta maquinaria | implementado | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `prisma/schema.prisma` |
 | FX | implementado | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
-| Postventa ingesta/análisis | parcial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/analyze/route.ts` |
+| Postventa ingesta/análisis | implementado inicial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
 | MCP | no implementado | `docs/technical/mcp-coverage-map.md` |
 
 ## Cambios De Cliente
@@ -83,3 +83,4 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 - Antes de cambios grandes, usar CodeGraph si está disponible y luego leer archivos reales.
 - No implementar features sin brief/backlog aprobado, salvo pedido explícito.
 - Mantener `docs/technical/mcp-coverage-map.md` actualizado para capacidades operativas nuevas.
+- Postventa: `analysis:postventa-matches` y `pipeline:postventa` deben usar los servicios compartidos de `lib/postventa/**`; no duplicar reglas de matching en scripts.

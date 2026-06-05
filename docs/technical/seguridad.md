@@ -75,7 +75,7 @@ Endpoints operativos protegidos por host local:
 - `POST /api/sync-fx-rate`
 - `POST /api/postventa/analyze`
 
-Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficiente para cron local controlado, pero no para exposición externa.
+Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficiente para cron local controlado, pero no para exposición externa. El pipeline `pipeline:postventa` ya no depende de este endpoint: ejecuta `runPostventaAnalysis` directo desde el script.
 
 Endpoint operativo protegido por sesión:
 

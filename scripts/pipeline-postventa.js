@@ -14,6 +14,7 @@ const path = require("path");
 const { MongoClient } = require("mongodb");
 const { PrismaClient } = require("@prisma/client");
 const { loadEnvFile } = require("./pipeline-shared");
+const { requireTypeScript } = require("./register-ts");
 
 loadEnvFile();
 
@@ -24,7 +25,6 @@ const COLLECTION_NAME = process.env.POSTVENTA_MONGO_COLLECTION || "productos";
 const DRY_RUN = process.argv.includes("--dry-run");
 const NO_SAMPLE = process.argv.includes("--no-sample");
 const SKIP_ANALYSIS = process.argv.includes("--skip-analysis");
-const ANALYSIS_URL = process.env.POSTVENTA_ANALYSIS_URL || "http://127.0.0.1:3000/api/postventa/analyze";
 const BATCH_SIZE = 500;
 
 if (!MONGODB_URI) {
@@ -77,7 +77,7 @@ async function main() {
     return;
   }
 
-  await triggerPostventaAnalysis({ importRunId: result.importRunId });
+  await runPostventaAnalysisAfterImport({ importRunId: result.importRunId });
 }
 
 async function fetchMongoProducts() {
@@ -429,30 +429,22 @@ async function upsertIntoPostgres({ activeProducts, counts, latestDates }) {
   }
 }
 
-async function triggerPostventaAnalysis({ importRunId }) {
-  const body = {
+async function runPostventaAnalysisAfterImport({ importRunId }) {
+  const options = {
     similarityThreshold: parseEnvNumber("POSTVENTA_SIMILARITY_THRESHOLD"),
   };
-  Object.keys(body).forEach((key) => {
-    if (body[key] === undefined) delete body[key];
+  Object.keys(options).forEach((key) => {
+    if (options[key] === undefined) delete options[key];
   });
 
   console.log();
   console.log("=== Running postventa analysis ===");
   console.log(`  Import run: #${importRunId}`);
-  console.log(`  Endpoint:   ${ANALYSIS_URL}`);
-  console.log(`  Options:    ${JSON.stringify(body)}`);
+  console.log("  Runtime:    lib/postventa/run-analysis.ts");
+  console.log(`  Options:    ${JSON.stringify(options)}`);
 
-  const response = await fetch(ANALYSIS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message = payload?.error || `HTTP ${response.status}`;
-    throw new Error(`Postventa analysis failed after import #${importRunId}: ${message}`);
-  }
+  const { runPostventaAnalysis } = requireTypeScript("lib/postventa/run-analysis.ts");
+  const payload = await runPostventaAnalysis(options);
 
   console.log();
   console.log("=== ANALYSIS RESULTS ===");

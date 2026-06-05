@@ -1,10 +1,10 @@
 # Arquitectura: Postventa Venturino vs MercadoLibre
 
-Estado: propuesta implementable
+Estado: implementado inicial, pendiente de validación en entorno destino
 
-Fecha: 2026-05-22
+Fecha: 2026-06-05
 
-Fuente principal: conversación de refinamiento + `reports/postventa-match-analysis.md` + `scripts/analyzePostventaMatches.js`.
+Fuente principal: conversación de refinamiento + `reports/postventa-match-analysis.md` + `lib/postventa/matching.ts`.
 
 ## Objetivo
 
@@ -27,8 +27,12 @@ El sistema debe:
 - Los productos Venturino y ML se consideran comparables sólo si están activos en la última extracción de su origen.
 - Los productos ML que ya no aparecen en la última extracción se marcan inactivos y no participan del análisis vigente, pero conservan trazabilidad histórica.
 - El reporte PDF usa banda fija de precio `±40%`.
+- El estado `similar a ML` usa umbral estándar `±10%`, persistido por corrida en `PostventaAnalysisRun.similarityThreshold`.
+- El listado `/postventa` ordena por defecto productos con candidatos/comparables primero y deja `sin comparable` al final.
+- El reporte PDF estándar exporta sólo productos comercialmente comparables: `similar a ML`, `Venturino más caro que ML` y `Venturino más barato que ML`. Excluye `sin comparable` y `baja confianza`.
 - La UI puede permitir ajustar la banda de precio para exploración, sin alterar el reporte estándar.
-- El reporte y la UI muestran candidatos sugeridos, incluso si algunos son de baja confianza.
+- La UI muestra candidatos sugeridos, incluso si algunos son de baja confianza.
+- `baja confianza` queda visible en UI como evidencia no accionable, pero no entra al PDF comercial.
 
 ## Módulos
 
@@ -39,7 +43,7 @@ El sistema debe:
 | Matching | Normalizar nombres, inferir tipos, puntuar candidatos, excluir outliers de precio y calcular mediana | `lib/postventa/matching.ts` |
 | API web | Listados, detalle por producto, resumen, ejecución de análisis y descarga PDF | `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
 | UI postventa | Dashboard compacto, filtros, tabla de productos y detalle con candidatos | `app/(pages)/postventa/page.tsx`, `components/postventa/**` |
-| Reporte PDF | PDF a nivel producto con estado, mediana, brecha y candidatos usados | `lib/reports/postventaVsMl.tsx` |
+| Reporte PDF | PDF de productos comparables con estado, mediana, brecha y candidatos usados | `app/api/reports/postventa/route.ts`, `scripts/generatePostventaReport.js` |
 | MCP candidato | Herramientas para consultar resumen, listar productos y ver detalle | `mcp/app/tools/postventa.py` |
 
 ## Flujo De Datos
@@ -60,6 +64,8 @@ MongoDB Atlas
        postventa_match_candidates
     -> Next.js UI / PDF / MCP candidato
 ```
+
+La calibración offline (`scripts/analyzePostventaMatches.js`) y el análisis persistido (`lib/postventa/run-analysis.ts`) ejecutan el mismo módulo de matching: `lib/postventa/matching.ts`.
 
 ## Modelo De Datos Propuesto
 
@@ -340,6 +346,8 @@ type Input = {
 
 El reporte estándar usa `priceBand = 0.4` aunque la UI permita exploración con otros valores.
 
+El endpoint fuerza exportación `comparableOnly`, por lo que `sin comparable` y `baja confianza` quedan excluidos aunque existan otros filtros activos.
+
 ## UI Propuesta
 
 Ruta: `/postventa`
@@ -378,6 +386,7 @@ Permisos:
 - Algunos productos no tendrán comparable real dentro de ML activo o dentro de la banda de precio.
 - Persistir candidatos permite auditar reportes, pero exige recalcular cuando cambia el algoritmo.
 - No persistir revisión manual simplifica el hito inicial, pero si negocio necesita overrides estables deberá agregarse una capa posterior.
+- Los scripts Node ejecutan módulos TypeScript compartidos mediante `scripts/register-ts.js`; la imagen Docker debe copiar `lib/` junto con `scripts/`.
 
 ## Criterios De Aceptación Técnicos
 
