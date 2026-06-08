@@ -19,7 +19,7 @@
 | `/api/tractors` | GET | Listar publicaciones con filtros, sort y paginación | `loadListings` |
 | `/api/stats` | GET | KPIs y agregados de mercado | `buildStats` |
 | `/api/model-combos` | GET | Buscar combos marca/modelo | `topModelCombos` |
-| `/api/market-evolution` | GET | Evolución p25/p50/p75 por modelo y buckets de año | Prisma `priceHistory` |
+| `/api/market-evolution` | GET | Evolución p25/p50/p75 por modelo y, opcionalmente, buckets de año | Prisma `priceHistory` |
 | `/api/listings/price-history` | GET | Historial de precio por URL | Prisma |
 | `/api/acara/items` | GET | Buscar y paginar ítems ACARA | CSV ACARA |
 | `/api/acara/item/[id]` | GET | Detalle de ítem ACARA | CSV ACARA |

@@ -164,8 +164,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
         selectedMeta.marca,
       )}&model=${encodeURIComponent(selectedMeta.modelo)}`;
       const estadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
-      const yearPresetParam = estado === "Usado" ? "&yearBucketPreset=used_default" : "";
-      return `${base}${estadoParam}${yearPresetParam}`;
+      return `${base}${estadoParam}`;
     })();
     const listingsEstadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
 
@@ -415,11 +414,11 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                     </span>
                   ) : null}
                 </div>
-                {estado === "Usado" && marketSeries?.length ? (
-                  <p className="mt-1 text-xs text-jd-black/60">
-                    Mediana (p50) por rango de año de fabricación.
-                  </p>
-                ) : null}
+                <p className="mt-1 text-xs text-jd-black/60">
+                  {estado === "Usado"
+                    ? "Mediana y dispersión por fecha de extracción para el modelo seleccionado."
+                    : "Mediana (p50) y percentiles por fecha de extracción."}
+                </p>
                 <div className="mt-2">
                   <MarketEvolutionChart points={market ?? []} series={marketSeries} />
                 </div>

@@ -162,7 +162,18 @@ export function MarketEvolutionChart({
                 dataKey={`p50__${entry.bucket}`}
                 stroke={bucketColors[index % bucketColors.length]}
                 strokeWidth={3}
-                dot={false}
+                dot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  fill: "#FFFFFF",
+                  stroke: bucketColors[index % bucketColors.length],
+                }}
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 2,
+                  fill: "#FFDE00",
+                  stroke: bucketColors[index % bucketColors.length],
+                }}
                 name={entry.label}
                 connectNulls
               />
