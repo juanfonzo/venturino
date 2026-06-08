@@ -2,7 +2,7 @@
 
 import {
   ResponsiveContainer,
-  LineChart,
+  ComposedChart,
   Line,
   XAxis,
   YAxis,
@@ -87,8 +87,8 @@ export function MarketEvolutionChart({
 
   return (
     <div className="h-64 w-full rounded-2xl border border-jd-black/10 bg-white/80 p-3">
-      <ResponsiveContainer>
-        <LineChart data={(hasSeries ? multiData : singleData) as any}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={(hasSeries ? multiData : singleData) as any}>
           {!hasSeries ? (
             <defs>
               <linearGradient id="marketP50Fill" x1="0" y1="0" x2="0" y2="1">
@@ -179,7 +179,7 @@ export function MarketEvolutionChart({
               />
             ))
           )}
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );

@@ -96,6 +96,7 @@
   - 2026-06-08 diagnóstico Dashboard tendencia: `MarketEvolutionChart` quedaba visualmente vacío en modo series por rango cuando cada rango tenía un solo punto histórico, porque las líneas multi-serie usaban `dot={false}`. Ajustado para mostrar dots/activeDots en series por rango.
   - Validación Dashboard tendencia: CodeGraph `query/context` usado como orientación, lectura directa de `ModelMarketPanel`, `MarketEvolutionChart` y `/api/market-evolution`; `npx tsc --noEmit`, `npm run lint` y `npm run build` OK. Browser integrado no disponible (`iab`).
   - 2026-06-08 iteración estrategia usados Dashboard: para maquinaria usada, el panel deja de activar buckets por rango de año y muestra p25/p50/p75 agregados por fecha de extracción del modelo seleccionado. Motivo: los rangos de año fragmentan muestras chicas y dificultan ver tendencia temporal.
+  - 2026-06-08 ajuste final Dashboard tendencia: filtro de estado queda sólo `Usado`/`Nuevo` con default `Usado`; `MarketEvolutionChart` usa `ResponsiveContainer width/height` explícito y `ComposedChart` para renderizar de forma robusta área + líneas.
   - Contexto canónico actualizado para futuras tareas del kit. App real: Next.js 16.2.7, PostgreSQL/Prisma, MongoDB pipelines, ACARA CSV activo, auth JWT simple, diseño propio Venturino/John Deere.
   - Analisis postventa ejecutado sobre 127 productos activos Venturino y ML ultima extraccion.
   - Resultado final calibracion: 46 Venturino mas caro, 19 mas barato, 60 sin comparable, 2 baja confianza.

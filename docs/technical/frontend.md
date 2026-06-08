@@ -72,7 +72,7 @@ Respetar identidad Venturino/John Deere, paleta `jd`, topbar actual, paneles, ta
 - Filtros resetean página a 1.
 - Listados grandes usan paginación visible o límites.
 - Búsquedas con debounce en paneles específicos (`AcaraTrendPanel`, `ModelMarketPanel`).
-- En Dashboard, la evolución de mercado de usados prioriza p25/p50/p75 por fecha de extracción del modelo seleccionado; los rangos de año no son la vista principal porque fragmentan muestras chicas.
+- En Dashboard, el filtro de estado del panel de modelos ofrece sólo `Usado` y `Nuevo`; `Usado` es el default. La evolución de usados prioriza p25/p50/p75 por fecha de extracción del modelo seleccionado; los rangos de año no son la vista principal porque fragmentan muestras chicas.
 - Detalles se abren por click en fila.
 - Links externos abren en nueva pestaña.
 - ACARA permite exportar/importar vínculos JSON.

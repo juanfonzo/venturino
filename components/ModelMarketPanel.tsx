@@ -33,7 +33,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
   const [comboSearchLoading, setComboSearchLoading] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedMeta, setSelectedMeta] = useState<{ marca: string; modelo: string } | null>(null);
-  const [estado, setEstado] = useState<"" | "Nuevo" | "Usado">("");
+  const [estado, setEstado] = useState<"Nuevo" | "Usado">("Usado");
 
   const { mappings, loaded: mappingsLoaded } = useAcaraMappings();
   const [acaraItem, setAcaraItem] = useState<AcaraItem | null>(null);
@@ -205,7 +205,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
     return () => {
       cancelled = true;
     };
-  }, [categoria, selectedMeta?.marca, selectedMeta?.modelo, estado]);
+  }, [categoria, selectedMeta, estado]);
 
   useEffect(() => {
     if (!mappingsLoaded) return;
@@ -327,9 +327,8 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
             <Select
               aria-label="Estado"
               value={estado}
-              onChange={(e) => setEstado(e.target.value as "" | "Nuevo" | "Usado")}
+              onChange={(e) => setEstado(e.target.value as "Nuevo" | "Usado")}
             >
-              <option value="">Todos</option>
               <option value="Usado">Usado</option>
               <option value="Nuevo">Nuevo</option>
             </Select>
