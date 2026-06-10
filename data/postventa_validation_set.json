@@ -49,12 +49,12 @@
       "venturinoProductId": "318712612",
       "name": "Aceite Hidráulico Hy‑Gard 20 Lts. John Deere",
       "family": "ACEITE",
-      "currentStatus": "sin comparable",
-      "expectedLabel": "requires_unit_normalization",
-      "expectedOutcome": "sin comparable",
-      "acceptedMlIds": [],
+      "currentStatus": "Venturino más barato que ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA1369333397"],
       "rejectedMlPatterns": ["Hy-Gard 4L comparado por precio total", "aceite hidráulico sin litros"],
-      "rationale": "Existe señal de Hy-Gard en ML, pero comparar 20L contra 4L por precio total degradaría precisión."
+      "rationale": "El scraping actual contiene Hy-Gard 20L, por lo que línea y litros son compatibles para benchmark."
     },
     {
       "id": "PV-VAL-004",
@@ -324,24 +324,24 @@
       "venturinoProductId": "332862512",
       "name": "Generador Honda EZ3000CX – 3 KVA",
       "family": "HONDA",
-      "currentStatus": "sin comparable",
-      "expectedLabel": "market_absent",
-      "expectedOutcome": "sin comparable",
-      "acceptedMlIds": [],
+      "currentStatus": "similar a ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA1129317376", "MLA908999957"],
       "rejectedMlPatterns": ["generador Honda sin modelo", "generador 3kva genérico"],
-      "rationale": "Para Honda se debe exigir modelo exacto o muy cercano."
+      "rationale": "El scraping actual contiene generadores EZ3000/EZ3000CX; debe matchear por familia de modelo Honda sin caer en generadores genéricos."
     },
     {
       "id": "PV-VAL-027",
       "venturinoProductId": "332863753",
       "name": "Generador Honda EZ6500CXS – 6.5 KVA",
       "family": "HONDA",
-      "currentStatus": "sin comparable",
-      "expectedLabel": "market_absent",
-      "expectedOutcome": "sin comparable",
-      "acceptedMlIds": [],
+      "currentStatus": "Venturino más barato que ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA3069032746", "MLA1559263375", "MLA1505050374"],
       "rejectedMlPatterns": ["generador Honda sin modelo", "generador 6500 genérico"],
-      "rationale": "El modelo EZ6500CXS es el atributo crítico; no comparar por marca/cilindrada aislada."
+      "rationale": "El modelo EZ6500/EZ6500CXS es el atributo crítico; debe aceptar variantes cercanas y no comparar por marca/cilindrada aislada."
     },
     {
       "id": "PV-VAL-028",
@@ -349,11 +349,11 @@
       "name": "Cortadora de Césped Honda HRX476VYEH – 4.8 HP",
       "family": "HONDA",
       "currentStatus": "sin comparable",
-      "expectedLabel": "market_absent",
-      "expectedOutcome": "sin comparable",
-      "acceptedMlIds": [],
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA1562771909", "MLA2028422062", "MLA2174350398", "MLA1495575311"],
       "rejectedMlPatterns": ["cortadora Honda sin modelo", "cortadora genérica 4.8HP"],
-      "rationale": "Debe exigir HRX476VYEH o equivalencia explícita, no sólo marca Honda."
+      "rationale": "Debe aceptar familia HRX476 como equivalente de variante HRX476VYEH, sin bajar a cortadoras Honda genéricas."
     },
     {
       "id": "PV-VAL-029",
@@ -367,6 +367,85 @@
       "rejectedMlIds": ["MLA1562325653", "MLA1946973092", "MLA1245977771"],
       "rejectedMlPatterns": ["kit de herramientas", "switch tambor de arranque", "llave de contacto"],
       "rationale": "Debe compararse sólo contra cajas de herramientas equivalentes; no contra kits de herramientas ni llaves/switch de arranque por compartir familia amplia."
+    },
+    {
+      "id": "PV-VAL-030",
+      "venturinoProductId": "332868795",
+      "name": "Cortadora de Césped Honda HRG466SKEP – 4.2 HP",
+      "family": "HONDA",
+      "currentStatus": "sin comparable",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA1995798192", "MLA3383003158", "MLA1969025994", "MLA1654450531"],
+      "rejectedMlPatterns": ["cortadora Honda sin modelo", "cortadora genérica", "repuesto para cortadora"],
+      "rationale": "Debe aceptar HRG466/HRG466C1/SKEP como familia y variante compatibles, sin comparar contra cortadoras Honda de otra familia."
+    },
+    {
+      "id": "PV-VAL-031",
+      "venturinoProductId": "340632800",
+      "name": "Motobomba Honda WB20XH2",
+      "family": "HONDA",
+      "currentStatus": "sin comparable",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA2810796020", "MLA772783659", "MLA2051015631"],
+      "rejectedMlPatterns": ["repuesto de motobomba", "motobomba Honda de otra familia", "turbina suelta"],
+      "rationale": "Debe aceptar familia WB20/WB20XH como equivalente de WB20XH2 cuando precio y tipo coinciden."
+    },
+    {
+      "id": "PV-VAL-032",
+      "venturinoProductId": "332861874",
+      "name": "Motor Honda GX200QX – 6.5 HP",
+      "family": "HONDA",
+      "currentStatus": "sin comparable",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA2042318950", "MLA1737817559"],
+      "rejectedMlIds": ["MLA2104665080", "MLA3197595114", "MLA3274362048"],
+      "rejectedMlPatterns": ["correa John Deere GX20072", "repuesto para cortacésped"],
+      "rationale": "Debe aceptar motores Honda GX200 compatibles, pero no confundir códigos John Deere GX20072 con modelo Honda GX200."
+    },
+    {
+      "id": "PV-VAL-033",
+      "venturinoProductId": "332858727",
+      "name": "Motor Honda GP200 – 5.5 HP",
+      "family": "HONDA",
+      "currentStatus": "similar a ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": [
+        "MLA1569928047",
+        "MLA2040853899",
+        "MLA1382376833",
+        "MLA1383523053",
+        "MLA1640116076",
+        "MLA1419235491",
+        "MLA1393956701",
+        "MLA2229850308"
+      ],
+      "rejectedMlPatterns": ["motor Honda GX160", "motor Honda GX200", "motor Honda genérico"],
+      "rationale": "El scraping actual ya contiene familia GP200 equivalente; debe comparar sólo contra GP200 y no contra otras familias de motor Honda."
+    },
+    {
+      "id": "PV-VAL-034",
+      "venturinoProductId": "332864939",
+      "name": "Mochila Fumigadora Honda WJR 2525 – 25 L",
+      "family": "HONDA",
+      "currentStatus": "similar a ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": [
+        "MLA1508691852",
+        "MLA2517349896",
+        "MLA3326594012",
+        "MLA1695304246",
+        "MLA1909451416",
+        "MLA1525914122",
+        "MLA1881780576",
+        "MLA1731343302"
+      ],
+      "rejectedMlPatterns": ["mochila fumigadora genérica", "producto Honda sin WJR2525"],
+      "rationale": "El scraping actual ya contiene familia WJR2525 equivalente; debe comparar sólo contra WJR2525 y no por marca Honda o capacidad aislada."
     }
   ]
 }

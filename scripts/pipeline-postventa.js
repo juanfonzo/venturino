@@ -13,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const { MongoClient } = require("mongodb");
 const { PrismaClient } = require("@prisma/client");
-const { loadEnvFile } = require("./pipeline-shared");
+const { loadEnvFile, resolveMongoUri } = require("./pipeline-shared");
 const { requireTypeScript } = require("./register-ts");
 
 loadEnvFile();
@@ -82,7 +82,7 @@ async function main() {
 
 async function fetchMongoProducts() {
   console.log("Connecting to MongoDB Atlas...");
-  const mongo = new MongoClient(MONGODB_URI);
+  const mongo = new MongoClient(await resolveMongoUri(MONGODB_URI));
   await mongo.connect();
 
   try {

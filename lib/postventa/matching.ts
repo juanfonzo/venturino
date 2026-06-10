@@ -144,7 +144,11 @@ const TOKEN_SYNONYMS = new Map<string, string>([
   ["motobombas", "motobomba"],
   ["motoguadanas", "motoguadana"],
   ["motoguadañas", "motoguadana"],
+  ["desmalezadora", "motoguadana"],
+  ["desmalezadoras", "motoguadana"],
   ["cortadoras", "cortadora"],
+  ["cortacesped", "cortadora"],
+  ["cortacésped", "cortadora"],
   ["cuchillos", "cuchillo"],
   ["punzones", "punzon"],
   ["puntones", "punton"],
@@ -165,6 +169,9 @@ const TOKEN_SYNONYMS = new Map<string, string>([
   ["matero", "mate"],
   ["bombillas", "bombilla"],
   ["mochilas", "mochila"],
+  ["fumigadoras", "fumigadora"],
+  ["aspersoras", "aspersora"],
+  ["pulverizadores", "pulverizador"],
   ["boinas", "boina"],
   ["bandejas", "bandeja"],
   ["materas", "matera"],
@@ -209,6 +216,9 @@ const PRODUCT_TYPE_BY_TOKEN = new Map<string, string>([
   ["mate", "MATE"],
   ["bombilla", "MATE"],
   ["mochila", "MOCHILA"],
+  ["fumigadora", "MOCHILA"],
+  ["aspersora", "MOCHILA"],
+  ["pulverizador", "MOCHILA"],
   ["boina", "BOINA"],
   ["bandeja", "BANDEJA"],
   ["matera", "MATERA"],
@@ -362,7 +372,9 @@ export function buildPostventaMatch(
     );
   });
 
-  const candidates = evaluated.slice(0, topN);
+  const candidates = shouldKeepLowConfidenceOnlyMatch(venturino, evaluated)
+    ? evaluated.slice(0, topN)
+    : evaluated.filter((candidate) => candidate.confidence !== "baja").slice(0, topN);
   const prices = candidates.map((candidate) => candidate.priceArs).sort((a, b) => a - b);
   const medianMlPriceArs =
     prices.length === 0
@@ -481,6 +493,12 @@ function scorePostventaCandidate(
     reasons.push(`tokens técnicos: ${commonStrong.join(", ")}`);
   }
 
+  const sharedHondaFamilies = getSharedHondaModelFamilies(vf, mf);
+  if (sharedHondaFamilies.length > 0) {
+    score += Math.min(sharedHondaFamilies.length * 24, 36);
+    reasons.push(`modelo Honda compatible: ${sharedHondaFamilies.join(", ")}`);
+  }
+
   if (commonPrimary.length > 0) {
     score += Math.min(commonPrimary.length * 5, 35);
     reasons.push(`tokens comunes: ${commonPrimary.slice(0, 8).join(", ")}`);
@@ -550,6 +568,9 @@ function getGuardrailRejection(
     if (venturinoLine && !mlLine) {
       return `guardrail fluido: candidato sin línea ${venturinoLine}`;
     }
+    if (venturino.fluidLiters === null && ml.fluidLiters !== null) {
+      return "guardrail fluido: producto Venturino sin litros";
+    }
     if (venturino.fluidLiters !== null) {
       if (ml.fluidLiters === null) return "guardrail fluido: candidato sin litros";
       if (!sameNumericSpec(venturino.fluidLiters, ml.fluidLiters, 0.05)) {
@@ -566,7 +587,7 @@ function getGuardrailRejection(
 
   if (requiresExactHondaModel(venturino)) {
     if (!ml.tokens.includes("honda")) return "guardrail Honda: candidato sin marca Honda";
-    if (!hasSharedModelToken(venturino, ml)) return "guardrail Honda: modelo no equivalente";
+    if (!hasSharedHondaModel(venturino, ml)) return "guardrail Honda: modelo no equivalente";
   }
 
   if (venturino.types.includes("CORREA") && venturino.tokens.includes("draper") && !ml.tokens.includes("draper")) {
@@ -669,10 +690,25 @@ function requiresExactHondaModel(features: ProductFeatures) {
   return features.tokens.includes("honda") && features.types.some((type) => hondaMachineTypes.includes(type));
 }
 
-function hasSharedModelToken(venturino: ProductFeatures, ml: ProductFeatures) {
+function hasSharedHondaModel(venturino: ProductFeatures, ml: ProductFeatures) {
   if (venturino.modelTokens.length === 0) return false;
   const candidateModels = new Set(ml.modelTokens);
-  return venturino.modelTokens.some((token) => candidateModels.has(token));
+  if (venturino.modelTokens.some((token) => candidateModels.has(token))) return true;
+  return getSharedHondaModelFamilies(venturino, ml).length > 0;
+}
+
+function getSharedHondaModelFamilies(venturino: ProductFeatures, ml: ProductFeatures) {
+  if (!venturino.tokens.includes("honda") || !ml.tokens.includes("honda")) return [];
+  const venturinoFamilies = new Set(venturino.modelTokens.map(toHondaModelFamily).filter(Boolean));
+  const mlFamilies = new Set(ml.modelTokens.map(toHondaModelFamily).filter(Boolean));
+  return Array.from(venturinoFamilies).filter((family) => mlFamilies.has(family));
+}
+
+function toHondaModelFamily(token: string) {
+  const normalized = token.replace(/[^a-z0-9]/g, "");
+  const match = normalized.match(/^(hrg|hrx|umk|wb|wl|wjr|ez|hhb|gp|gx)(\d{2,4})/);
+  if (!match) return null;
+  return `${match[1]}${match[2]}`;
 }
 
 function hasSharedTechnicalCode(venturino: ProductFeatures, ml: ProductFeatures, commonStrong: string[]) {
@@ -706,6 +742,12 @@ function getEffectivePriceBand(
   return defaultPriceBand;
 }
 
+function shouldKeepLowConfidenceOnlyMatch(venturino: FeaturedPostventaProduct, candidates: PostventaCandidate[]) {
+  if (candidates.some((candidate) => CONFIDENCE_ORDER[candidate.confidence] >= 2)) return true;
+  if (candidates.length === 0) return true;
+  return venturino.features.types.some((type) => TECHNICAL_DETAIL_TYPES.has(type));
+}
+
 function normalizeBase(value: string) {
   return (value || "")
     .toString()
@@ -730,7 +772,8 @@ function canonicalToken(token: string) {
 function tokenize(value: string) {
   const normalized = normalizeBase(value);
   const rawTokens = normalized.match(/[a-z0-9]+(?:[.\-x][a-z0-9]+)*/g) || [];
-  return rawTokens.map(canonicalToken).filter((token) => token.length > 0 && !STOPWORDS.has(token));
+  const tokens = rawTokens.map(canonicalToken).filter((token) => token.length > 0 && !STOPWORDS.has(token));
+  return unique([...tokens, ...extractHondaModelFamilyTokens(normalized, tokens)]);
 }
 
 function inferProductTypes(tokens: string[], normalizedName: string, source: PostventaSource) {
@@ -851,6 +894,12 @@ function extractBatteryAh(normalizedName: string) {
 }
 
 function extractFluidLiters(normalizedName: string) {
+  const mlMatch = normalizedName.match(/\b(\d+(?:\.\d+)?)\s*ml\b/);
+  if (mlMatch) {
+    const value = Number(mlMatch[1]);
+    return Number.isFinite(value) ? value / 1000 : null;
+  }
+
   const match = normalizedName.match(/\b(\d+(?:\.\d+)?)\s*(?:l|lt|lts|litro|litros)\b/);
   if (!match) return null;
   const value = Number(match[1]);
@@ -866,6 +915,26 @@ function isStrongToken(token: string) {
 
 function isModelToken(token: string) {
   return token.length >= 4 && /[a-z]/.test(token) && /\d/.test(token);
+}
+
+function extractHondaModelFamilyTokens(normalizedName: string, tokens: string[]) {
+  if (!tokens.includes("honda")) return [];
+
+  const families = new Set<string>();
+  const familyPattern = /\b(hrg|hrx|umk|wb|wl|wjr|ez|hhb|gp|gx)[\s.-]*(\d{2,4})(?!\d)/g;
+
+  for (const match of normalizedName.matchAll(familyPattern)) {
+    const family = `${match[1]}${match[2]}`;
+    if (isLikelyHondaModelFamily(family, normalizedName, match.index ?? 0)) families.add(family);
+  }
+
+  return Array.from(families);
+}
+
+function isLikelyHondaModelFamily(family: string, normalizedName: string, markerIndex: number) {
+  const before = normalizedName.slice(Math.max(0, markerIndex - 18), markerIndex).replace(/[^a-z0-9]/g, "");
+  if (before.includes("johndeere")) return false;
+  return true;
 }
 
 function isTechnicalCodeToken(token: string) {

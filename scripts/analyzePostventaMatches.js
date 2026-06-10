@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { MongoClient } = require("mongodb");
-const { loadEnvFile } = require("./pipeline-shared");
+const { loadEnvFile, resolveMongoUri } = require("./pipeline-shared");
 const { requireTypeScript } = require("./register-ts");
 
 loadEnvFile();
@@ -392,7 +392,7 @@ async function main() {
   );
   console.log(`Algoritmo: ${POSTVENTA_ALGORITHM_VERSION} desde lib/postventa/matching.ts`);
 
-  const mongo = new MongoClient(MONGODB_URI);
+  const mongo = new MongoClient(await resolveMongoUri(MONGODB_URI));
   await mongo.connect();
   const collection = mongo.db(DB_NAME).collection(COLLECTION_NAME);
 

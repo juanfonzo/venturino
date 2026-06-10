@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const dns = require('dns').promises;
 
 let cachedPipelineFunctions = null;
 
@@ -268,9 +269,34 @@ function pickLatestByDate(items, getDate) {
   return latest;
 }
 
+async function resolveMongoUri(uri) {
+  if (!uri || !uri.startsWith('mongodb+srv://')) return uri;
+
+  try {
+    const parsed = new URL(uri.replace('mongodb+srv://', 'http://'));
+    const resolver = new dns.Resolver();
+    resolver.setServers(['8.8.8.8', '1.1.1.1']);
+    const records = await resolver.resolveSrv(`_mongodb._tcp.${parsed.hostname}`);
+    if (!records.length) return uri;
+
+    const hosts = records
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((record) => `${record.name}:${record.port}`)
+      .join(',');
+    const params = new URLSearchParams(parsed.searchParams);
+    params.set('tls', 'true');
+    if (!params.has('authSource')) params.set('authSource', 'admin');
+
+    return `mongodb://${parsed.username}:${parsed.password}@${hosts}${parsed.pathname}?${params.toString()}`;
+  } catch {
+    return uri;
+  }
+}
+
 module.exports = {
   loadEnvFile,
   loadPipelineFunctions,
+  resolveMongoUri,
   normalizeMongoDoc,
   createProcessingStats,
   addRecordToStats,

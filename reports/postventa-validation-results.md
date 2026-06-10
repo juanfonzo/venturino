@@ -1,17 +1,17 @@
 # Resultado Validation Set Postventa
 
-Generado: 2026-06-05T16:06:10.933Z
+Generado: 2026-06-10T15:56:56.000Z
 Validation set: postventa-validation-set-v1
-Análisis base: 2026-06-05T16:04:14.016Z
+Análisis base: 2026-06-10T15:55:59.737Z
 
 ## KPIs
 
-- Casos evaluados: 29
-- Pass: 28
+- Casos evaluados: 34
+- Pass: 33
 - Warnings: 1
 - Fail: 0
 - Missing: 0
-- Positivos correctos: 3/3
+- Positivos correctos: 12/12
 - Falsos positivos accionables: 0
 
 ## Gates
@@ -19,7 +19,7 @@ Análisis base: 2026-06-05T16:04:14.016Z
 | Gate | Estado | Evidencia |
 |---|---|---|
 | all_items_present | OK | Casos ausentes en análisis: 0 |
-| positive_recall | OK | Positivos correctos 3/3 |
+| positive_recall | OK | Positivos correctos 12/12 |
 | no_actionable_false_positives | OK | Falsos positivos accionables: 0 |
 | no_rejected_ml_actionable | OK | Candidatos ML rechazados en estados accionables: 0 |
 | no_strict_failures | OK | Fallos estrictos: 0 |
@@ -30,9 +30,9 @@ Análisis base: 2026-06-05T16:04:14.016Z
 |---|---|---|---|---|---|---|
 | PV-VAL-001 | ACEITE | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-002 | ACEITE | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-003 | ACEITE | sin comparable | sin comparable | pass | - | OK |
+| PV-VAL-003 | ACEITE | comparable | Venturino más barato que ML | pass | Aceite Hidráulico Ajm69444 Hy-gard 20lt | OK |
 | PV-VAL-004 | REFRIGERANTE | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-005 | BATERIA | comparable | Venturino más caro que ML | pass | Bateria Willard Ub920i 12x110 John Deere Vial Tractores | OK |
+| PV-VAL-005 | BATERIA | comparable | Venturino más caro que ML | pass | Bateria Moura M100hi 12x110 Tractor New Holland Jhon Deere | OK |
 | PV-VAL-006 | BATERIA | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-007 | ISG | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-008 | ISG | sin comparable | sin comparable | pass | - | OK |
@@ -49,11 +49,16 @@ Análisis base: 2026-06-05T16:04:14.016Z
 | PV-VAL-019 | CINCEL | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-020 | CINCEL | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-021 | CINCEL | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-022 | FILTRO | baja confianza | baja confianza | pass | Filtro De Combustible John Deere Re525523 Agrícola | OK |
+| PV-VAL-022 | FILTRO | baja confianza | baja confianza | pass | Filtro De Combustible Re500186 John Deere | OK |
 | PV-VAL-023 | INYECCION | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-024 | INYECCION | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-025 | NAVAJA | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-026 | HONDA | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-027 | HONDA | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-028 | HONDA | sin comparable | sin comparable | pass | - | OK |
+| PV-VAL-026 | HONDA | comparable | similar a ML | pass | Generador Grupo Electrogeno Honda Ez3000cx 3 Kva Moron Ppi | OK |
+| PV-VAL-027 | HONDA | comparable | Venturino más barato que ML | pass | Generador Honda Naftero De Alta Potencia 6.5 Kva Ez6500cx... | OK |
+| PV-VAL-028 | HONDA | comparable | similar a ML | pass | Cortadora De Cesped Honda Hrx476c2 Autopropulsada | OK |
 | PV-VAL-029 | HERRAMIENTA | comparable | Venturino más caro que ML | pass | Caja De Herramientas John Deere, 18 Piezas | OK |
+| PV-VAL-030 | HONDA | comparable | similar a ML | pass | Cortadora De Césped Honda Hrg466c1 - Pkeh 4,2 Hp | OK |
+| PV-VAL-031 | HONDA | comparable | Venturino más caro que ML | pass | Motobomba Honda Wb20xt Drx Wb20xTDRx | OK |
+| PV-VAL-032 | HONDA | comparable | similar a ML | pass | Motor de gasolina estacionario Honda Gx200 Qd 6.5 HP | OK |
+| PV-VAL-033 | HONDA | comparable | similar a ML | pass | Motor Estacionario Honda Gp 200 5.5 Hp Eje Horizontal | OK |
+| PV-VAL-034 | HONDA | comparable | similar a ML | pass | Mochila Fumigadora Honda Wjr 2525 Naftera 4 Tiempos 25cc | OK |
