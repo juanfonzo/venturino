@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-06-10T15:56:56.000Z",
+  "generatedAt": "2026-06-11T18:39:39.261Z",
   "validationSet": {
     "version": "postventa-validation-set-v1",
     "createdAt": "2026-06-04",
     "sourceAnalysisFile": "data/postventa_match_analysis.json"
   },
   "source": {
-    "analysisGeneratedAt": "2026-06-10T15:55:59.737Z",
+    "analysisGeneratedAt": "2026-06-11T18:38:28.646Z",
     "mongo": {
       "db": "algorym",
       "collection": "productos",
       "latestDates": {
         "venturino": "2026-05-30",
-        "ml": "2026-06-10"
+        "ml": "2026-06-11"
       }
     },
     "params": {
@@ -23,13 +23,13 @@
       "similarityThreshold": 0.1
     },
     "counts": {
-      "totalDocs": 13836,
+      "totalDocs": 19089,
       "venturinoActiveRaw": 127,
-      "mlActiveRaw": 5324,
+      "mlActiveRaw": 5253,
       "venturinoActive": 127,
-      "mlActive": 5307,
+      "mlActive": 5248,
       "venturinoWithPrice": 127,
-      "mlWithPrice": 5307
+      "mlWithPrice": 4963
     }
   },
   "kpis": {
@@ -38,8 +38,8 @@
     "warnings": 1,
     "failed": 0,
     "missing": 0,
-    "validComparableTotal": 12,
-    "validComparablePassed": 12,
+    "validComparableTotal": 13,
+    "validComparablePassed": 13,
     "actionableFalsePositives": 0,
     "rejectedMlActionable": 0
   },
@@ -52,7 +52,7 @@
     {
       "id": "positive_recall",
       "pass": true,
-      "evidence": "Positivos correctos 12/12"
+      "evidence": "Positivos correctos 13/13"
     },
     {
       "id": "no_actionable_false_positives",
@@ -76,15 +76,17 @@
       "venturinoProductId": "318717662",
       "name": "Aceite de Motor Premium John Deere Plus-50™ II. John Deere",
       "family": "ACEITE",
-      "expectedLabel": "market_absent",
-      "expectedOutcome": "sin comparable",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
       "result": "pass",
-      "actualStatus": "sin comparable",
-      "actualCandidateIds": [],
-      "actualBestCandidate": null,
-      "actualBestCandidateId": null,
-      "actualBestConfidence": "descartar",
-      "actualStrongCandidateCount": 0,
+      "actualStatus": "Venturino más barato que ML",
+      "actualCandidateIds": [
+        "MLA904693976"
+      ],
+      "actualBestCandidate": "Aceite Plus 50 John Deere",
+      "actualBestCandidateId": "MLA904693976",
+      "actualBestConfidence": "media",
+      "actualStrongCandidateCount": 1,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -376,15 +378,13 @@
       "actualCandidateIds": [
         "MLA1123219059",
         "MLA1775667427",
+        "MLA2404238162",
         "MLA2137492956",
         "CATALOG-MLA64289081",
         "MLA1437902317",
-        "MLA1140941044",
-        "MLA1381336731",
-        "MLA1859864160",
-        "MLA1140331911",
         "MLA1439946508",
-        "MLA1750731425",
+        "MLA1140941044",
+        "MLA1859864160",
         "MLA1472563141",
         "MLA1825307436"
       ],
@@ -409,23 +409,23 @@
         "MLA775204942",
         "MLA1549074995",
         "MLA919160219",
+        "MLA2404238162",
         "MLA847129327",
         "MLA834167453",
         "MLA1140948761",
         "MLA2794779068",
         "MLA1266340056",
         "MLA910245048",
+        "MLA1439970672",
         "MLA910215527",
         "MLA1152796939",
         "MLA1536195876",
         "MLA1163468541",
         "MLA1106046608",
         "MLA1400582119",
-        "CATALOG-MLA64289081",
-        "MLA1437902317",
         "MLA827797148",
-        "CATALOG-MLA72870521",
-        "MLA1110282228"
+        "CATALOG-MLA64289081",
+        "MLA1437902317"
       ],
       "actualBestCandidate": "Cuchillas Para Tractor John Deere 42",
       "actualBestCandidateId": "MLA775204942",
@@ -499,29 +499,29 @@
       "result": "pass",
       "actualStatus": "baja confianza",
       "actualCandidateIds": [
-        "MLA1223890867",
         "MLA1131562648",
-        "MLA2764132958",
-        "MLA1929743570",
+        "MLA1223890867",
         "MLA1453989409",
         "MLA815422587",
         "MLA1124362080",
+        "MLA882224392",
         "MLA2898605838",
         "MLA1817725113",
         "MLA1761887079",
-        "MLA2711956876",
         "MLA921993694",
-        "MLA1995411330",
         "MLA926567545",
         "MLA3281755084",
         "MLA1734058763",
-        "MLA3365318118",
-        "MLA1800977901",
+        "MLA1810324197",
+        "MLA1470255973",
         "MLA1467193781",
-        "MLA1810324197"
+        "MLA685759359",
+        "MLA926569670",
+        "MLA845377714",
+        "MLA1995599532"
       ],
-      "actualBestCandidate": "Filtro De Combustible Re500186 John Deere",
-      "actualBestCandidateId": "MLA1223890867",
+      "actualBestCandidate": "Filtro De Combustible John Deere Re541922",
+      "actualBestCandidateId": "MLA1131562648",
       "actualBestConfidence": "baja",
       "actualStrongCandidateCount": 0,
       "message": "OK",
@@ -594,17 +594,15 @@
       "actualCandidateIds": [
         "MLA1129317376",
         "MLA908999957",
-        "MLA2080094039",
         "MLA2053258934",
         "MLA1373008332",
         "MLA1106773437",
-        "MLA1433235434",
-        "MLA1365451545"
+        "MLA1433235434"
       ],
       "actualBestCandidate": "Generador Grupo Electrogeno Honda Ez3000cx 3 Kva Moron Ppi",
       "actualBestCandidateId": "MLA1129317376",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 8,
+      "actualStrongCandidateCount": 6,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -617,15 +615,15 @@
       "expectedLabel": "valid_comparable",
       "expectedOutcome": "comparable",
       "result": "pass",
-      "actualStatus": "Venturino más barato que ML",
+      "actualStatus": "similar a ML",
       "actualCandidateIds": [
         "MLA3069032746",
         "MLA1559263375",
         "MLA1505050374",
         "MLA2066150340",
         "MLA1799165815",
-        "MLA1459133110",
-        "MLA1102763333"
+        "MLA2204280368",
+        "MLA1459133110"
       ],
       "actualBestCandidate": "Generador Honda Naftero De Alta Potencia 6.5 Kva Ez6500cx...",
       "actualBestCandidateId": "MLA3069032746",
@@ -643,17 +641,16 @@
       "expectedLabel": "valid_comparable",
       "expectedOutcome": "comparable",
       "result": "pass",
-      "actualStatus": "similar a ML",
+      "actualStatus": "Venturino más barato que ML",
       "actualCandidateIds": [
         "MLA1495575311",
-        "MLA2028422062",
         "MLA1562771909",
         "MLA2174350398"
       ],
       "actualBestCandidate": "Cortadora De Cesped Honda Hrx476c2 Autopropulsada",
       "actualBestCandidateId": "MLA1495575311",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 4,
+      "actualStrongCandidateCount": 3,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -668,13 +665,12 @@
       "result": "pass",
       "actualStatus": "Venturino más caro que ML",
       "actualCandidateIds": [
-        "MLA3242261346",
         "MLA2033573986"
       ],
-      "actualBestCandidate": "Caja De Herramientas John Deere, 18 Piezas",
-      "actualBestCandidateId": "MLA3242261346",
+      "actualBestCandidate": "Caja De Herramientas De Lujo John Deere De 18 Piezas,...",
+      "actualBestCandidateId": "MLA2033573986",
       "actualBestConfidence": "media",
-      "actualStrongCandidateCount": 2,
+      "actualStrongCandidateCount": 1,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -696,15 +692,12 @@
         "MLA1995798192",
         "MLA1654450531",
         "MLA1969025994",
-        "MLA3383003158",
-        "MLA1960678598",
-        "MLA1517836965",
-        "MLA2435446240"
+        "MLA3383003158"
       ],
       "actualBestCandidate": "Cortadora De Césped Honda Hrg466c1 - Pkeh 4,2 Hp",
       "actualBestCandidateId": "MLA3205391632",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 11,
+      "actualStrongCandidateCount": 8,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -720,13 +713,13 @@
       "actualStatus": "Venturino más caro que ML",
       "actualCandidateIds": [
         "MLA2810796020",
-        "MLA1774600258",
-        "MLA2051015631"
+        "MLA3191038992",
+        "MLA1607531908"
       ],
       "actualBestCandidate": "Motobomba Honda Wb20xt Drx Wb20xTDRx",
       "actualBestCandidateId": "MLA2810796020",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 2,
+      "actualStrongCandidateCount": 3,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -764,20 +757,19 @@
       "actualCandidateIds": [
         "MLA1569928047",
         "MLA2040853899",
-        "MLA1382376833",
         "MLA1383523053",
         "MLA1640116076",
         "MLA1419235491",
         "MLA1393956701",
-        "MLA2229850308",
         "MLA2334348212",
         "MLA2030073448",
+        "MLA2313919866",
         "MLA2457963400"
       ],
       "actualBestCandidate": "Motor Estacionario Honda Gp 200 5.5 Hp Eje Horizontal",
       "actualBestCandidateId": "MLA1569928047",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 11,
+      "actualStrongCandidateCount": 10,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false
@@ -792,21 +784,17 @@
       "result": "pass",
       "actualStatus": "similar a ML",
       "actualCandidateIds": [
-        "MLA1508691852",
-        "MLA1909451416",
         "MLA1525914122",
-        "MLA1731343302",
         "MLA1553921162",
         "MLA2517349896",
         "MLA3326594012",
-        "MLA1881780576",
         "MLA1695304246",
         "MLA1731433810"
       ],
       "actualBestCandidate": "Mochila Fumigadora Honda Wjr 2525 Naftera 4 Tiempos 25cc",
-      "actualBestCandidateId": "MLA1508691852",
+      "actualBestCandidateId": "MLA1525914122",
       "actualBestConfidence": "alta",
-      "actualStrongCandidateCount": 10,
+      "actualStrongCandidateCount": 6,
       "message": "OK",
       "actionableFalsePositive": false,
       "rejectedMlActionable": false

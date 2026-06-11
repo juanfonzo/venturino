@@ -42,6 +42,9 @@ type DbPostventaProduct = {
   name: string;
   priceArs: Prisma.Decimal | null;
   url: string | null;
+  installmentTotalArs: Prisma.Decimal | null;
+  installmentsQuantity: number | null;
+  freeShipping: boolean | null;
 };
 
 const EMPTY_STATUS_COUNTS: Record<MatchStatus, number> = {
@@ -146,6 +149,9 @@ export async function runPostventaAnalysis(optionsInput: AnalyzePostventaOptions
             score: candidate.score,
             confidence: candidate.confidence,
             mlPriceArs: candidate.priceArs,
+            mlInstallmentTotalArs: candidate.installmentTotalArs,
+            mlInstallmentsQuantity: candidate.installmentsQuantity,
+            mlFreeShipping: candidate.freeShipping,
             diffPct: candidate.diffPct,
             reasons: candidate.reasons,
           })),
@@ -188,6 +194,9 @@ const productSelect = {
   name: true,
   priceArs: true,
   url: true,
+  installmentTotalArs: true,
+  installmentsQuantity: true,
+  freeShipping: true,
 } satisfies Prisma.PostventaProductSelect;
 
 function toComparableProduct(row: DbPostventaProduct): PostventaComparableProduct {
@@ -202,6 +211,9 @@ function toComparableProduct(row: DbPostventaProduct): PostventaComparableProduc
     name: row.name,
     priceArs: row.priceArs ? row.priceArs.toNumber() : null,
     url: row.url,
+    installmentTotalArs: row.installmentTotalArs ? row.installmentTotalArs.toNumber() : null,
+    installmentsQuantity: row.installmentsQuantity,
+    freeShipping: row.freeShipping,
   };
 }
 

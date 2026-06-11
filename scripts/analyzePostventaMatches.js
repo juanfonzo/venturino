@@ -78,6 +78,22 @@ function parsePrice(value, textValue) {
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) / 100 : null;
 }
 
+function parsePositiveInteger(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.round(parsed);
+}
+
+function parseBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (value === null || value === undefined || value === "") return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "si", "sí", "yes"].includes(normalized)) return true;
+  if (["false", "0", "no"].includes(normalized)) return false;
+  return null;
+}
+
 function parseDate(value) {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
@@ -161,6 +177,9 @@ function toProduct(doc) {
     name,
     priceArs,
     url: doc.url ? String(doc.url).trim() : null,
+    installmentTotalArs: source === "ml" ? parsePrice(doc.precio_cuotas) : null,
+    installmentsQuantity: source === "ml" ? parsePositiveInteger(doc.cantidad_cuotas) : null,
+    freeShipping: source === "ml" ? parseBoolean(doc.envio_gratis) : null,
   });
 
   return {
@@ -184,6 +203,9 @@ function toLegacyMatch(match, mlById) {
         name: candidate.name,
         price: candidate.priceArs,
         url: candidate.url,
+        installmentTotalArs: candidate.installmentTotalArs,
+        installmentsQuantity: candidate.installmentsQuantity,
+        freeShipping: candidate.freeShipping,
         categoriaMl: source?.categoriaMl || null,
         diffPct: candidate.diffPct,
         score: candidate.score,

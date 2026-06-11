@@ -72,6 +72,9 @@ export type PostventaProductDetail = PostventaProductListItem & {
     name: string;
     priceArs: number | null;
     url: string | null;
+    installmentTotalArs: number | null;
+    installmentsQuantity: number | null;
+    freeShipping: boolean | null;
     score: number;
     confidence: string;
     diffPct: number | null;
@@ -253,6 +256,9 @@ export async function getPostventaProductDetail(id: number): Promise<PostventaPr
       name: candidate.mlProduct.name,
       priceArs: decimalToNumber(candidate.mlPriceArs),
       url: candidate.mlProduct.url,
+      installmentTotalArs: decimalToNumber(candidate.mlInstallmentTotalArs) ?? decimalToNumber(candidate.mlProduct.installmentTotalArs),
+      installmentsQuantity: candidate.mlInstallmentsQuantity ?? candidate.mlProduct.installmentsQuantity,
+      freeShipping: candidate.mlFreeShipping ?? candidate.mlProduct.freeShipping,
       score: candidate.score,
       confidence: candidate.confidence,
       diffPct: decimalToNumber(candidate.diffPct),

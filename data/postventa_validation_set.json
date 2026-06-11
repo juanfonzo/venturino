@@ -25,12 +25,12 @@
       "venturinoProductId": "318717662",
       "name": "Aceite de Motor Premium John Deere Plus-50™ II. John Deere",
       "family": "ACEITE",
-      "currentStatus": "sin comparable",
-      "expectedLabel": "market_absent",
-      "expectedOutcome": "sin comparable",
-      "acceptedMlIds": [],
+      "currentStatus": "Venturino más barato que ML",
+      "expectedLabel": "valid_comparable",
+      "expectedOutcome": "comparable",
+      "acceptedMlIds": ["MLA904693976"],
       "rejectedMlPatterns": ["aceite genérico", "filtro de aceite", "envase sin Plus-50"],
-      "rationale": "Plus-50 es una línea específica. No debe compararse contra aceites John Deere genéricos o filtros."
+      "rationale": "El scraping actual contiene línea Plus 50 John Deere; se acepta cuando no hay litros en ninguno de los dos lados y no se compara contra aceites genéricos o filtros."
     },
     {
       "id": "PV-VAL-002",

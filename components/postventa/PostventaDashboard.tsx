@@ -73,6 +73,9 @@ type ProductDetail = ProductItem & {
     name: string;
     priceArs: number | null;
     url: string | null;
+    installmentTotalArs: number | null;
+    installmentsQuantity: number | null;
+    freeShipping: boolean | null;
     score: number;
     confidence: string;
     diffPct: number | null;
@@ -591,7 +594,13 @@ function DetailModal({
                     <span>{formatArs(candidate.priceArs)}</span>
                     <span className={gapClass(candidate.diffPct)}>{formatSignedPercent(candidate.diffPct)}</span>
                     <ConfidenceBadge confidence={candidate.confidence} />
+                    {candidate.freeShipping ? <Badge variant="green">Envío gratis</Badge> : null}
                   </div>
+                  {candidate.installmentTotalArs && candidate.installmentsQuantity ? (
+                    <p className="mt-2 text-xs text-jd-black/55">
+                      {formatInstallmentTerms(candidate.installmentTotalArs, candidate.installmentsQuantity)}
+                    </p>
+                  ) : null}
                   {candidate.reasons.length > 0 ? (
                     <p className="mt-2 text-xs leading-relaxed text-jd-black/55">
                       {candidate.reasons.slice(0, 4).join(" · ")}
@@ -647,6 +656,12 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
 function formatArs(value?: number | null) {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";
   return `$${Math.round(value).toLocaleString("es-AR")}`;
+}
+
+function formatInstallmentTerms(total?: number | null, quantity?: number | null) {
+  if (!total || !quantity || Number.isNaN(total) || Number.isNaN(quantity)) return "";
+  const installmentValue = total / quantity;
+  return `${quantity} cuotas: total ${formatArs(total)} (~${formatArs(installmentValue)} c/u)`;
 }
 
 function formatSignedPercent(value?: number | null) {

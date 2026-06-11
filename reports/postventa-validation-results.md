@@ -1,8 +1,8 @@
 # Resultado Validation Set Postventa
 
-Generado: 2026-06-10T15:56:56.000Z
+Generado: 2026-06-11T18:39:39.261Z
 Validation set: postventa-validation-set-v1
-Análisis base: 2026-06-10T15:55:59.737Z
+Análisis base: 2026-06-11T18:38:28.646Z
 
 ## KPIs
 
@@ -11,7 +11,7 @@ Análisis base: 2026-06-10T15:55:59.737Z
 - Warnings: 1
 - Fail: 0
 - Missing: 0
-- Positivos correctos: 12/12
+- Positivos correctos: 13/13
 - Falsos positivos accionables: 0
 
 ## Gates
@@ -19,7 +19,7 @@ Análisis base: 2026-06-10T15:55:59.737Z
 | Gate | Estado | Evidencia |
 |---|---|---|
 | all_items_present | OK | Casos ausentes en análisis: 0 |
-| positive_recall | OK | Positivos correctos 12/12 |
+| positive_recall | OK | Positivos correctos 13/13 |
 | no_actionable_false_positives | OK | Falsos positivos accionables: 0 |
 | no_rejected_ml_actionable | OK | Candidatos ML rechazados en estados accionables: 0 |
 | no_strict_failures | OK | Fallos estrictos: 0 |
@@ -28,7 +28,7 @@ Análisis base: 2026-06-10T15:55:59.737Z
 
 | Caso | Familia | Esperado | Actual | Resultado | Mejor candidato | Mensaje |
 |---|---|---|---|---|---|---|
-| PV-VAL-001 | ACEITE | sin comparable | sin comparable | pass | - | OK |
+| PV-VAL-001 | ACEITE | comparable | Venturino más barato que ML | pass | Aceite Plus 50 John Deere | OK |
 | PV-VAL-002 | ACEITE | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-003 | ACEITE | comparable | Venturino más barato que ML | pass | Aceite Hidráulico Ajm69444 Hy-gard 20lt | OK |
 | PV-VAL-004 | REFRIGERANTE | sin comparable | sin comparable | pass | - | OK |
@@ -49,14 +49,14 @@ Análisis base: 2026-06-10T15:55:59.737Z
 | PV-VAL-019 | CINCEL | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-020 | CINCEL | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-021 | CINCEL | sin comparable | sin comparable | pass | - | OK |
-| PV-VAL-022 | FILTRO | baja confianza | baja confianza | pass | Filtro De Combustible Re500186 John Deere | OK |
+| PV-VAL-022 | FILTRO | baja confianza | baja confianza | pass | Filtro De Combustible John Deere Re541922 | OK |
 | PV-VAL-023 | INYECCION | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-024 | INYECCION | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-025 | NAVAJA | sin comparable | sin comparable | pass | - | OK |
 | PV-VAL-026 | HONDA | comparable | similar a ML | pass | Generador Grupo Electrogeno Honda Ez3000cx 3 Kva Moron Ppi | OK |
-| PV-VAL-027 | HONDA | comparable | Venturino más barato que ML | pass | Generador Honda Naftero De Alta Potencia 6.5 Kva Ez6500cx... | OK |
-| PV-VAL-028 | HONDA | comparable | similar a ML | pass | Cortadora De Cesped Honda Hrx476c2 Autopropulsada | OK |
-| PV-VAL-029 | HERRAMIENTA | comparable | Venturino más caro que ML | pass | Caja De Herramientas John Deere, 18 Piezas | OK |
+| PV-VAL-027 | HONDA | comparable | similar a ML | pass | Generador Honda Naftero De Alta Potencia 6.5 Kva Ez6500cx... | OK |
+| PV-VAL-028 | HONDA | comparable | Venturino más barato que ML | pass | Cortadora De Cesped Honda Hrx476c2 Autopropulsada | OK |
+| PV-VAL-029 | HERRAMIENTA | comparable | Venturino más caro que ML | pass | Caja De Herramientas De Lujo John Deere De 18 Piezas,... | OK |
 | PV-VAL-030 | HONDA | comparable | similar a ML | pass | Cortadora De Césped Honda Hrg466c1 - Pkeh 4,2 Hp | OK |
 | PV-VAL-031 | HONDA | comparable | Venturino más caro que ML | pass | Motobomba Honda Wb20xt Drx Wb20xTDRx | OK |
 | PV-VAL-032 | HONDA | comparable | similar a ML | pass | Motor de gasolina estacionario Honda Gx200 Qd 6.5 HP | OK |

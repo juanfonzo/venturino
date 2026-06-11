@@ -182,6 +182,9 @@ model PostventaProduct {
   name            String
   priceArs        Decimal?            @map("price_ars") @db.Decimal(14, 2)
   priceText       String?             @map("price_text")
+  installmentTotalArs Decimal?        @map("installment_total_ars") @db.Decimal(14, 2)
+  installmentsQuantity Int?           @map("installments_quantity")
+  freeShipping    Boolean?            @map("free_shipping")
   currency        String?
   url             String?
   categoryMl      String?             @map("category_ml")
@@ -218,6 +221,9 @@ model PostventaPriceSnapshot {
   name         String
   priceArs     Decimal?           @map("price_ars") @db.Decimal(14, 2)
   priceText    String?            @map("price_text")
+  installmentTotalArs Decimal?    @map("installment_total_ars") @db.Decimal(14, 2)
+  installmentsQuantity Int?       @map("installments_quantity")
+  freeShipping Boolean?           @map("free_shipping")
   url          String?
   activeInRun  Boolean            @default(true) @map("active_in_run")
   createdAt    DateTime           @default(now()) @map("created_at")
@@ -286,6 +292,9 @@ model PostventaMatchCandidate {
   score             Int
   confidence        String
   mlPriceArs        Decimal                  @map("ml_price_ars") @db.Decimal(14, 2)
+  mlInstallmentTotalArs Decimal?             @map("ml_installment_total_ars") @db.Decimal(14, 2)
+  mlInstallmentsQuantity Int?                @map("ml_installments_quantity")
+  mlFreeShipping    Boolean?                 @map("ml_free_shipping")
   diffPct           Decimal                  @map("diff_pct") @db.Decimal(8, 4)
   reasons           Json
 

@@ -47,9 +47,10 @@ Campos funcionales principales:
 Postventa usa modelos separados para no mezclar maquinaria con accesorios/productos:
 
 - `PostventaProduct` tiene unique compuesto `source + externalId`.
+- Para productos ML, `PostventaProduct` conserva datos comerciales informativos de MercadoLibre: total financiado (`installmentTotalArs`), cantidad de cuotas (`installmentsQuantity`) y envío gratis (`freeShipping`). En productos Venturino quedan nulos.
 - `PostventaPriceSnapshot` tiene unique `productId + snapshotDate`.
 - `PostventaProductAnalysis` tiene unique `analysisRunId + venturinoProductId`.
-- `PostventaMatchCandidate` tiene unique por rank y por candidato ML dentro del análisis.
+- `PostventaMatchCandidate` tiene unique por rank y por candidato ML dentro del análisis; copia los datos comerciales ML usados en esa corrida para mostrar condiciones de financiación/envío sin afectar el matching.
 - Relaciones con `onDelete: Cascade` en snapshots/candidatos dependientes.
 
 Detalle extendido: `docs/technical/postventa-ml.md`.

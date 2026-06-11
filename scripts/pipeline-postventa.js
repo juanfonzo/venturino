@@ -97,6 +97,9 @@ async function fetchMongoProducts() {
             nombre: 1,
             precio: 1,
             precio_texto: 1,
+            precio_cuotas: 1,
+            cantidad_cuotas: 1,
+            envio_gratis: 1,
             moneda: 1,
             url: 1,
             origen: 1,
@@ -137,6 +140,9 @@ function toPostventaProduct(doc) {
     name,
     priceArs: parsePrice(doc.precio, doc.precio_texto),
     priceText: doc.precio_texto ? String(doc.precio_texto) : null,
+    installmentTotalArs: source === "ml" ? parsePrice(doc.precio_cuotas) : null,
+    installmentsQuantity: source === "ml" ? parsePositiveInteger(doc.cantidad_cuotas) : null,
+    freeShipping: source === "ml" ? parseBoolean(doc.envio_gratis) : null,
     currency: doc.moneda ? String(doc.moneda).trim().toUpperCase() : null,
     url: doc.url ? String(doc.url).trim() : null,
     categoryMl: doc.categoria_ml ? String(doc.categoria_ml).trim() : null,
@@ -234,6 +240,22 @@ function parsePrice(value, textValue) {
 
   const parsed = Number(cleaned);
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed * 100) / 100 : null;
+}
+
+function parsePositiveInteger(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.round(parsed);
+}
+
+function parseBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (value === null || value === undefined || value === "") return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "si", "sí", "yes"].includes(normalized)) return true;
+  if (["false", "0", "no"].includes(normalized)) return false;
+  return null;
 }
 
 function getLatestDatesBySource(products) {
@@ -346,6 +368,9 @@ async function upsertIntoPostgres({ activeProducts, counts, latestDates }) {
           name: product.name,
           priceArs: product.priceArs,
           priceText: product.priceText,
+          installmentTotalArs: product.installmentTotalArs,
+          installmentsQuantity: product.installmentsQuantity,
+          freeShipping: product.freeShipping,
           currency: product.currency,
           url: product.url,
           categoryMl: product.categoryMl,
@@ -476,6 +501,9 @@ async function savePriceSnapshot(prisma, { productId, importRunId, product }) {
     name: product.name,
     priceArs: product.priceArs,
     priceText: product.priceText,
+    installmentTotalArs: product.installmentTotalArs,
+    installmentsQuantity: product.installmentsQuantity,
+    freeShipping: product.freeShipping,
     url: product.url,
     activeInRun: true,
   };

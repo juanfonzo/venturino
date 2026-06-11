@@ -101,6 +101,9 @@ Representa un producto Venturino o ML, con estado activo vigente.
 | `name` | `String` | `nombre` actual |
 | `priceArs` | `Decimal(14,2)?` | precio normalizado en ARS |
 | `priceText` | `String?` | `precio_texto` |
+| `installmentTotalArs` | `Decimal(14,2)?` | total financiado ML desde `precio_cuotas`; nulo en Venturino |
+| `installmentsQuantity` | `Int?` | cantidad de cuotas ML desde `cantidad_cuotas`; nulo en Venturino |
+| `freeShipping` | `Boolean?` | `envio_gratis` de ML; nulo en Venturino |
 | `currency` | `String?` | esperado `ARS` |
 | `url` | `String?` | URL de origen |
 | `categoryMl` | `String?` | sólo ML |
@@ -135,6 +138,9 @@ Historial de precio y nombre por extracción.
 | `name` | `String` | nombre observado |
 | `priceArs` | `Decimal(14,2)?` | precio observado |
 | `priceText` | `String?` | texto original |
+| `installmentTotalArs` | `Decimal(14,2)?` | total financiado observado |
+| `installmentsQuantity` | `Int?` | cantidad de cuotas observada |
+| `freeShipping` | `Boolean?` | si ML informaba envío gratis |
 | `url` | `String?` | URL observada |
 | `activeInRun` | `Boolean` | si participó de la última extracción |
 | `createdAt` | `DateTime` | default `now()` |
@@ -193,8 +199,13 @@ Candidatos ML sugeridos por producto.
 | `score` | `Int` | score v0 |
 | `confidence` | `String` | `alta`, `media`, `baja` |
 | `mlPriceArs` | `Decimal(14,2)` | precio usado |
+| `mlInstallmentTotalArs` | `Decimal(14,2)?` | total financiado ML copiado desde la corrida |
+| `mlInstallmentsQuantity` | `Int?` | cantidad de cuotas ML copiada desde la corrida |
+| `mlFreeShipping` | `Boolean?` | envío gratis ML copiado desde la corrida |
 | `diffPct` | `Decimal(8,4)` | diferencia ML vs Venturino |
 | `reasons` | `Json` | motivos del scoring |
+
+Estos datos comerciales de ML son informativos para UI y análisis humano; no modifican scoring, guardrails ni mediana del matching.
 
 ## Contratos Backend
 

@@ -20,6 +20,9 @@ export type PostventaComparableProduct = {
   name: string;
   priceArs: number | null;
   url: string | null;
+  installmentTotalArs?: number | null;
+  installmentsQuantity?: number | null;
+  freeShipping?: boolean | null;
 };
 
 export type ProductFeatures = {
@@ -45,6 +48,9 @@ export type PostventaCandidate = {
   name: string;
   priceArs: number;
   url: string | null;
+  installmentTotalArs: number | null;
+  installmentsQuantity: number | null;
+  freeShipping: boolean | null;
   diffPct: number;
   score: number;
   confidence: Exclude<MatchConfidence, "descartar">;
@@ -357,6 +363,9 @@ export function buildPostventaMatch(
       name: ml.name,
       priceArs: ml.priceArs,
       url: ml.url,
+      installmentTotalArs: ml.installmentTotalArs ?? null,
+      installmentsQuantity: ml.installmentsQuantity ?? null,
+      freeShipping: ml.freeShipping ?? null,
       diffPct,
       score: scored.score,
       confidence: scored.confidence,
