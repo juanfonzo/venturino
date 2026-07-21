@@ -1,6 +1,6 @@
 # Manifest
 
-Última revisión coordinada: 2026-06-05.
+Última revisión coordinada: 2026-07-17.
 
 ## Estado General
 
@@ -28,8 +28,8 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | `docs/ai/PROJECT_CONTEXT.md` | vigente | onboarding del repo real + migración Next 16 | 2026-06-04 |
 | `docs/technical/arquitectura.md` | vigente | código + Prisma + scripts + docs previos | 2026-06-04 |
 | `docs/technical/frontend.md` | vigente | rutas UI + componentes + CSS real | 2026-06-04 |
-| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-06-04 |
-| `docs/technical/base-de-datos.md` | vigente | `prisma/schema.prisma` + migración postventa | 2026-06-03 |
+| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-07-21 |
+| `docs/technical/base-de-datos.md` | vigente | Prisma + pipelines + auditoría API | 2026-07-21 |
 | `docs/technical/seguridad.md` | vigente | `lib/auth.ts`, proxy y endpoints auth | 2026-06-04 |
 | `docs/technical/mcp-coverage-map.md` | vigente | onboarding + política MCP-first | 2026-06-03 |
 | `docs/technical/postventa-ml.md` | vigente-específico | análisis postventa previo | 2026-05-22 |
@@ -56,6 +56,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | Ingesta maquinaria | implementado | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `prisma/schema.prisma` |
 | FX | implementado | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
 | Postventa ingesta/análisis | implementado inicial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
+| API Padway de referencias | implementado; pendiente activación productiva | `app/api/v1/market-references/**`, `lib/market-reference/**`, `lib/normalize/machineIdentity.ts`, `MarketReferenceQuery` |
 | MCP | no implementado | `docs/technical/mcp-coverage-map.md` |
 
 ## Cambios De Cliente
@@ -64,13 +65,14 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 |---|---|---|---|
 | Onboarding de proyecto existente | procesado | Documentación técnica y contexto para futuras tareas | No requiere feature |
 | Migrar Next.js a 16 y retirar CSVs MVP legacy | procesado | Dependencias, proxy, lint config y documentación actualizados; ACARA CSV activo se conserva | Pendiente decidir migración ACARA a DB si se quiere eliminar todo CSV runtime |
+| API de referencias de mercado para tomas de usados | implementado; pendiente activación productiva | Servicio externo sobre PostgreSQL, matching progresivo, identidad canónica, autenticación HMAC, auditoría e integración Padway | Contrato en `docs/changes/processed/2026-07-17-referencias-mercado-api.md` |
 
 ## Riesgos Registrados
 
 - Hay archivos históricos o plantillas con contenido desactualizado respecto de la arquitectura actual.
 - Algunos documentos previos muestran mojibake; los documentos actualizados en esta pasada deben quedar en UTF-8 correcto.
-- No hay `.env.example` versionado como contrato de entorno.
-- No hay suite de tests ni script `test`.
+- Existe `.env.example`; mantenerlo sincronizado cuando cambien variables de runtime.
+- No hay suite general; la API Padway tiene tests focalizados y verificación read-only contra inventario.
 - Auth actual es suficiente para MVP interno, pero no cubre roles, tenant, permisos ni auditoría.
 - `npx prisma db push` en deploy evita trazabilidad fina de migraciones para todo el schema.
 - No hay MCP real pese a la política MCP-first; la deuda debe permanecer visible.

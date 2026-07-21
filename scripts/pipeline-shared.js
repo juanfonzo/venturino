@@ -2,8 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const dns = require('dns').promises;
+const { requireTypeScript } = require('./register-ts');
 
 let cachedPipelineFunctions = null;
+let cachedMachineIdentity = null;
+
+function loadMachineIdentity() {
+  if (!cachedMachineIdentity) {
+    cachedMachineIdentity = requireTypeScript('lib/normalize/machineIdentity.ts');
+  }
+  return cachedMachineIdentity;
+}
 
 function loadEnvFile(envPath = path.join(__dirname, '..', '.env')) {
   if (!fs.existsSync(envPath)) return;
@@ -143,22 +152,20 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
   const { esCompetidor, competidorNombre } = P.detectCompetitor(vendedor, origen);
 
   const marca = doc.marca || null;
-  const { marcaNorm, modeloForNorm } = P.normalizeBrandAndModel(marca, doc.modelo);
+  const { marcaNorm: preprocessedBrand, modeloForNorm } = P.normalizeBrandAndModel(marca, doc.modelo);
   const modelo = doc.modelo || null;
-  let modeloNorm = P.normalizeModel(modeloForNorm);
+  const identity = loadMachineIdentity().normalizeMachineIdentity({
+    category: categoria,
+    brand: preprocessedBrand || marca,
+    model: modeloForNorm,
+    title: titulo,
+    hp,
+  });
+  const marcaNorm = identity.brandNorm || preprocessedBrand;
+  const modeloNorm = identity.modelKey;
 
-  if (modeloNorm && /^\d[\d ]*$/.test(modeloNorm) && titulo) {
-    const titleInferred = P.inferModelFromTitle(titulo, marca, marcaNorm);
-    if (titleInferred && /[A-Z]/.test(titleInferred)) {
-      modeloNorm = titleInferred;
-      extraFlags.push('MODEL_INFERRED_FROM_TITLE');
-    }
-  }
-
-  if (!modeloNorm && titulo) {
-    modeloNorm = P.inferModelFromTitle(titulo, marca, marcaNorm);
-    if (modeloNorm) extraFlags.push('MODEL_INFERRED_FROM_TITLE');
-  }
+  if (identity.source === 'title') extraFlags.push('MODEL_INFERRED_FROM_TITLE');
+  if (identity.aliasApplied) extraFlags.push('MODEL_CANONICALIZED');
 
   const allExtraFlags = [...extraFlags, ...condicionFlags, ...(priceFlags || [])];
   const flags = P.buildFlags({ precioUsd, anio, hp, horas, provincia, condicion, extraFlags: allExtraFlags });

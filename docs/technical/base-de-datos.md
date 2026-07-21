@@ -1,6 +1,6 @@
 # Base De Datos
 
-Última revisión: 2026-06-04.
+Última revisión: 2026-07-21.
 
 ## Motor
 
@@ -24,6 +24,7 @@
 | `PostventaAnalysisRun` | `postventa_analysis_runs` | Corrida del algoritmo postventa. |
 | `PostventaProductAnalysis` | `postventa_product_analyses` | Resultado por producto Venturino. |
 | `PostventaMatchCandidate` | `postventa_match_candidates` | Candidatos ML por producto analizado. |
+| `MarketReferenceQuery` | `market_reference_queries` | Auditoría interna de consultas de referencias enviadas por Padway. |
 
 ## Modelo `Listing`
 
@@ -40,7 +41,15 @@ Campos funcionales principales:
 - Lifecycle: `active`, `firstSeenAt`, `lastSeenAt`, `createdAt`, `scrapingRunId`.
 - Calidad: `flags String[]`.
 
-Índices actuales: `origen`, `categoria`, `marcaNorm`, `condicion`, `provincia`, `precioUsd`, `esCompetidor`, `scrapingRunId`, `active`.
+Índices actuales: `origen`, `categoria`, `marcaNorm`, `condicion`, `provincia`, `precioUsd`, `esCompetidor`, `scrapingRunId`, `active` y el compuesto `active + categoria + condicion + marcaNorm + modeloNorm` para referencias de mercado.
+
+## Auditoría De Referencias De Mercado
+
+`MarketReferenceQuery` conserva identificador de cliente y request, operación externa opcional, modo, filtros normalizados, paginación, estado, cantidad de resultados, resumen interno, error y duración. El unique `clientId + requestId` funciona como protección persistente contra replay.
+
+No guarda firma HMAC, secreto, cuerpo crudo ni metadatos de scraping. `resultSummary` es de uso interno y conserva estadísticas, criterio aplicado, ids y snapshot de las referencias devueltas para reproducir qué información vio la integración.
+
+`pipeline:live` y la API comparten `normalizeMachineIdentity`. Los nuevos barridos persisten la identidad canónica en `marcaNorm`/`modeloNorm`; la API también recalcula esa identidad al leer para tolerar filas históricas. El backfill histórico sólo cambia aliases semánticos comprobados y es simulación por defecto.
 
 ## Postventa
 
@@ -88,6 +97,7 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 | `/api/model-combos` | `limit` | 100 | Calculado desde listings cargados. |
 | `/api/analisis-2/items` | `limit` | 1000 | Carga all listings para breakdown. |
 | Postventa propuesto | pendiente | 100 recomendado | APIs de listado/detalle aún no implementadas. |
+| Referencias de mercado | offset después de ranking acotado | 50 | Búsqueda previa limitada a 5000 candidatos; respuesta directa limitada a 50 referencias. |
 
 ## Búsqueda
 
@@ -97,10 +107,12 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 | ACARA CSV | marca, categoría, descripción | substring simple en memoria | Suficiente para CSV chico/medio; no DB. |
 | Model combos | marca/modelo normalizados | contains compacto en memoria/server | Aceptable en MVP. |
 | Postventa | nombre | scoring propio en matching | Listados buscables pendientes. |
+| Referencias de mercado | categoría, marca, modelo/título y año | tokens normalizados en DB, filtro exacto posterior para modo directo y ranking para modo ampliado | Evaluar índice de texto si el volumen supera el límite actual. |
 
 ## Migraciones
 
 - Existe migración SQL versionada para postventa: `prisma/migrations/20260522190000_add_postventa/migration.sql`.
+- Existe migración SQL versionada para la API: `prisma/migrations/20260717160000_add_market_reference_api/migration.sql`.
 - No se observó migración inicial versionada para todas las tablas principales.
 - Workflow usa `prisma db push`, lo que puede aplicar cambios sin migración formal.
 
@@ -108,7 +120,7 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 
 - `DATABASE_URL` requerida para Prisma.
 - `MONGODB_URI` requerida para pipelines.
-- No se encontró `.env.example`.
+- `.env.example` documenta las variables esperadas sin incluir credenciales reales.
 
 ## Fuentes No DB
 

@@ -110,7 +110,37 @@ model Listing {
   @@index([esCompetidor])
   @@index([scrapingRunId])
   @@index([active])
+  @@index([active, categoria, condicion, marcaNorm, modeloNorm], map: "listings_market_reference_idx")
   @@map("listings")
+}
+
+model MarketReferenceQuery {
+  id                  Int       @id @default(autoincrement())
+  clientId            String    @map("client_id")
+  requestId           String    @map("request_id")
+  externalOperationId String?   @map("external_operation_id")
+  mode                String
+  categoria           String
+  marca               String?
+  marcaNorm           String?   @map("marca_norm")
+  modelo              String
+  modeloNorm          String    @map("modelo_norm")
+  anio                Int?
+  page                Int?
+  pageSize            Int?      @map("page_size")
+  status              String    @default("processing")
+  resultCount         Int       @default(0) @map("result_count")
+  resultSummary       Json?     @map("result_summary")
+  errorCode           String?   @map("error_code")
+  durationMs          Int?      @map("duration_ms")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  completedAt         DateTime? @map("completed_at")
+
+  @@unique([clientId, requestId])
+  @@index([createdAt])
+  @@index([externalOperationId])
+  @@index([mode, status])
+  @@map("market_reference_queries")
 }
 
 model PriceHistory {

@@ -1,6 +1,6 @@
 # Backend
 
-Última revisión: 2026-06-04.
+Última revisión: 2026-07-21.
 
 ## Stack Real
 
@@ -35,6 +35,8 @@
 | `/api/sync-fx-rate` | GET/POST | Leer/sincronizar FX y recalcular ARS | `lib/fx-rate.ts` |
 | `/api/postventa/analyze` | POST | Ejecutar análisis postventa persistido desde host local | `runPostventaAnalysis` |
 | `/api/geo/provincias` | GET | Devolver GeoJSON local | FS local |
+| `/api/v1/market-references/direct` | POST | Buscar referencias externas directas para una maquinaria usada | `findDirectMarketReferences` |
+| `/api/v1/market-references/search` | POST | Ejecutar búsqueda ampliada orientativa y paginada | `searchExpandedMarketReferences` |
 
 ## Servicios Internos
 
@@ -49,16 +51,21 @@
 | `lib/postventa/run-analysis.ts` | Persiste corridas, resultados y candidatos postventa. |
 | `lib/fx-rate.ts` | DolarAPI, `FxRate`, recálculo masivo de listings ARS. |
 | `app/api/reports/venturino/route.ts` | Endpoint de descarga PDF; ejecuta el generador Node para evitar incompatibilidades de React PDF dentro del bundle de Next 16. |
+| `lib/market-reference/**` | Contrato, autenticación HMAC, validación, matching, consultas PostgreSQL y auditoría de la integración Padway. |
+| `lib/normalize/machineIdentity.ts` | Identidad canónica compartida por API y pipeline; separa modelo, familia y configuraciones comerciales con aliases acotados. |
 
 ## Scripts Operativos
 
 | Script npm | Archivo | Uso |
 |---|---|---|
 | `pipeline:live` | `scripts/pipeline-live.js` | Ingesta Mongo `algorym.venturino` a PostgreSQL. |
+| `pipeline:backfill-identity` | `scripts/backfill-machine-identity.js` | Auditar aliases canónicos históricos; sólo escribe con `--apply`. |
 | `pipeline:postventa` | `scripts/pipeline-postventa.js` | Ingesta Mongo `algorym.productos` a tablas `postventa_*` y luego ejecuta análisis persistido directo. |
 | `analysis:postventa-persist` | `scripts/run-postventa-analysis.js` | Ejecutar matching postventa persistido directo, sin depender de HTTP local. |
 | `fx:sync` | `scripts/syncFxRate.js` | Sincronizar dólar oficial y recalcular precios. |
 | `report:venturino` | `scripts/generateVenturinoReport.js` | Generar PDF local. |
+| `test:market-reference` | `scripts/test-market-reference-api.js` | Validar firma, inputs, matching, exclusión de Venturino y estadísticas. |
+| `verify:market-reference-inventory` | `scripts/verify-market-reference-inventory.js` | Verificar en modo lectura cinco tractores usados del inventario contra PostgreSQL. |
 
 ## Reportes PDF
 
@@ -88,6 +95,20 @@
 - Límite: default 200 desde endpoint, máximo 1000 en service.
 - Filtra por empresa y trae todas las categorías para breakdown.
 
+### `/api/v1/market-references/**`
+
+- Consumo exclusivo servidor a servidor desde Padway; no usa la cookie de la app ni expone secretos al navegador.
+- Firma HMAC-SHA256 sobre timestamp, request-id y cuerpo JSON crudo; tolerancia temporal por defecto de 300 segundos.
+- Condición fija `Usado`, precio USD válido desde 1000 y publicaciones activas en PostgreSQL.
+- La referencia directa exige categoría, marca, modelo y año; mantiene el mismo modelo canónico y amplía automáticamente años hasta reunir contexto suficiente.
+- La búsqueda ampliada tokeniza modelo/familia, admite marca/año opcionales y pagina con máximo 50 resultados por página. El año ordena por cercanía, no actúa como filtro excluyente.
+- Las respuestas incluyen criterios y clasificaciones comerciales en español, solidez de muestra y configuraciones separadas del modelo.
+- El conjunto previo al ranking está limitado a 5000 filas para evitar consultas sin cota.
+- Las publicaciones propias de Venturino quedan excluidas de las referencias.
+- No devuelve HP, horas, fechas, corridas, cobertura ni metadatos de scraping.
+- Cada request autenticado se registra en `MarketReferenceQuery`; el request-id único impide replay.
+- Contrato para Padway: `docs/integrations/padway-market-reference-api.md`.
+
 ## Validaciones Y Errores
 
 - Endpoints devuelven JSON con `error` en fallos principales.
@@ -106,9 +127,9 @@
 
 ## Tests
 
-- No hay script `test`.
-- No se detectó suite automatizada.
-- Futuros cambios backend deberían agregar al menos checks focalizados o validación manual documentada.
+- No hay un runner de tests general del repositorio.
+- La API de referencias cuenta con checks focalizados de autenticación, validación, normalización y matching en `npm run test:market-reference`, además de verificación contra cinco unidades del inventario en `npm run verify:market-reference-inventory`.
+- Futuros cambios backend deberían agregar checks focalizados o validación manual documentada.
 
 ## Riesgos
 

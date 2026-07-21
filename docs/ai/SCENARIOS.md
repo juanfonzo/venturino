@@ -166,3 +166,34 @@ Validaciones:
 - [ ] UI filtra datos.
 - [ ] API bloquea acceso directo.
 - [ ] Error no expone datos sensibles.
+
+### Escenario: API Padway de referencias de mercado
+
+Nivel sugerido: 4
+Rol: Backend de Padway.
+Objetivo: Validar referencias directas, búsqueda ampliada, seguridad y auditoría sin exponer datos internos.
+Datos necesarios: secreto técnico de prueba y cinco tractores usados del inventario Venturino.
+Entorno: local/dev con PostgreSQL actualizado.
+Precondiciones: migración aplicada y variables `PADWAY_API_*` de prueba configuradas.
+
+Pasos:
+
+1. Firmar y enviar una consulta directa válida.
+2. Confirmar publicaciones externas, estadísticas USD y ausencia de HP, horas y metadatos de scraping.
+3. Repetir el mismo request-id y confirmar `409 DUPLICATE_REQUEST`.
+4. Enviar firma inválida y confirmar `401 UNAUTHORIZED`.
+5. Ejecutar una búsqueda ampliada paginada para un caso sin referencias directas.
+6. Confirmar que la consulta aceptada quedó auditada sin secretos.
+
+Resultado esperado:
+
+La API devuelve únicamente referencias de mercado permitidas, no fuerza comparables inexistentes y rechaza replay o autenticación inválida.
+
+Validaciones:
+
+- [ ] Firma válida responde 200 y firma inválida responde 401.
+- [ ] Request-id repetido responde 409.
+- [ ] Publicaciones Venturino quedan excluidas.
+- [ ] Paginación respeta máximo 50.
+- [ ] No aparecen HP, horas, scraping, fechas de extracción ni estado de cobertura.
+- [ ] Auditoría persiste resultado o error posterior a autenticación sin guardar secretos.

@@ -89,6 +89,9 @@ jobs:
           add AUTH_USER "${{ secrets.AUTH_USER }}"
           add AUTH_PASSWORD "${{ secrets.AUTH_PASSWORD }}"
           add JWT_SECRET "${{ secrets.JWT_SECRET }}"
+          add PADWAY_API_ENABLED "${{ secrets.PADWAY_API_ENABLED }}"
+          add PADWAY_API_CLIENT_ID "${{ secrets.PADWAY_API_CLIENT_ID }}"
+          add PADWAY_API_SECRET "${{ secrets.PADWAY_API_SECRET }}"
 
           # 6.4) Ejecutar nuevo contenedor y conectar redes
           ssh algorym "docker run -d \
