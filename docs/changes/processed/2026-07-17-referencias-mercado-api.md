@@ -2,11 +2,11 @@
 
 Estado: implementado; activación productiva pendiente
 Fecha: 2026-07-17
-Origen: conversación con Venturino y coordinación con Padway
+Origen: conversación con Venturino y coordinación con Padawanway
 
 ## Objetivo
 
-Exponer a Padway un servicio API para consultar referencias de mercado de maquinaria usada tomada como parte de pago. Padway construirá la interfaz dentro de su dashboard y consumirá la API exclusivamente desde su backend.
+Exponer a Padawanway un servicio API para consultar referencias de mercado de maquinaria usada tomada como parte de pago. Padawanway construirá la interfaz dentro de su dashboard y consumirá la API exclusivamente desde su backend.
 
 ## Alcance confirmado
 
@@ -16,7 +16,7 @@ Exponer a Padway un servicio API para consultar referencias de mercado de maquin
 - Entrada de búsqueda ampliada: categoría, marca opcional, texto de modelo, año opcional y paginación.
 - Salida: publicaciones externas, precios normalizados en USD y estadísticas agregadas.
 - Dos operaciones separadas: referencias directas y búsqueda ampliada orientativa.
-- Historial interno de consultas, resultados y operación externa cuando Padway la informe.
+- Historial interno de consultas y resultados, correlacionado mediante request-id.
 - Autenticación máquina a máquina; ningún secreto se entrega al navegador.
 
 ## Límites de la primera versión
@@ -26,17 +26,17 @@ Exponer a Padway un servicio API para consultar referencias de mercado de maquin
 - No expone fechas, corridas, estado, cobertura ni metadatos de scraping.
 - No modifica Análisis 1, Análisis 2, Explorador ni las pantallas existentes.
 - No incluye frontend ni iframe desarrollado por Algorym.
-- La búsqueda ampliada sigue siendo una decisión del vendedor; cuando la familia del modelo es inequívoca, la API devuelve una sugerencia inicial que Padway puede ofrecer como atajo.
+- La búsqueda ampliada sigue siendo una decisión del vendedor; cuando la familia del modelo es inequívoca, la API devuelve una sugerencia inicial que Padawanway puede ofrecer como atajo.
 
 ## Contrato acordado
 
 ```text
 POST /api/v1/market-references/direct
-  Entrada: { categoria, marca, modelo, anio, externalOperationId? }
+  Entrada: { categoria, marca, modelo, anio }
   Salida: estadísticas y referencias del mismo modelo, ampliando años automáticamente cuando la muestra cercana es insuficiente.
 
 POST /api/v1/market-references/search
-  Entrada: { categoria, marca?, modelo, anio?, page?, pageSize?, externalOperationId? }
+  Entrada: { categoria, marca?, modelo, anio?, page?, pageSize? }
   Salida: resultados orientativos paginados y estadísticas de la búsqueda ampliada.
 ```
 
@@ -51,7 +51,7 @@ Ambas operaciones requieren firma HMAC con identificador de cliente, timestamp, 
 - [x] Las publicaciones propias de Venturino no integran la muestra de mercado.
 - [x] La búsqueda ampliada aplica búsqueda normalizada y paginación con límite máximo.
 - [x] Cada consulta aceptada queda auditada sin guardar secretos.
-- [x] Se entrega documentación de autenticación, requests, responses y errores a Padway.
+- [x] Se entrega documentación de autenticación, requests, responses y errores a Padawanway.
 - [x] La lógica se verifica con cinco tractores usados del inventario de Venturino.
 - [x] Los criterios visibles, la solidez de la muestra y la relación de cada publicación se expresan en español comercial.
 - [x] Marca/modelo se normalizan con reglas compartidas por API y pipeline, sin fusionar sufijos de líneas distintas por similitud textual.
@@ -74,8 +74,8 @@ Las reglas se contrastaron con nomenclatura oficial y con los datos reales del r
 
 - Aplicar el schema/migración en la base productiva.
 - Ejecutar `npm run pipeline:backfill-identity` en producción, revisar el informe y aplicar únicamente con `node scripts/backfill-machine-identity.js --apply` si los aliases detectados son los esperados.
-- Configurar `PADWAY_API_ENABLED`, `PADWAY_API_CLIENT_ID` y `PADWAY_API_SECRET` en GitHub Actions/producción.
-- Intercambiar el secreto por un canal seguro y ejecutar la prueba de integración desde el backend de Padway.
+- Configurar `PADAWANWAY_API_ENABLED`, `PADAWANWAY_API_CLIENT_ID` y `PADAWANWAY_API_SECRET` en GitHub Actions/producción.
+- Intercambiar el secreto por un canal seguro y ejecutar la prueba de integración desde el backend de Padawanway.
 
 ## Verificación 2026-07-21
 
@@ -87,6 +87,16 @@ Las reglas se contrastaron con nomenclatura oficial y con los datos reales del r
 - CodeGraph se usó como orientación inicial y la revisión directa de archivos fue la fuente de verdad. No aplicó navegador porque el cambio no incorpora interfaz.
 
 Riesgo residual: las equivalencias se mantienen deliberadamente acotadas. Los modelos nuevos o nomenclaturas no cubiertas deben agregarse con evidencia y regresiones, sin recurrir a fuzzy genérico.
+
+## Verificación 2026-07-22
+
+- El contrato de entrada quedó simplificado y request-id permanece como único identificador de trazabilidad por intento.
+- El nombre Padawanway quedó unificado en código, variables de entorno, pipeline y documentación compartible.
+- `npm run test:market-reference`, `npx tsc --noEmit`, `npx prisma validate` y `npm run build`: aprobados.
+- `npm run lint`: sin errores; persisten tres warnings preexistentes en UI ajena a esta API.
+- Prueba HTTP local con las nuevas variables: respuesta válida `200`, replay `409 DUPLICATE_REQUEST` y firma inválida `401 UNAUTHORIZED`; se eliminó la auditoría temporal al finalizar.
+- Los ocho ejemplos JSON, seis enlaces locales y el vector HMAC del paquete `api-doc/` fueron validados automáticamente.
+- No aplicó navegador porque el cambio afecta únicamente contrato, backend y documentación. CodeGraph no fue necesario por tratarse de un ajuste acotado sobre archivos ya identificados.
 
 ## Impacto MCP/IA
 

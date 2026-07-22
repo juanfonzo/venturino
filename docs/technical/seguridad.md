@@ -44,15 +44,15 @@ Observación: `/api/postventa/analyze` está en lista pública del middleware, p
 
 Las rutas `/api/v1/market-references/**` son públicas sólo para que no dependan de la cookie web. Cada handler exige autenticación HMAC máquina a máquina antes de consultar datos.
 
-## Integración Padway
+## Integración Padawanway
 
-- Identidad técnica por `PADWAY_API_CLIENT_ID` y secreto compartido de al menos 32 caracteres.
+- Identidad técnica por `PADAWANWAY_API_CLIENT_ID` y secreto compartido de al menos 32 caracteres.
 - Firma HMAC-SHA256 sobre `<timestamp>\n<request-id>\n<raw-body>`.
 - Timestamp con ventana corta, comparación timing-safe y request-id único persistido para evitar replay.
-- Rate limit aplicado después de validar la firma, para que requests falsos no consuman la cuota de Padway. El proxy de despliegue debe limitar tráfico no autenticado por IP.
+- Rate limit aplicado después de validar la firma, para que requests falsos no consuman la cuota de Padawanway. El proxy de despliegue debe limitar tráfico no autenticado por IP.
 - Requests limitados a JSON y 16 KB; respuestas con `Cache-Control: no-store`.
-- La API permanece deshabilitada salvo `PADWAY_API_ENABLED=true`.
-- No se configura CORS porque Padway consume desde su backend; el secreto nunca debe llegar al navegador.
+- La API permanece deshabilitada salvo `PADAWANWAY_API_ENABLED=true`.
+- No se configura CORS porque Padawanway consume desde su backend; el secreto nunca debe llegar al navegador.
 - La auditoría no guarda firma, secreto ni cuerpo crudo.
 
 ## Claims De Sesión
@@ -105,7 +105,7 @@ Este endpoint se usa desde el control discreto del dashboard para ejecutar únic
 | `MONGODB_URI` | alta | Sólo entorno/scripts, no exponer. |
 | `AUTH_PASSWORD` | alta | Sólo entorno, no loguear. |
 | `JWT_SECRET` | alta | Sólo entorno. |
-| `PADWAY_API_SECRET` | alta | Sólo backend/entorno; nunca navegador, respuesta o logs. |
+| `PADAWANWAY_API_SECRET` | alta | Sólo backend/entorno; nunca navegador, respuesta o logs. |
 | URLs públicas de publicaciones | baja/media | Visibles en UI. |
 | Datos de negocio de precios/capital | media | App interna autenticada. |
 
@@ -115,7 +115,7 @@ Este endpoint se usa desde el control discreto del dashboard para ejecutar únic
 - Scripts y endpoints imprimen logs operativos, no auditoría de usuario.
 - Postventa registra corridas y estados en DB.
 - Ingesta de maquinaria registra corridas en `ScrapingRun`.
-- Las consultas aceptadas de Padway se registran en `MarketReferenceQuery`, incluidas fallas posteriores a autenticación; los rechazos sin identidad válida no persisten contenido no confiable.
+- Las consultas aceptadas de Padawanway se registran en `MarketReferenceQuery`, incluidas fallas posteriores a autenticación; los rechazos sin identidad válida no persisten contenido no confiable.
 
 ## Riesgos
 

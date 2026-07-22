@@ -25,7 +25,6 @@ export interface DirectReferenceInput {
   familiaDisplay: string | null;
   configuracion: string[];
   anio: number;
-  externalOperationId: string | null;
 }
 
 export interface ExpandedSearchInput {
@@ -41,7 +40,6 @@ export interface ExpandedSearchInput {
   anio: number | null;
   page: number;
   pageSize: number;
-  externalOperationId: string | null;
 }
 
 export interface MarketReferenceCandidate {

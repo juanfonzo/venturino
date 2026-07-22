@@ -26,7 +26,6 @@ export async function startMarketReferenceAudit(input: {
       data: {
         clientId: input.clientId,
         requestId: input.requestId,
-        externalOperationId: input.query.externalOperationId,
         mode: input.mode,
         categoria: input.query.categoria,
         marca: input.query.marca,

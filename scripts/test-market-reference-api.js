@@ -2,9 +2,9 @@ const assert = require('node:assert/strict');
 const { requireTypeScript } = require('./register-ts');
 
 const {
-  createPadwaySignature,
-  PadwayApiAuthError,
-  verifyPadwayRequest,
+  createPadawanwaySignature,
+  PadawanwayApiAuthError,
+  verifyPadawanwayRequest,
 } = requireTypeScript('lib/market-reference/auth.ts');
 const {
   buildSampleStrength,
@@ -35,39 +35,39 @@ function testSignedRequest() {
   const timestamp = '1760000000';
   const requestId = 'request-test-0001';
   const rawBody = JSON.stringify({ categoria: 'Tractores', marca: 'John Deere' });
-  const signature = createPadwaySignature({ secret, timestamp, requestId, rawBody });
+  const signature = createPadawanwaySignature({ secret, timestamp, requestId, rawBody });
   const env = {
-    PADWAY_API_ENABLED: 'true',
-    PADWAY_API_CLIENT_ID: 'padway-test',
-    PADWAY_API_SECRET: secret,
-    PADWAY_API_MAX_SKEW_SECONDS: '300',
+    PADAWANWAY_API_ENABLED: 'true',
+    PADAWANWAY_API_CLIENT_ID: 'padawanway-test',
+    PADAWANWAY_API_SECRET: secret,
+    PADAWANWAY_API_MAX_SKEW_SECONDS: '300',
   };
 
   const validHeaders = new Map([
-    ['x-client-id', 'padway-test'],
+    ['x-client-id', 'padawanway-test'],
     ['x-timestamp', timestamp],
     ['x-request-id', requestId],
     ['x-signature', `sha256=${signature}`],
   ]);
-  const auth = verifyPadwayRequest(validHeaders, rawBody, {
+  const auth = verifyPadawanwayRequest(validHeaders, rawBody, {
     nowMs: Number(timestamp) * 1000,
     env,
   });
-  assert.deepEqual(auth, { clientId: 'padway-test', requestId });
+  assert.deepEqual(auth, { clientId: 'padawanway-test', requestId });
 
   const invalidHeaders = new Map(validHeaders);
   invalidHeaders.set('x-signature', `sha256=${'0'.repeat(64)}`);
   assert.throws(
-    () => verifyPadwayRequest(invalidHeaders, rawBody, { nowMs: Number(timestamp) * 1000, env }),
-    (error) => error instanceof PadwayApiAuthError && error.code === 'UNAUTHORIZED',
+    () => verifyPadawanwayRequest(invalidHeaders, rawBody, { nowMs: Number(timestamp) * 1000, env }),
+    (error) => error instanceof PadawanwayApiAuthError && error.code === 'UNAUTHORIZED',
   );
 
   assert.throws(
-    () => verifyPadwayRequest(validHeaders, rawBody, {
+    () => verifyPadawanwayRequest(validHeaders, rawBody, {
       nowMs: (Number(timestamp) + 301) * 1000,
       env,
     }),
-    (error) => error instanceof PadwayApiAuthError && error.code === 'REQUEST_EXPIRED',
+    (error) => error instanceof PadawanwayApiAuthError && error.code === 'REQUEST_EXPIRED',
   );
 }
 

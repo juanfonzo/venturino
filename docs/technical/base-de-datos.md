@@ -24,7 +24,7 @@
 | `PostventaAnalysisRun` | `postventa_analysis_runs` | Corrida del algoritmo postventa. |
 | `PostventaProductAnalysis` | `postventa_product_analyses` | Resultado por producto Venturino. |
 | `PostventaMatchCandidate` | `postventa_match_candidates` | Candidatos ML por producto analizado. |
-| `MarketReferenceQuery` | `market_reference_queries` | Auditoría interna de consultas de referencias enviadas por Padway. |
+| `MarketReferenceQuery` | `market_reference_queries` | Auditoría interna de consultas de referencias enviadas por Padawanway. |
 
 ## Modelo `Listing`
 
@@ -45,7 +45,7 @@ Campos funcionales principales:
 
 ## Auditoría De Referencias De Mercado
 
-`MarketReferenceQuery` conserva identificador de cliente y request, operación externa opcional, modo, filtros normalizados, paginación, estado, cantidad de resultados, resumen interno, error y duración. El unique `clientId + requestId` funciona como protección persistente contra replay.
+`MarketReferenceQuery` conserva identificador de cliente y request, modo, filtros normalizados, paginación, estado, cantidad de resultados, resumen interno, error y duración. El unique `clientId + requestId` funciona como protección persistente contra replay.
 
 No guarda firma HMAC, secreto, cuerpo crudo ni metadatos de scraping. `resultSummary` es de uso interno y conserva estadísticas, criterio aplicado, ids y snapshot de las referencias devueltas para reproducir qué información vio la integración.
 

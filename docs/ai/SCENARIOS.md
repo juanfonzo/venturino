@@ -167,14 +167,14 @@ Validaciones:
 - [ ] API bloquea acceso directo.
 - [ ] Error no expone datos sensibles.
 
-### Escenario: API Padway de referencias de mercado
+### Escenario: API Padawanway de referencias de mercado
 
 Nivel sugerido: 4
-Rol: Backend de Padway.
+Rol: Backend de Padawanway.
 Objetivo: Validar referencias directas, búsqueda ampliada, seguridad y auditoría sin exponer datos internos.
 Datos necesarios: secreto técnico de prueba y cinco tractores usados del inventario Venturino.
 Entorno: local/dev con PostgreSQL actualizado.
-Precondiciones: migración aplicada y variables `PADWAY_API_*` de prueba configuradas.
+Precondiciones: migración aplicada y variables `PADAWANWAY_API_*` de prueba configuradas.
 
 Pasos:
 

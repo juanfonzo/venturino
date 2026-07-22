@@ -4,7 +4,7 @@
 - App interna para analisis de mercado de maquinaria agricola y postventa Venturino.
 - Datos vigentes de maquinaria desde PostgreSQL/Prisma, alimentados por pipeline MongoDB; ACARA sigue desde CSV local.
 - Normalizacion de precio, ubicacion, estado, marca/modelo, flags, dedupe e historial de precios.
-- 2026-07-17: implementar una API de referencias de mercado para tomas de maquinaria usada consumida desde el backend de Padway, sin alterar los módulos actuales.
+- 2026-07-17: implementar una API de referencias de mercado para tomas de maquinaria usada consumida desde el backend de Padawanway, sin alterar los módulos actuales.
 - 2026-05-21: relevar el repo actual en profundidad y confeccionar contexto de proyecto para agentes IA.
 - 2026-05-22: iniciar analisis postventa Venturino vs ML desde Mongo productos para calibrar matching automatico.
 
@@ -26,7 +26,7 @@
 - Next.js migrado a 16.2.7; requiere Node >= 20.9.0.
 - Diseno UI propio Venturino/John Deere prevalece sobre guia visual base del kit.
 - API de referencias de mercado separada de Análisis 1, con operaciones de referencias directas y búsqueda ampliada orientativa; no devuelve tasación ni recomendación de compra.
-- Acceso máquina a máquina desde el backend de Padway mediante requests firmados; no se implementa iframe ni frontend de Algorym.
+- Acceso máquina a máquina desde el backend de Padawanway mediante requests firmados; no se implementa iframe ni frontend de Algorym.
 - Primera versión sin HP ni horas y sin exponer fechas, estado, cobertura o metadatos internos del scraping.
 - Matching directo por modelo canónico con ampliación automática de años; las configuraciones se informan aparte y no se usan para excluir resultados.
 - Aliases conservadores por marca/categoría: no fusionar sufijos de líneas distintas por fuzzy genérico.
@@ -62,12 +62,14 @@
   - ACARA: busqueda de combos de mercado y mas opciones via stats (topModelCombos=200).
   - Autocomplete de publicaciones usa searchScope=core para evitar ruido de descripcion.
   - Comparables con guias de uso y microcopy para interpretar resultados.
-  - 2026-07-17 API Padway de referencias de mercado implementada: endpoints directo/ampliado, HMAC, replay protection, rate limit, auditoría PostgreSQL, documentación y tests focalizados.
+  - 2026-07-17 API Padawanway de referencias de mercado implementada: endpoints directo/ampliado, HMAC, replay protection, rate limit, auditoría PostgreSQL, documentación y tests focalizados.
   - 2026-07-17 migración `20260717160000_add_market_reference_api` aplicada sólo a PostgreSQL local; verificación read-only completada con cinco tractores usados de Venturino.
   - 2026-07-21 mejora de disponibilidad implementada: cascada automática de años, clasificaciones comerciales en español, solidez de muestra y sugerencia de familia para búsqueda ampliada.
   - 2026-07-21 normalización compartida entre API y `pipeline:live`; backfill local conservador corrigió cuatro aliases comprobados y quedó en cero cambios pendientes.
+  - 2026-07-21 paquete `api-doc/` preparado para reunión y handoff con Padawanway: resumen, contrato, seguridad/firma, Postman, guía frontend y checklist de producción.
+  - 2026-07-22 contrato simplificado: request-id queda como único identificador de trazabilidad y el nombre de la empresa integradora se unifica como Padawanway en código, configuración y documentación.
 - Now:
-  - 2026-07-21 API Padway lista en código con matching progresivo y normalización robustecida; falta aplicar schema/configuración en producción y ejecutar prueba conjunta desde el backend de Padway.
+  - 2026-07-22 API Padawanway lista en código con matching progresivo, normalización robustecida y contrato simplificado; falta aplicar schema/configuración en producción y ejecutar prueba conjunta desde el backend de Padawanway.
   - 2026-06-10 diagnóstico puntual Postventa Honda cortadoras: Mongo `algorym.productos` contiene Venturino `332868795` HRG466SKEP y `332865987` HRX476VYEH al 2026-05-30, pero no contiene ML con `HRG466`, `SKEP`, `HRX476`, `VYEH` ni `cortadora Honda`; el motor productivo devuelve `sin comparable` por falta de equivalente extraído, no por falso negativo de matching.
   - 2026-06-10 verificación adicional: Mongo activo actual perfila 127 Venturino y 4111 ML; búsqueda web actual muestra que MercadoLibre sí tiene páginas/listados para HRG466C1-SKEP y HRX476, por lo que el problema probable está en cobertura/query del scraping ML, no en el pipeline Mongo -> Postgres ni en la regla de matching.
   - 2026-06-10 segunda revisión Honda tras nuevo scraping: Mongo activo ML 2026-06-10 contiene 5209 ML, 253 Honda, con familias HRG466, HRX476, WB20, GX200, etc. Las cortadoras HRG466/HRX476, motobomba WB20XH2 y motor GX200QX tienen candidatos ML activos dentro de banda, pero quedan `sin comparable` por regla de modelo Honda exacto; requiere mejorar normalización/compatibilidad de modelos por familia y variante. WJR2525 y GP200 siguen sin equivalente exacto extraído.
@@ -125,7 +127,7 @@
   - postventa-01 implementado en codigo: modelos Prisma, pipeline-postventa y script npm manual.
   - postventa-02 implementado en codigo: matching TS v0, runPostventaAnalysis, endpoint local y script npm manual.
 - Next:
-  - Activar API Padway en producción: aplicar schema, configurar `PADWAY_API_*`, compartir secreto por canal seguro y validar requests firmados desde Padway.
+  - Activar API Padawanway en producción: aplicar schema, configurar `PADAWANWAY_API_*`, compartir secreto por canal seguro y validar requests firmados desde Padawanway.
   - Para cambios grandes futuros: usar los docs técnicos actualizados como punto de partida; no forzar sidebar base del kit.
   - Si el objetivo es eliminar todo CSV runtime, migrar primero ACARA desde `data/acara_precios_maquinaria_agricola_wide.csv` a DB u otra fuente definida.
   - Ampliar estrategia de tests general y decidir MCP base Python/FastAPI si se priorizan capacidades IA-first.
@@ -143,7 +145,6 @@
 - Si ACARA debe migrar a PostgreSQL para eliminar la última dependencia CSV.
 - Umbral final de YEAR_CONDITION_CONFLICT.
 - Regla de outliers.
-- Identificador opaco de operación que Padway enviará para auditoría; no bloquea la implementación porque el campo será opcional.
 
 ## Working set (files/ids/commands):
 - docs/ai/PROJECT_CONTEXT.md
@@ -165,7 +166,7 @@
 - docs/technical/postventa-ml.md
 - docs/backlog/hitos/hito-02-postventa-ml.md
 - docs/changes/processed/2026-07-17-referencias-mercado-api.md
-- docs/integrations/padway-market-reference-api.md
+- api-doc/README.md
 - app/api/v1/market-references/direct/route.ts
 - app/api/v1/market-references/search/route.ts
 - lib/market-reference/
@@ -174,6 +175,7 @@
 - scripts/verify-market-reference-inventory.js
 - scripts/backfill-machine-identity.js
 - lib/normalize/machineIdentity.ts
+- api-doc/
 - docs/backlog/features/postventa-01-ingesta-postgres.md
 - docs/backlog/features/postventa-02-matching-persistido.md
 - docs/backlog/features/postventa-03-ui-analisis.md

@@ -6,7 +6,10 @@ import {
   failMarketReferenceAudit,
   startMarketReferenceAudit,
 } from "@/lib/market-reference/audit";
-import { PadwayApiAuthError, verifyPadwayRequest } from "@/lib/market-reference/auth";
+import {
+  PadawanwayApiAuthError,
+  verifyPadawanwayRequest,
+} from "@/lib/market-reference/auth";
 import {
   enforceMarketReferenceRateLimit,
   MarketReferenceRateLimitError,
@@ -53,7 +56,7 @@ export async function handleMarketReferenceRequest(
       return apiError(413, "PAYLOAD_TOO_LARGE", "El cuerpo supera el límite permitido.");
     }
 
-    const auth = verifyPadwayRequest(request.headers, rawBody);
+    const auth = verifyPadawanwayRequest(request.headers, rawBody);
     enforceMarketReferenceRateLimit(auth.clientId);
     requestIdForLog = auth.requestId;
 
@@ -108,7 +111,7 @@ export async function handleMarketReferenceRequest(
 }
 
 function mapError(error: unknown) {
-  if (error instanceof PadwayApiAuthError) {
+  if (error instanceof PadawanwayApiAuthError) {
     return { status: error.status, code: error.code, message: error.message };
   }
   if (error instanceof MarketReferenceRateLimitError) {

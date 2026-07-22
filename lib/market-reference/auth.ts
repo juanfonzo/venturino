@@ -8,35 +8,35 @@ type HeaderReader = {
   get(name: string): string | null;
 };
 
-export interface PadwayAuthContext {
+export interface PadawanwayAuthContext {
   clientId: string;
   requestId: string;
 }
 
-export class PadwayApiAuthError extends Error {
+export class PadawanwayApiAuthError extends Error {
   readonly status: number;
   readonly code: string;
 
   constructor(status: number, code: string, message: string) {
     super(message);
-    this.name = "PadwayApiAuthError";
+    this.name = "PadawanwayApiAuthError";
     this.status = status;
     this.code = code;
   }
 }
 
-export function verifyPadwayRequest(
+export function verifyPadawanwayRequest(
   headers: HeaderReader,
   rawBody: string,
   options?: { nowMs?: number; env?: NodeJS.ProcessEnv },
-): PadwayAuthContext {
+): PadawanwayAuthContext {
   const env = options?.env ?? process.env;
-  const enabled = env.PADWAY_API_ENABLED?.toLowerCase() === "true";
-  const configuredClientId = env.PADWAY_API_CLIENT_ID?.trim() ?? "";
-  const secret = env.PADWAY_API_SECRET ?? "";
+  const enabled = env.PADAWANWAY_API_ENABLED?.toLowerCase() === "true";
+  const configuredClientId = env.PADAWANWAY_API_CLIENT_ID?.trim() ?? "";
+  const secret = env.PADAWANWAY_API_SECRET ?? "";
 
   if (!enabled || !configuredClientId || secret.length < MIN_SECRET_LENGTH) {
-    throw new PadwayApiAuthError(
+    throw new PadawanwayApiAuthError(
       503,
       "SERVICE_NOT_CONFIGURED",
       "La integración no está habilitada.",
@@ -57,15 +57,15 @@ export function verifyPadwayRequest(
 
   const timestampSeconds = Number(timestamp);
   const maxSkewSeconds = parsePositiveInt(
-    env.PADWAY_API_MAX_SKEW_SECONDS,
+    env.PADAWANWAY_API_MAX_SKEW_SECONDS,
     DEFAULT_MAX_SKEW_SECONDS,
   );
   const nowSeconds = Math.floor((options?.nowMs ?? Date.now()) / 1000);
   if (!Number.isInteger(timestampSeconds) || Math.abs(nowSeconds - timestampSeconds) > maxSkewSeconds) {
-    throw new PadwayApiAuthError(401, "REQUEST_EXPIRED", "La solicitud venció.");
+    throw new PadawanwayApiAuthError(401, "REQUEST_EXPIRED", "La solicitud venció.");
   }
 
-  const expected = createPadwaySignature({ secret, timestamp, requestId, rawBody });
+  const expected = createPadawanwaySignature({ secret, timestamp, requestId, rawBody });
   const received = signature.startsWith("sha256=") ? signature.slice(7) : signature;
   if (!/^[a-f0-9]{64}$/i.test(received) || !safeEqualHex(received, expected)) {
     throw unauthorized();
@@ -74,7 +74,7 @@ export function verifyPadwayRequest(
   return { clientId, requestId };
 }
 
-export function createPadwaySignature(input: {
+export function createPadawanwaySignature(input: {
   secret: string;
   timestamp: string;
   requestId: string;
@@ -85,7 +85,7 @@ export function createPadwaySignature(input: {
 }
 
 function unauthorized() {
-  return new PadwayApiAuthError(401, "UNAUTHORIZED", "No autorizado.");
+  return new PadawanwayApiAuthError(401, "UNAUTHORIZED", "No autorizado.");
 }
 
 function safeEqualText(left: string, right: string) {

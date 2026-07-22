@@ -24,7 +24,10 @@ export function enforceMarketReferenceRateLimit(
 ) {
   const now = options?.nowMs ?? Date.now();
   const env = options?.env ?? process.env;
-  const limit = parsePositiveInt(env.PADWAY_API_RATE_LIMIT_PER_MINUTE, DEFAULT_LIMIT_PER_MINUTE);
+  const limit = parsePositiveInt(
+    env.PADAWANWAY_API_RATE_LIMIT_PER_MINUTE,
+    DEFAULT_LIMIT_PER_MINUTE,
+  );
   const key = identifier || "unknown";
   const existing = buckets.get(key);
 

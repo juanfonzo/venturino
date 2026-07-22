@@ -33,6 +33,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | `docs/technical/seguridad.md` | vigente | `lib/auth.ts`, proxy y endpoints auth | 2026-06-04 |
 | `docs/technical/mcp-coverage-map.md` | vigente | onboarding + política MCP-first | 2026-06-03 |
 | `docs/technical/postventa-ml.md` | vigente-específico | análisis postventa previo | 2026-05-22 |
+| `api-doc/` | vigente-compartible | contrato implementado de referencias de mercado | 2026-07-22 |
 | `docs/product/brief.md` | revisar | kit/producto previo | sin confirmar |
 | `docs/product/prd.md` | revisar | kit/producto previo | sin confirmar |
 | `docs/backlog/hitos/hito-02-postventa-ml.md` | vigente-parcial | backlog postventa | 2026-05 |
@@ -56,7 +57,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | Ingesta maquinaria | implementado | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `prisma/schema.prisma` |
 | FX | implementado | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
 | Postventa ingesta/análisis | implementado inicial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
-| API Padway de referencias | implementado; pendiente activación productiva | `app/api/v1/market-references/**`, `lib/market-reference/**`, `lib/normalize/machineIdentity.ts`, `MarketReferenceQuery` |
+| API Padawanway de referencias | implementado; pendiente activación productiva | `app/api/v1/market-references/**`, `lib/market-reference/**`, `lib/normalize/machineIdentity.ts`, `MarketReferenceQuery` |
 | MCP | no implementado | `docs/technical/mcp-coverage-map.md` |
 
 ## Cambios De Cliente
@@ -65,14 +66,14 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 |---|---|---|---|
 | Onboarding de proyecto existente | procesado | Documentación técnica y contexto para futuras tareas | No requiere feature |
 | Migrar Next.js a 16 y retirar CSVs MVP legacy | procesado | Dependencias, proxy, lint config y documentación actualizados; ACARA CSV activo se conserva | Pendiente decidir migración ACARA a DB si se quiere eliminar todo CSV runtime |
-| API de referencias de mercado para tomas de usados | implementado; pendiente activación productiva | Servicio externo sobre PostgreSQL, matching progresivo, identidad canónica, autenticación HMAC, auditoría e integración Padway | Contrato en `docs/changes/processed/2026-07-17-referencias-mercado-api.md` |
+| API de referencias de mercado para tomas de usados | implementado; pendiente activación productiva | Servicio externo sobre PostgreSQL, matching progresivo, identidad canónica, autenticación HMAC, auditoría e integración Padawanway | Contrato en `docs/changes/processed/2026-07-17-referencias-mercado-api.md` |
 
 ## Riesgos Registrados
 
 - Hay archivos históricos o plantillas con contenido desactualizado respecto de la arquitectura actual.
 - Algunos documentos previos muestran mojibake; los documentos actualizados en esta pasada deben quedar en UTF-8 correcto.
 - Existe `.env.example`; mantenerlo sincronizado cuando cambien variables de runtime.
-- No hay suite general; la API Padway tiene tests focalizados y verificación read-only contra inventario.
+- No hay suite general; la API Padawanway tiene tests focalizados y verificación read-only contra inventario.
 - Auth actual es suficiente para MVP interno, pero no cubre roles, tenant, permisos ni auditoría.
 - `npx prisma db push` en deploy evita trazabilidad fina de migraciones para todo el schema.
 - No hay MCP real pese a la política MCP-first; la deuda debe permanecer visible.

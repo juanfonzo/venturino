@@ -51,7 +51,7 @@
 | `lib/postventa/run-analysis.ts` | Persiste corridas, resultados y candidatos postventa. |
 | `lib/fx-rate.ts` | DolarAPI, `FxRate`, recálculo masivo de listings ARS. |
 | `app/api/reports/venturino/route.ts` | Endpoint de descarga PDF; ejecuta el generador Node para evitar incompatibilidades de React PDF dentro del bundle de Next 16. |
-| `lib/market-reference/**` | Contrato, autenticación HMAC, validación, matching, consultas PostgreSQL y auditoría de la integración Padway. |
+| `lib/market-reference/**` | Contrato, autenticación HMAC, validación, matching, consultas PostgreSQL y auditoría de la integración Padawanway. |
 | `lib/normalize/machineIdentity.ts` | Identidad canónica compartida por API y pipeline; separa modelo, familia y configuraciones comerciales con aliases acotados. |
 
 ## Scripts Operativos
@@ -97,7 +97,7 @@
 
 ### `/api/v1/market-references/**`
 
-- Consumo exclusivo servidor a servidor desde Padway; no usa la cookie de la app ni expone secretos al navegador.
+- Consumo exclusivo servidor a servidor desde Padawanway; no usa la cookie de la app ni expone secretos al navegador.
 - Firma HMAC-SHA256 sobre timestamp, request-id y cuerpo JSON crudo; tolerancia temporal por defecto de 300 segundos.
 - Condición fija `Usado`, precio USD válido desde 1000 y publicaciones activas en PostgreSQL.
 - La referencia directa exige categoría, marca, modelo y año; mantiene el mismo modelo canónico y amplía automáticamente años hasta reunir contexto suficiente.
@@ -107,7 +107,7 @@
 - Las publicaciones propias de Venturino quedan excluidas de las referencias.
 - No devuelve HP, horas, fechas, corridas, cobertura ni metadatos de scraping.
 - Cada request autenticado se registra en `MarketReferenceQuery`; el request-id único impide replay.
-- Contrato para Padway: `docs/integrations/padway-market-reference-api.md`.
+- Contrato compartible para Padawanway: `api-doc/README.md`.
 
 ## Validaciones Y Errores
 

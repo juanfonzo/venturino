@@ -41,11 +41,6 @@ export function parseDirectReferenceInput(value: unknown): DirectReferenceInput 
   const marca = parseRequiredText(body.marca, "marca", 2, issues);
   const modelo = parseRequiredText(body.modelo, "modelo", 1, issues);
   const anio = parseYear(body.anio, true, issues);
-  const externalOperationId = parseOptionalText(
-    body.externalOperationId,
-    "externalOperationId",
-    issues,
-  );
 
   const identity = normalizeMachineIdentity({ category: categoria, brand: marca, model: modelo });
   const marcaNorm = identity.brandNorm;
@@ -68,7 +63,6 @@ export function parseDirectReferenceInput(value: unknown): DirectReferenceInput 
     familiaDisplay: identity.familyDisplay,
     configuracion: identity.qualifiers,
     anio,
-    externalOperationId,
   };
 }
 
@@ -86,11 +80,6 @@ export function parseExpandedSearchInput(value: unknown): ExpandedSearchInput {
     1,
     MAX_PAGE_SIZE,
     DEFAULT_PAGE_SIZE,
-    issues,
-  );
-  const externalOperationId = parseOptionalText(
-    body.externalOperationId,
-    "externalOperationId",
     issues,
   );
 
@@ -117,7 +106,6 @@ export function parseExpandedSearchInput(value: unknown): ExpandedSearchInput {
     anio,
     page,
     pageSize,
-    externalOperationId,
   };
 }
 

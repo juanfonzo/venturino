@@ -24,7 +24,7 @@ Estado: reemplazada
 
 Contexto:
 
-Venturino necesita consultar referencias de mercado para maquinaria usada tomada como parte de pago desde un dashboard administrado por Padway. El panel vive en otro dominio y puede consultar maquinaria que no pertenece al stock actual de Venturino.
+Venturino necesita consultar referencias de mercado para maquinaria usada tomada como parte de pago desde un dashboard administrado por Padawanway. El panel vive en otro dominio y puede consultar maquinaria que no pertenece al stock actual de Venturino.
 
 Decisión:
 
@@ -39,31 +39,31 @@ Alternativas consideradas:
 Consecuencias:
 
 - Se deben crear rutas, sesión embebida, persistencia de auditoría y políticas de iframe separadas de la autenticación existente.
-- Antes de habilitar producción se debe confirmar el dominio de Padway y validar que el backend de Padway pueda realizar el handshake seguro.
+- Antes de habilitar producción se debe confirmar el dominio de Padawanway y validar que el backend de Padawanway pueda realizar el handshake seguro.
 - Las referencias dependen de la cobertura y frescura de la carga MongoDB a PostgreSQL; la auditoría de datos es un hito previo obligatorio.
 
-## 2026-07-17 - Referencias de mercado mediante API para Padway
+## 2026-07-17 - Referencias de mercado mediante API para Padawanway
 
 Estado: aceptada
 
 Contexto:
 
-Padway confirmó que prefiere consumir los datos como servicio y construir la experiencia visual dentro de su propio dashboard. Venturino confirmó que la primera versión no usa HP ni horas y que no deben exponerse datos internos sobre scraping o estado de la fuente.
+Padawanway confirmó que prefiere consumir los datos como servicio y construir la experiencia visual dentro de su propio dashboard. Venturino confirmó que la primera versión no usa HP ni horas y que no deben exponerse datos internos sobre scraping o estado de la fuente.
 
 Decisión:
 
-Implementar dos endpoints API versionados, consumidos exclusivamente desde el backend de Padway: referencias directas y búsqueda ampliada. La autenticación será máquina a máquina mediante firma HMAC por request. La API leerá sólo PostgreSQL, excluirá publicaciones propias de Venturino y registrará internamente cada consulta aceptada.
+Implementar dos endpoints API versionados, consumidos exclusivamente desde el backend de Padawanway: referencias directas y búsqueda ampliada. La autenticación será máquina a máquina mediante firma HMAC por request. La API leerá sólo PostgreSQL, excluirá publicaciones propias de Venturino y registrará internamente cada consulta aceptada.
 
 Alternativas consideradas:
 
-- Widget mediante iframe: reemplazado porque Padway asumirá el frontend y necesita reutilizar los datos con mayor libertad.
+- Widget mediante iframe: reemplazado porque Padawanway asumirá el frontend y necesita reutilizar los datos con mayor libertad.
 - API consumida directamente desde el navegador: descartada porque expondría credenciales de integración.
-- Acceso directo de Padway a PostgreSQL: descartado porque impediría controlar reglas, seguridad, paginación y auditoría.
+- Acceso directo de Padawanway a PostgreSQL: descartado porque impediría controlar reglas, seguridad, paginación y auditoría.
 
 Consecuencias:
 
 - Algorym es responsable del contrato, matching, estadísticas, seguridad, versionado, auditoría y documentación.
-- Padway es responsable del frontend, de resguardar el secreto en su backend y de representar correctamente referencias directas y resultados orientativos.
+- Padawanway es responsable del frontend, de resguardar el secreto en su backend y de representar correctamente referencias directas y resultados orientativos.
 - Ya no aplican dominio permitido para iframe, códigos de apertura, cookies de terceros ni resizing entre dominios.
 
 ## 2026-07-21 - Matching conservador y ampliación automática de referencias
@@ -87,5 +87,5 @@ Alternativas consideradas:
 Consecuencias:
 
 - Nuevas equivalencias requieren evidencia y una regresión específica antes de agregarse.
-- Padway puede mostrar `titulo`/`detalle` de criterios y coincidencias sin traducir lógica técnica.
+- Padawanway puede mostrar `titulo`/`detalle` de criterios y coincidencias sin traducir lógica técnica.
 - El backfill queda restringido a aliases comprobados y no reescribe masivamente modelos ambiguos.
