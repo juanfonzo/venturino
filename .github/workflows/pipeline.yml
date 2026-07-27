@@ -92,6 +92,8 @@ jobs:
           add PADAWANWAY_API_ENABLED "${{ secrets.PADAWANWAY_API_ENABLED }}"
           add PADAWANWAY_API_CLIENT_ID "${{ secrets.PADAWANWAY_API_CLIENT_ID }}"
           add PADAWANWAY_API_SECRET "${{ secrets.PADAWANWAY_API_SECRET }}"
+          add PADAWANWAY_API_MAX_SKEW_SECONDS "${{ secrets.PADAWANWAY_API_MAX_SKEW_SECONDS }}"
+          add PADAWANWAY_API_RATE_LIMIT_PER_MINUTE "${{ secrets.PADAWANWAY_API_RATE_LIMIT_PER_MINUTE }}"
 
           # 6.4) Ejecutar nuevo contenedor y conectar redes
           ssh algorym "docker run -d \
