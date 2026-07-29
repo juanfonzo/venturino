@@ -4,7 +4,7 @@
 
 Postman puede utilizarse para probar la API como si fuera el backend de Padawanway. La prueba debe incluir firma HMAC, casos funcionales y casos negativos.
 
-El secreto utilizado en Postman debe ser exclusivo del ambiente de prueba.
+La opción recomendada es utilizar un ambiente y secreto exclusivos de prueba. Si no se crea un ambiente separado, el uso de credenciales productivas en Postman debe limitarse a un smoke test acordado, ejecutado manualmente y sin exportar el secreto.
 
 ## Variables
 
@@ -12,11 +12,13 @@ Crear un environment local con:
 
 | Variable | Ejemplo | Sensibilidad |
 |---|---|---|
-| `base_url` | `https://api-pruebas.example.com` | No sensible. |
-| `client_id` | `padawanway-test` | Media. |
+| `base_url` | `https://venturino.algorym.app` para producción controlada | No sensible. |
+| `client_id` | Valor entregado por Algorym para el ambiente | Media. |
 | `force_request_id` | vacío | Sólo para probar replay. |
 | `force_timestamp` | vacío | Sólo para probar timestamp vencido. |
 | `force_invalid_signature` | vacío | Sólo para probar autenticación inválida. |
+
+`base_url` no debe incluir `/api/v1` ni terminar con `/`.
 
 Guardar el secreto en Postman Vault con el nombre:
 

@@ -33,7 +33,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | `docs/technical/seguridad.md` | vigente | `lib/auth.ts`, proxy y endpoints auth | 2026-06-04 |
 | `docs/technical/mcp-coverage-map.md` | vigente | onboarding + política MCP-first | 2026-06-03 |
 | `docs/technical/postventa-ml.md` | vigente-específico | análisis postventa previo | 2026-05-22 |
-| `api-doc/` | vigente-compartible | contrato implementado de referencias de mercado | 2026-07-22 |
+| `api-doc/` | vigente-compartible | contrato implementado de referencias de mercado | 2026-07-29 |
 | `docs/product/brief.md` | revisar | kit/producto previo | sin confirmar |
 | `docs/product/prd.md` | revisar | kit/producto previo | sin confirmar |
 | `docs/backlog/hitos/hito-02-postventa-ml.md` | vigente-parcial | backlog postventa | 2026-05 |

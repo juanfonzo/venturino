@@ -156,10 +156,12 @@ La operación es de sólo lectura. Un nuevo intento no modifica publicaciones ni
 Padawanway debe mantener estas variables únicamente en su backend:
 
 ```text
-VENTURINO_API_URL
+VENTURINO_API_URL=https://venturino.algorym.app
 VENTURINO_API_CLIENT_ID
 VENTURINO_API_SECRET
 ```
+
+`VENTURINO_API_URL` no debe incluir `/api/v1` ni terminar con `/`.
 
 Requisitos:
 

@@ -71,6 +71,7 @@
   - 2026-07-27 credenciales locales de la integración Padawanway generadas y asentadas en `.env`; client-id y secreto de ambos lados quedaron correlacionados sin exponerlos en documentación ni Git.
   - 2026-07-27 URL pública para Padawanway confirmada y registrada como `https://venturino.algorym.app`, sin barra final para concatenar los endpoints versionados.
   - 2026-07-27 pipeline de despliegue actualizado para inyectar desde GitHub Secrets las cinco variables `PADAWANWAY_API_*`, incluidos ventana temporal y rate limit.
+  - 2026-07-29 documentación Padawanway actualizada con URL productiva, estrategia de prueba pendiente, semántica de `configuracion`, variables exactas y preguntas de reunión refinadas.
 - Now:
   - 2026-07-27 API Padawanway lista en código y configuración local completa; falta cargar los cinco GitHub Secrets, aplicar schema/configuración en producción y ejecutar la prueba conjunta desde Padawanway.
   - 2026-06-10 diagnóstico puntual Postventa Honda cortadoras: Mongo `algorym.productos` contiene Venturino `332868795` HRG466SKEP y `332865987` HRX476VYEH al 2026-05-30, pero no contiene ML con `HRG466`, `SKEP`, `HRX476`, `VYEH` ni `cortadora Honda`; el motor productivo devuelve `sin comparable` por falta de equivalente extraído, no por falso negativo de matching.

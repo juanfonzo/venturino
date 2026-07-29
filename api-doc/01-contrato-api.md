@@ -5,10 +5,11 @@ Versión: `v1`
 ## URL base
 
 ```text
-{{base_url}}/api/v1
+Producción: https://venturino.algorym.app/api/v1
+Prueba: pendiente de definición
 ```
 
-Las URLs definitivas de prueba y producción se entregarán antes de la validación conjunta.
+En el cliente se recomienda guardar `base_url=https://venturino.algorym.app`, sin `/api/v1` ni `/` final, y concatenar las rutas versionadas indicadas en este documento.
 
 ## Convenciones generales
 
@@ -274,6 +275,20 @@ Cuando no hay referencias, `sampleSize` es `0` y los cinco valores estadísticos
 | `configuracion` | string[] | Características separadas del modelo, por ejemplo plataforma o rodado. |
 
 Las publicaciones propias de Venturino no forman parte de `references` ni de las estadísticas.
+
+### `configuracion`
+
+Este campo contiene características comerciales detectadas y separadas de la identidad principal del modelo. Puede incluir, entre otras:
+
+- `Doble tracción`;
+- `Rodado dual`, `Rodado simple` o `Rodado patón`;
+- `Transmisión hidrostática`;
+- `Plataforma Draper` o su ancho en pies;
+- `Botalón de 30 metros` o `Botalón de carbono`.
+
+`query.configuracion` describe las características detectadas en la maquinaria buscada. `references[].configuracion` corresponde a cada publicación encontrada.
+
+Un arreglo vacío `[]` significa que no se detectaron características adicionales. No representa un error ni un dato obligatorio faltante. En esta versión, la configuración se informa como contexto y no se utiliza para excluir resultados.
 
 ## Clasificaciones comerciales
 

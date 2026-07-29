@@ -1,8 +1,8 @@
 # API de referencias de mercado para Padawanway
 
 Versión del contrato: `v1`  
-Estado: implementado; activación productiva pendiente  
-Última revisión: 2026-07-22
+Estado: implementado; autenticación productiva activa; prueba funcional conjunta pendiente
+Última revisión: 2026-07-29
 
 ## Propósito
 
@@ -34,6 +34,15 @@ API de referencias de Algorym
 ```
 
 El navegador nunca debe comunicarse directamente con esta API. El backend de Padawanway firma cada request y conserva el secreto de integración.
+
+## Ambientes
+
+| Ambiente | URL base | Estado |
+|---|---|---|
+| Producción | `https://venturino.algorym.app` | Autenticación activa; prueba funcional conjunta pendiente. |
+| Prueba | Pendiente | Definir en la reunión si se requiere un ambiente y credenciales separados. |
+
+La URL base no debe incluir `/api/v1` ni terminar con `/`. Las rutas versionadas se agregan al realizar cada request.
 
 ## Operaciones
 
@@ -81,8 +90,9 @@ El navegador nunca debe comunicarse directamente con esta API. El backend de Pad
 
 ## Pendientes para la reunión
 
-- URL de prueba y URL productiva.
+- Definir si habrá ambiente y credenciales de prueba separados o un smoke test productivo controlado.
 - Tecnología del backend de Padawanway para entregar un ejemplo de firma específico si lo necesitan.
 - Volumen esperado de requests y política final de timeout/reintentos.
-- Flujo visual definitivo para referencias directas y búsqueda ampliada.
+- Presentación definitiva de paginación y estados dentro de los dos bloques acordados.
 - Canal seguro para entregar las credenciales.
+- Responsable y procedimiento de rotación de credenciales.
