@@ -4,132 +4,421 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: venturino-production-deploy
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: algorym2424/algorym
+  SERVICE: venturino
+  WEB_NETWORK: nginxproxymanager_default
+  DB_NETWORK: venturino-backend
+
+  # Prisma y Next.js requieren una DATABASE_URL sintácticamente válida
+  # durante algunos pasos de build, pero no necesitan conectarse a producción.
+  BUILD_DATABASE_URL: postgresql://build:build@127.0.0.1:5432/venturino
 
 jobs:
-  build_and_deploy:
+  quality:
+    name: Quality checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     env:
-      IMAGE_NAME: algorym2424/algorym       # Repo en Docker Hub
-      SERVICE:    venturino             # Nombre del contenedor en el VPS
-      WEB_NETWORK: nginxproxymanager_default # Red donde se conecta el proxy NGINX
-      DB_NETWORK:  venturino-backend            # Red donde vive la base de datos
-  
+      DATABASE_URL: postgresql://build:build@127.0.0.1:5432/venturino
+
     steps:
-      # 1) Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) Login to Docker Hub
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Run focused tests
+        run: |
+          npm run test:superadmin
+          npm run test:market-reference
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+  build_and_deploy:
+    name: Build and deploy
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+          AUTH_USER: ${{ secrets.AUTH_USER }}
+          AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+          SUPERADMIN_USER: ${{ secrets.SUPERADMIN_USER }}
+          SUPERADMIN_PASSWORD: ${{ secrets.SUPERADMIN_PASSWORD }}
+
+          PADAWANWAY_API_ENABLED: ${{ secrets.PADAWANWAY_API_ENABLED }}
+          PADAWANWAY_API_CLIENT_ID: ${{ secrets.PADAWANWAY_API_CLIENT_ID }}
+          PADAWANWAY_API_SECRET: ${{ secrets.PADAWANWAY_API_SECRET }}
+
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+
+        run: |
+          set -Eeuo pipefail
+
+          required=(
+            DOCKER_USERNAME
+            DOCKERHUB_TOKEN
+            SSH_PRIVATE_KEY
+            SERVER_HOST
+            SERVER_USER
+            DATABASE_URL
+            MONGODB_URI
+            AUTH_USER
+            AUTH_PASSWORD
+            JWT_SECRET
+            SUPERADMIN_USER
+            SUPERADMIN_PASSWORD
+            PADAWANWAY_API_ENABLED
+            PADAWANWAY_API_CLIENT_ID
+            PADAWANWAY_API_SECRET
+            SMTP_USER
+            SMTP_PASS
+          )
+
+          missing=()
+
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            printf '::error::Faltan secrets requeridos: %s\n' "${missing[*]}"
+            exit 1
+          fi
+
+          if [[ "$AUTH_USER" == "$SUPERADMIN_USER" ]]; then
+            echo "::error::AUTH_USER y SUPERADMIN_USER deben ser distintos."
+            exit 1
+          fi
+
+          if [[ "$AUTH_PASSWORD" == "$SUPERADMIN_PASSWORD" ]]; then
+            echo "::error::AUTH_PASSWORD y SUPERADMIN_PASSWORD deben ser distintos."
+            exit 1
+          fi
+
+          if [[ "${PADAWANWAY_API_ENABLED,,}" == "true" && ${#PADAWANWAY_API_SECRET} -lt 32 ]]; then
+            echo "::error::PADAWANWAY_API_SECRET debe tener al menos 32 caracteres cuando la API está habilitada."
+            exit 1
+          fi
+
+          # Estos valores se incorporarán a comandos remotos y deben ser
+          # valores de una sola línea.
+          single_line=(
+            DOCKER_USERNAME
+            DOCKERHUB_TOKEN
+            SERVER_HOST
+            SERVER_USER
+            DATABASE_URL
+            MONGODB_URI
+            AUTH_USER
+            AUTH_PASSWORD
+            JWT_SECRET
+            SUPERADMIN_USER
+            SUPERADMIN_PASSWORD
+            PADAWANWAY_API_ENABLED
+            PADAWANWAY_API_CLIENT_ID
+            PADAWANWAY_API_SECRET
+            SMTP_USER
+            SMTP_PASS
+          )
+
+          for name in "${single_line[@]}"; do
+            value="${!name}"
+
+            if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
+              echo "::error::$name no puede contener saltos de línea."
+              exit 1
+            fi
+          done
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3) Set up tag (branch-timestamp)
-      - name: Set up tag
+      - name: Set up image tag
         id: tag
+        shell: bash
         run: |
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          BRANCH_TAG=$(echo "${GITHUB_REF#refs/heads/}" | tr '/' '-')
-          echo "full_tag=${BRANCH_TAG}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+          set -Eeuo pipefail
 
-      # 4) Build & Push image
+          TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+          BRANCH_TAG="${GITHUB_REF#refs/heads/}"
+          BRANCH_TAG="${BRANCH_TAG//\//-}"
+          SHORT_SHA="${GITHUB_SHA:0:12}"
+
+          echo "full_tag=${BRANCH_TAG}-${SHORT_SHA}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+
       - name: Build image
+        shell: bash
         run: |
+          set -Eeuo pipefail
+
           docker build \
             --no-cache \
-            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -t $IMAGE_NAME:${{ steps.tag.outputs.full_tag }} .
+            --build-arg DATABASE_URL="$BUILD_DATABASE_URL" \
+            -t "$IMAGE_NAME:${{ steps.tag.outputs.full_tag }}" \
+            .
 
       - name: Push image
+        shell: bash
         run: |
-          docker push $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}
+          set -Eeuo pipefail
 
-      # 5) Configure SSH
+          docker push "$IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
+
       - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+
         run: |
+          set -Eeuo pipefail
+
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/algorym.key
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/algorym.key
           chmod 600 ~/.ssh/algorym.key
+
           cat > ~/.ssh/config <<EOF
           Host algorym
-            HostName ${{ secrets.SERVER_HOST }}
-            User ${{ secrets.SERVER_USER }}
+            HostName $SERVER_HOST
+            User $SERVER_USER
             IdentityFile ~/.ssh/algorym.key
             StrictHostKeyChecking no
+            ServerAliveInterval 20
+            ServerAliveCountMax 6
           EOF
 
-      # 6) Deploy container
+          chmod 600 ~/.ssh/config
+
       - name: Deploy container
+        shell: bash
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+
+          AUTH_USER: ${{ secrets.AUTH_USER }}
+          AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+          SUPERADMIN_USER: ${{ secrets.SUPERADMIN_USER }}
+          SUPERADMIN_PASSWORD: ${{ secrets.SUPERADMIN_PASSWORD }}
+
+          PADAWANWAY_API_ENABLED: ${{ secrets.PADAWANWAY_API_ENABLED }}
+          PADAWANWAY_API_CLIENT_ID: ${{ secrets.PADAWANWAY_API_CLIENT_ID }}
+          PADAWANWAY_API_SECRET: ${{ secrets.PADAWANWAY_API_SECRET }}
+          PADAWANWAY_API_MAX_SKEW_SECONDS: ${{ secrets.PADAWANWAY_API_MAX_SKEW_SECONDS }}
+          PADAWANWAY_API_RATE_LIMIT_PER_MINUTE: ${{ secrets.PADAWANWAY_API_RATE_LIMIT_PER_MINUTE }}
+
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+
         run: |
-          set -e
+          set -Eeuo pipefail
 
-          # Helper para escapar apóstrofes
-          esc() { printf '%s' "$1" | sed "s/'/'\\''/g"; }
+          escape_single_quotes() {
+            printf '%s' "$1" | sed "s/'/'\"'\"'/g"
+          }
 
-          # 6.1) Login remoto a Docker Hub
-          printf '%s' "${{ secrets.DOCKERHUB_TOKEN }}" | \
-            ssh algorym "docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin"
-
-          # 6.1.1) Pull remoto de la imagen
-          ssh algorym \
-            "docker pull $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
-
-          # 6.2) Detener y remover contenedor previo
-          ssh algorym \
-            "docker stop $SERVICE || true && docker rm $SERVICE || true"
-
-          # 6.3) Construir flags de entorno
           ENV_FLAGS=""
-          add() { ENV_FLAGS="$ENV_FLAGS -e $1='$(esc "$2")'"; }
-          add DATABASE_URL "${{ secrets.DATABASE_URL }}"
-          add MONGODB_URI "${{ secrets.MONGODB_URI }}"
-          add AUTH_USER "${{ secrets.AUTH_USER }}"
-          add AUTH_PASSWORD "${{ secrets.AUTH_PASSWORD }}"
-          add JWT_SECRET "${{ secrets.JWT_SECRET }}"
-          add PADAWANWAY_API_ENABLED "${{ secrets.PADAWANWAY_API_ENABLED }}"
-          add PADAWANWAY_API_CLIENT_ID "${{ secrets.PADAWANWAY_API_CLIENT_ID }}"
-          add PADAWANWAY_API_SECRET "${{ secrets.PADAWANWAY_API_SECRET }}"
-          add PADAWANWAY_API_MAX_SKEW_SECONDS "${{ secrets.PADAWANWAY_API_MAX_SKEW_SECONDS }}"
-          add PADAWANWAY_API_RATE_LIMIT_PER_MINUTE "${{ secrets.PADAWANWAY_API_RATE_LIMIT_PER_MINUTE }}"
 
-          # 6.4) Ejecutar nuevo contenedor y conectar redes
-          ssh algorym "docker run -d \
-            --name $SERVICE \
-            --network $WEB_NETWORK \
-            --network-alias $SERVICE \
+          add() {
+            local name="$1"
+            local value="$2"
+            local escaped
+
+            escaped="$(escape_single_quotes "$value")"
+            ENV_FLAGS+=" -e ${name}='${escaped}'"
+          }
+
+          IMAGE_REF="$IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
+
+          # Login remoto a Docker Hub.
+          printf '%s' "$DOCKERHUB_TOKEN" | \
+            ssh algorym "docker login -u '$DOCKER_USERNAME' --password-stdin"
+
+          # Descargar la nueva imagen y verificar las redes antes de detener
+          # la aplicación actual.
+          ssh algorym "docker pull '$IMAGE_REF'"
+          ssh algorym "docker network inspect '$WEB_NETWORK' >/dev/null"
+          ssh algorym "docker network inspect '$DB_NETWORK' >/dev/null"
+
+          # Base de datos y fuentes.
+          add DATABASE_URL "$DATABASE_URL"
+          add MONGODB_URI "$MONGODB_URI"
+
+          # Acceso actual de Venturino.
+          add AUTH_USER "$AUTH_USER"
+          add AUTH_PASSWORD "$AUTH_PASSWORD"
+          add JWT_SECRET "$JWT_SECRET"
+
+          # Acceso exclusivo de Algorym.
+          add SUPERADMIN_USER "$SUPERADMIN_USER"
+          add SUPERADMIN_PASSWORD "$SUPERADMIN_PASSWORD"
+
+          # Integración con Padawanway.
+          add PADAWANWAY_API_ENABLED "$PADAWANWAY_API_ENABLED"
+          add PADAWANWAY_API_CLIENT_ID "$PADAWANWAY_API_CLIENT_ID"
+          add PADAWANWAY_API_SECRET "$PADAWANWAY_API_SECRET"
+
+          add PADAWANWAY_API_MAX_SKEW_SECONDS \
+            "${PADAWANWAY_API_MAX_SKEW_SECONDS:-300}"
+
+          add PADAWANWAY_API_RATE_LIMIT_PER_MINUTE \
+            "${PADAWANWAY_API_RATE_LIMIT_PER_MINUTE:-60}"
+
+          # Reglas actuales del matching.
+          add MARKET_REFERENCE_YEAR_TOLERANCE "2"
+          add MARKET_REFERENCE_EXTENDED_YEAR_TOLERANCE "5"
+          add MARKET_REFERENCE_DESIRED_SAMPLE_SIZE "3"
+
+          # Alertas operativas.
+          add APP_ENV "production"
+          add APP_RELEASE "$GITHUB_SHA"
+          add ALERT_EMAIL_ENABLED "true"
+          add ALERT_SERVICE_NAME "venturino"
+          add ALERT_COOLDOWN_SECONDS "900"
+
+          add SMTP_SERVER "smtp.gmail.com"
+          add SMTP_PORT "587"
+          add SMTP_USER "$SMTP_USER"
+          add SMTP_PASS "$SMTP_PASS"
+          add SMTP_TO "algorym.adm@gmail.com"
+          add SMTP_FROM "$SMTP_USER"
+
+          DATABASE_URL_ESCAPED="$(escape_single_quotes "$DATABASE_URL")"
+
+          # Aplicar el schema antes de detener la versión activa.
+          # La modificación del superadmin agrega columnas compatibles.
+          ssh algorym "docker run --rm \
+            --network '$DB_NETWORK' \
+            -e DATABASE_URL='$DATABASE_URL_ESCAPED' \
+            '$IMAGE_REF' \
+            npx prisma db push"
+
+          # Reemplazar el contenedor actual.
+          ssh algorym "docker stop '$SERVICE' || true"
+          ssh algorym "docker rm '$SERVICE' || true"
+
+          # Crear primero el contenedor sin iniciarlo, conectarlo a ambas
+          # redes y recién después levantar la aplicación.
+          ssh algorym "docker create \
+            --name '$SERVICE' \
+            --network '$WEB_NETWORK' \
+            --network-alias '$SERVICE' \
             --restart unless-stopped \
             $ENV_FLAGS \
-            $IMAGE_NAME:${{ steps.tag.outputs.full_tag }}"
+            '$IMAGE_REF'"
 
-          # Conectar a la red de base de datos (no se puede pasar 2 --network en docker run)
-          ssh algorym "docker network connect $DB_NETWORK $SERVICE || true"
+          ssh algorym "docker network connect '$DB_NETWORK' '$SERVICE'"
+          ssh algorym "docker start '$SERVICE'"
 
-      # 6.5) Apply database changes
-      - name: Apply database changes
+      - name: Verify deployment
+        shell: bash
         run: |
-          ssh algorym "docker exec $SERVICE npx prisma db push"
+          set -Eeuo pipefail
 
-      # 6.6) Configure host cron jobs (FX rate sync + DB backup)
+          ssh algorym "SERVICE='$SERVICE' bash -s" <<'REMOTE'
+          set -Eeuo pipefail
+
+          for attempt in $(seq 1 30); do
+            if docker inspect -f '{{.State.Running}}' "$SERVICE" 2>/dev/null \
+              | grep -qx true \
+              && docker exec "$SERVICE" node -e \
+                "fetch('http://127.0.0.1:3000/login').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+            then
+              echo "Venturino respondió correctamente."
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "La aplicación no quedó saludable dentro del tiempo esperado." >&2
+
+          docker inspect "$SERVICE" || true
+          docker logs --tail 200 "$SERVICE" || true
+
+          exit 1
+          REMOTE
+
       - name: Configure host cron jobs
+        shell: bash
         run: |
+          set -Eeuo pipefail
+
           ssh algorym <<'CRONEOF'
           set -Eeuo pipefail
 
           TMP="$(mktemp)"
           TMP_NEW="$(mktemp)"
+
           crontab -l > "$TMP" 2>/dev/null || true
 
-          # Remove previous venturino-managed entries to avoid duplicates
+          # Eliminar entradas administradas previamente por este workflow.
           grep -v 'venturino-managed-' "$TMP" > "$TMP_NEW" || true
 
           printf '%s\n' \
-            "0 11 * * * docker exec venturino sh -lc 'curl -fsS -X POST \"http://127.0.0.1:3000/api/sync-fx-rate\" >/dev/null 2>&1' # venturino-managed-fx-sync" \
-            "30 3 * * * docker exec -u postgres venturino-db pg_dump -Fc --no-owner --no-acl -d venturino | gzip -c > /tmp/venturino_db_$(date +\%F_\%H-\%M-\%S).dump.gz # venturino-managed-db-backup" \
+            "0 11 * * * docker exec venturino npm run fx:sync >/dev/null 2>&1 # venturino-managed-fx-sync" \
+            "30 3 * * * docker exec -u postgres venturino-db pg_dump -Fc --no-owner --no-acl -d venturino | gzip -c > /tmp/venturino_db_\$(date +\%F_\%H-\%M-\%S).dump.gz # venturino-managed-db-backup" \
             >> "$TMP_NEW"
 
           crontab "$TMP_NEW"
+
           rm -f "$TMP" "$TMP_NEW"
           CRONEOF
