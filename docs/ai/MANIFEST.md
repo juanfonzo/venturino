@@ -1,6 +1,6 @@
 # Manifest
 
-Última revisión coordinada: 2026-07-17.
+Última revisión coordinada: 2026-09-02.
 
 ## Estado General
 
@@ -87,3 +87,15 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 - No implementar features sin brief/backlog aprobado, salvo pedido explícito.
 - Mantener `docs/technical/mcp-coverage-map.md` actualizado para capacidades operativas nuevas.
 - Postventa: `analysis:postventa-matches` y `pipeline:postventa` deben usar los servicios compartidos de `lib/postventa/**`; no duplicar reglas de matching en scripts.
+
+## Actualización coordinada 2026-09-02 — Superadmin y observabilidad
+
+- Cambio: superadmin exclusivo de Algorym, auditoría ampliada de la API Padawanway, revisión interna y alertas SMTP.
+- Estado: implementado en rama; pendiente de validación con PostgreSQL, navegación y SMTP del entorno local.
+- Archivos canónicos nuevos:
+  - `docs/technical/superadmin-observabilidad.md`;
+  - `docs/changes/processed/2026-09-02-superadmin-observabilidad-api.md`;
+  - `docs/backlog/features/superadmin-observabilidad-api.md`.
+- Módulo real: `app/(pages)/superadmin/**`, `lib/superadmin/**` y `lib/operational-alerts/**`.
+- Compatibilidad: no cambia `AUTH_USER`/`AUTH_PASSWORD`, el login visible ni el contrato de Padawanway.
+- Riesgos residuales: dos perfiles fijos por entorno; cola/cooldown SMTP locales al proceso; no hay monitor externo ni MCP real.

@@ -1,6 +1,6 @@
 # Backend
 
-Última revisión: 2026-07-21.
+Última revisión: 2026-09-02.
 
 ## Stack Real
 
@@ -138,3 +138,21 @@
 - Endpoints locales sensibles dependen de host; revisar si se exponen detrás de proxy.
 - Carga completa en memoria puede crecer en stats/análisis/dedupe.
 - El endpoint `/api/mappings` escribe JSON local; en contenedor/deploy puede no ser fuente estable para colaboración.
+
+## Addendum 2026-09-02 — Observabilidad de referencias
+
+### Nuevas rutas internas
+
+| Ruta | Método | Responsabilidad |
+|---|---|---|
+| `/api/superadmin/market-reference-queries/[id]/review` | POST | Guardar evaluación interna de una consulta. |
+| `/api/superadmin/alerts/test` | POST | Verificar configuración y entrega SMTP. |
+
+### Servicios
+
+- `lib/auth/session.ts`: sesión server-side y guardas superadmin.
+- `lib/superadmin/market-reference.ts`: resumen, listado paginado, detalle y revisión.
+- `lib/operational-alerts/**`: configuración, sanitización, fingerprint, cooldown, cola y SMTP STARTTLS.
+- `lib/market-reference/audit.ts`: registra requests HMAC válidos antes de rate limit, parseo y validación.
+
+La entrega SMTP se ejecuta fuera del camino crítico del request, con máximo dos entregas concurrentes, cola acotada y dos intentos. Una falla del canal nunca modifica la respuesta de Padawanway.

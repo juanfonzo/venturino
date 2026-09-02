@@ -120,19 +120,31 @@ model MarketReferenceQuery {
   requestId           String    @map("request_id")
   externalOperationId String?   @map("external_operation_id")
   mode                String
-  categoria           String
+  categoria           String?
   marca               String?
   marcaNorm           String?   @map("marca_norm")
-  modelo              String
-  modeloNorm          String    @map("modelo_norm")
+  modelo              String?
+  modeloNorm          String?   @map("modelo_norm")
   anio                Int?
   page                Int?
   pageSize            Int?      @map("page_size")
   status              String    @default("processing")
+  httpStatus          Int?      @map("http_status")
+  failureStage        String?   @map("failure_stage")
+  requestPayload      Json?     @map("request_payload")
+  algorithmVersion    String    @default("market-reference-v1.1") @map("algorithm_version")
+  criterionCode       String?   @map("criterion_code")
+  sampleStrengthCode  String?   @map("sample_strength_code")
   resultCount         Int       @default(0) @map("result_count")
   resultSummary       Json?     @map("result_summary")
   errorCode           String?   @map("error_code")
   durationMs          Int?      @map("duration_ms")
+  reviewStatus        String    @default("unreviewed") @map("review_status")
+  reviewReason        String?   @map("review_reason")
+  reviewNotes         String?   @map("review_notes") @db.Text
+  reviewedAt          DateTime? @map("reviewed_at")
+  reviewedBy          String?   @map("reviewed_by")
+  alertQueuedAt       DateTime? @map("alert_queued_at")
   createdAt           DateTime  @default(now()) @map("created_at")
   completedAt         DateTime? @map("completed_at")
 
@@ -140,6 +152,9 @@ model MarketReferenceQuery {
   @@index([createdAt])
   @@index([externalOperationId])
   @@index([mode, status])
+  @@index([status, createdAt])
+  @@index([reviewStatus, createdAt])
+  @@index([errorCode, createdAt])
   @@map("market_reference_queries")
 }
 
@@ -206,27 +221,27 @@ model PostventaImportRun {
 }
 
 model PostventaProduct {
-  id              Int                 @id @default(autoincrement())
-  source          String
-  externalId      String              @map("external_id")
-  name            String
-  priceArs        Decimal?            @map("price_ars") @db.Decimal(14, 2)
-  priceText       String?             @map("price_text")
-  installmentTotalArs Decimal?        @map("installment_total_ars") @db.Decimal(14, 2)
-  installmentsQuantity Int?           @map("installments_quantity")
-  freeShipping    Boolean?            @map("free_shipping")
-  currency        String?
-  url             String?
-  categoryMl      String?             @map("category_ml")
-  scrapingDate    DateTime?           @map("scraping_date") @db.Date
-  scrapedAt       DateTime?           @map("scraped_at")
-  active          Boolean             @default(true)
-  firstSeenAt     DateTime            @default(now()) @map("first_seen_at")
-  lastSeenAt      DateTime            @default(now()) @map("last_seen_at")
-  lastImportRunId Int?                @map("last_import_run_id")
-  lastImportRun   PostventaImportRun? @relation("PostventaProductLastImportRun", fields: [lastImportRunId], references: [id])
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
+  id                       Int                 @id @default(autoincrement())
+  source                   String
+  externalId               String              @map("external_id")
+  name                     String
+  priceArs                 Decimal?            @map("price_ars") @db.Decimal(14, 2)
+  priceText                String?             @map("price_text")
+  installmentTotalArs      Decimal?            @map("installment_total_ars") @db.Decimal(14, 2)
+  installmentsQuantity     Int?                @map("installments_quantity")
+  freeShipping             Boolean?            @map("free_shipping")
+  currency                 String?
+  url                      String?
+  categoryMl               String?             @map("category_ml")
+  scrapingDate             DateTime?           @map("scraping_date") @db.Date
+  scrapedAt                DateTime?           @map("scraped_at")
+  active                   Boolean             @default(true)
+  firstSeenAt              DateTime            @default(now()) @map("first_seen_at")
+  lastSeenAt               DateTime            @default(now()) @map("last_seen_at")
+  lastImportRunId          Int?                @map("last_import_run_id")
+  lastImportRun            PostventaImportRun? @relation("PostventaProductLastImportRun", fields: [lastImportRunId], references: [id])
+  createdAt                DateTime            @default(now()) @map("created_at")
+  updatedAt                DateTime            @updatedAt @map("updated_at")
 
   priceSnapshots    PostventaPriceSnapshot[]
   venturinoAnalyses PostventaProductAnalysis[] @relation("PostventaVenturinoProduct")
@@ -242,21 +257,21 @@ model PostventaProduct {
 }
 
 model PostventaPriceSnapshot {
-  id           Int                @id @default(autoincrement())
-  productId    Int                @map("product_id")
-  product      PostventaProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  importRunId  Int                @map("import_run_id")
-  importRun    PostventaImportRun @relation(fields: [importRunId], references: [id])
-  snapshotDate DateTime           @map("snapshot_date") @db.Date
-  name         String
-  priceArs     Decimal?           @map("price_ars") @db.Decimal(14, 2)
-  priceText    String?            @map("price_text")
-  installmentTotalArs Decimal?    @map("installment_total_ars") @db.Decimal(14, 2)
-  installmentsQuantity Int?       @map("installments_quantity")
-  freeShipping Boolean?           @map("free_shipping")
-  url          String?
-  activeInRun  Boolean            @default(true) @map("active_in_run")
-  createdAt    DateTime           @default(now()) @map("created_at")
+  id                       Int                @id @default(autoincrement())
+  productId                Int                @map("product_id")
+  product                  PostventaProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  importRunId              Int                @map("import_run_id")
+  importRun                PostventaImportRun @relation(fields: [importRunId], references: [id])
+  snapshotDate             DateTime           @map("snapshot_date") @db.Date
+  name                     String
+  priceArs                 Decimal?           @map("price_ars") @db.Decimal(14, 2)
+  priceText                String?            @map("price_text")
+  installmentTotalArs      Decimal?           @map("installment_total_ars") @db.Decimal(14, 2)
+  installmentsQuantity     Int?               @map("installments_quantity")
+  freeShipping             Boolean?           @map("free_shipping")
+  url                      String?
+  activeInRun              Boolean            @default(true) @map("active_in_run")
+  createdAt                DateTime           @default(now()) @map("created_at")
 
   @@unique([productId, snapshotDate])
   @@index([productId])
@@ -289,19 +304,19 @@ model PostventaAnalysisRun {
 }
 
 model PostventaProductAnalysis {
-  id                   Int                  @id @default(autoincrement())
-  analysisRunId        Int                  @map("analysis_run_id")
-  analysisRun          PostventaAnalysisRun @relation(fields: [analysisRunId], references: [id], onDelete: Cascade)
-  venturinoProductId   Int                  @map("venturino_product_id")
-  venturinoProduct     PostventaProduct     @relation("PostventaVenturinoProduct", fields: [venturinoProductId], references: [id])
+  id                   Int                   @id @default(autoincrement())
+  analysisRunId        Int                   @map("analysis_run_id")
+  analysisRun          PostventaAnalysisRun  @relation(fields: [analysisRunId], references: [id], onDelete: Cascade)
+  venturinoProductId   Int                   @map("venturino_product_id")
+  venturinoProduct     PostventaProduct      @relation("PostventaVenturinoProduct", fields: [venturinoProductId], references: [id])
   status               String
-  medianMlPriceArs     Decimal?             @map("median_ml_price_ars") @db.Decimal(14, 2)
-  ventVsMedianPct      Decimal?             @map("vent_vs_median_pct") @db.Decimal(8, 4)
-  bestConfidence       String               @map("best_confidence")
-  strongCandidateCount Int                  @default(0) @map("strong_candidate_count")
-  totalCandidates      Int                  @default(0) @map("total_candidates")
-  excludedByPrice      Int                  @default(0) @map("excluded_by_price")
-  excludedByScore      Int                  @default(0) @map("excluded_by_score")
+  medianMlPriceArs     Decimal?              @map("median_ml_price_ars") @db.Decimal(14, 2)
+  ventVsMedianPct      Decimal?              @map("vent_vs_median_pct") @db.Decimal(8, 4)
+  bestConfidence       String                @map("best_confidence")
+  strongCandidateCount Int                   @default(0) @map("strong_candidate_count")
+  totalCandidates      Int                   @default(0) @map("total_candidates")
+  excludedByPrice      Int                   @default(0) @map("excluded_by_price")
+  excludedByScore      Int                   @default(0) @map("excluded_by_score")
 
   candidates PostventaMatchCandidate[]
 
@@ -313,20 +328,20 @@ model PostventaProductAnalysis {
 }
 
 model PostventaMatchCandidate {
-  id                Int                      @id @default(autoincrement())
-  productAnalysisId Int                      @map("product_analysis_id")
-  productAnalysis   PostventaProductAnalysis @relation(fields: [productAnalysisId], references: [id], onDelete: Cascade)
-  mlProductId       Int                      @map("ml_product_id")
-  mlProduct         PostventaProduct         @relation("PostventaMlProduct", fields: [mlProductId], references: [id])
-  rank              Int
-  score             Int
-  confidence        String
-  mlPriceArs        Decimal                  @map("ml_price_ars") @db.Decimal(14, 2)
-  mlInstallmentTotalArs Decimal?             @map("ml_installment_total_ars") @db.Decimal(14, 2)
-  mlInstallmentsQuantity Int?                @map("ml_installments_quantity")
-  mlFreeShipping    Boolean?                 @map("ml_free_shipping")
-  diffPct           Decimal                  @map("diff_pct") @db.Decimal(8, 4)
-  reasons           Json
+  id                     Int                       @id @default(autoincrement())
+  productAnalysisId      Int                       @map("product_analysis_id")
+  productAnalysis        PostventaProductAnalysis @relation(fields: [productAnalysisId], references: [id], onDelete: Cascade)
+  mlProductId            Int                       @map("ml_product_id")
+  mlProduct              PostventaProduct          @relation("PostventaMlProduct", fields: [mlProductId], references: [id])
+  rank                   Int
+  score                  Int
+  confidence             String
+  mlPriceArs             Decimal                   @map("ml_price_ars") @db.Decimal(14, 2)
+  mlInstallmentTotalArs  Decimal?                  @map("ml_installment_total_ars") @db.Decimal(14, 2)
+  mlInstallmentsQuantity Int?                      @map("ml_installments_quantity")
+  mlFreeShipping         Boolean?                  @map("ml_free_shipping")
+  diffPct                Decimal                   @map("diff_pct") @db.Decimal(8, 4)
+  reasons                Json
 
   @@unique([productAnalysisId, rank])
   @@unique([productAnalysisId, mlProductId])

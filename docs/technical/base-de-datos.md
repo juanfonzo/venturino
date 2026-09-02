@@ -1,6 +1,6 @@
 # Base De Datos
 
-Última revisión: 2026-07-21.
+Última revisión: 2026-09-02.
 
 ## Motor
 
@@ -140,3 +140,21 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 - Falta estrategia de reset/seed documentada.
 - Falta test de migraciones y constraints.
 - Potenciales índices adicionales si crecen búsquedas por texto o reportes históricos.
+
+## Addendum 2026-09-02 — `MarketReferenceQuery`
+
+La auditoría de referencias incorpora:
+
+- campos de entrada normalizados opcionales para registrar errores previos a validación;
+- `httpStatus`, `failureStage` y `requestPayload` sanitizado;
+- `algorithmVersion`, `criterionCode` y `sampleStrengthCode`;
+- revisión interna (`reviewStatus`, motivo, notas, autor y fecha);
+- `alertQueuedAt` para identificar consultas que encolaron una alerta.
+
+Índices adicionales:
+
+- `status + createdAt`;
+- `reviewStatus + createdAt`;
+- `errorCode + createdAt`.
+
+El listado superadmin usa paginación server-side de 25 filas y filtros en PostgreSQL. La migración versionada es `prisma/migrations/20260902120000_add_superadmin_observability/migration.sql`.

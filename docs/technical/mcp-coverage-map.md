@@ -1,6 +1,6 @@
 # MCP Coverage Map
 
-Última revisión: 2026-07-17.
+Última revisión: 2026-09-02.
 
 ## Estado General
 
@@ -53,3 +53,13 @@ Por política del kit, las capacidades operativas relevantes deben quedar visibl
 - Respetar sesión/permisos del sistema o definir identidad técnica explícita.
 - Para acciones sensibles como sync FX o ejecutar análisis, requerir confirmación y autorización interna.
 - No duplicar reglas de negocio: reutilizar services existentes o exponer adaptadores claros.
+
+## Actualización 2026-09-02 — Superadmin de referencias
+
+| Módulo | Capacidad | UI/API relacionada | Herramienta MCP candidata | Estado | Permisos | Campos sensibles excluidos | Feature/Origen | Última revisión |
+|---|---|---|---|---|---|---|---|---|
+| Observabilidad | Resumir uso de referencias | `/superadmin` | `observabilidad_referencias_resumen` | contrato-candidato | Superadmin | Payloads completos, secretos y stack | Superadmin | 2026-09-02 |
+| Observabilidad | Listar consultas auditadas | `/superadmin/requests` | `observabilidad_referencias_listar` | contrato-candidato | Superadmin | Secretos; paginación obligatoria | Superadmin | 2026-09-02 |
+| Observabilidad | Revisar resultado de matching | `/api/superadmin/market-reference-queries/[id]/review` | `observabilidad_referencias_revisar` | contrato-candidato | Superadmin + confirmación | Secretos e infraestructura | Superadmin | 2026-09-02 |
+
+La implementación MCP queda diferida. Un MCP futuro debe reutilizar los servicios existentes, separar lectura de métricas de la mutación de revisión y no exponer bodies completos ni errores técnicos por defecto.

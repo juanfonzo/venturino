@@ -10,13 +10,14 @@ import {
   selectDirectCandidates,
   toMarketReferenceItem,
 } from "@/lib/market-reference/matching";
-import type {
-  DirectReferenceInput,
-  DirectReferenceResponse,
-  ExpandedSearchInput,
-  ExpandedSearchResponse,
-  MarketReferenceCandidate,
-  MarketReferenceServiceResult,
+import {
+  MARKET_REFERENCE_ALGORITHM_VERSION,
+  type DirectReferenceInput,
+  type DirectReferenceResponse,
+  type ExpandedSearchInput,
+  type ExpandedSearchResponse,
+  type MarketReferenceCandidate,
+  type MarketReferenceServiceResult,
 } from "@/lib/market-reference/types";
 
 const DIRECT_REFERENCE_LIMIT = 50;
@@ -114,6 +115,7 @@ export async function findDirectMarketReferences(
       targetYear: input.anio,
     })
   ));
+  const sampleStrength = buildSampleStrength(statistics.sampleSize);
   const expandedSearchRecommended = statistics.sampleSize < desiredSampleSize;
   const expandedSearchSuggestion = input.familiaModelo && input.familiaDisplay
     ? {
@@ -138,19 +140,24 @@ export async function findDirectMarketReferences(
       statistics,
       references,
       criterioAplicado: selection.criterion,
-      solidezMuestra: buildSampleStrength(statistics.sampleSize),
+      solidezMuestra: sampleStrength,
       expandedSearchRecommended,
       busquedaAmpliadaSugerida: expandedSearchSuggestion,
     },
     audit: {
       resultCount: statistics.sampleSize,
+      algorithmVersion: MARKET_REFERENCE_ALGORITHM_VERSION,
+      criterionCode: selection.criterion.codigo,
+      sampleStrengthCode: sampleStrength.codigo,
       resultSummary: {
         statistics,
         criterion: selection.criterion,
+        sampleStrength,
         yearScope: selection.yearScope,
         nearYearTolerance,
         extendedYearTolerance,
         desiredSampleSize,
+        candidateCount: rows.length,
         returnedListingIds: candidates.slice(0, DIRECT_REFERENCE_LIMIT).map((row) => row.listingId),
         responseSnapshot: references,
       },
@@ -175,9 +182,9 @@ export async function searchExpandedMarketReferences(
     ...baseMarketWhere(input.categoria),
     ...(input.marcaNorm ? { marcaNorm: input.marcaNorm } : {}),
     OR: tokens.flatMap((token) => [
-          { modeloNorm: { contains: token, mode: "insensitive" } },
-          { modelo: { contains: token, mode: "insensitive" } },
-          { titulo: { contains: token, mode: "insensitive" } },
+      { modeloNorm: { contains: token, mode: "insensitive" } },
+      { modelo: { contains: token, mode: "insensitive" } },
+      { titulo: { contains: token, mode: "insensitive" } },
     ]),
   };
 
@@ -209,6 +216,7 @@ export async function searchExpandedMarketReferences(
     titulo: "Referencias de modelos relacionados",
     detalle: "Resultados ordenados por cercanía con el modelo y el año buscados.",
   };
+  const sampleStrength = buildSampleStrength(total);
 
   return {
     response: {
@@ -225,7 +233,7 @@ export async function searchExpandedMarketReferences(
       statistics,
       references,
       criterioAplicado: criterion,
-      solidezMuestra: buildSampleStrength(total),
+      solidezMuestra: sampleStrength,
       pagination: {
         page: input.page,
         pageSize: input.pageSize,
@@ -236,9 +244,15 @@ export async function searchExpandedMarketReferences(
     },
     audit: {
       resultCount: total,
+      algorithmVersion: MARKET_REFERENCE_ALGORITHM_VERSION,
+      criterionCode: criterion.codigo,
+      sampleStrengthCode: sampleStrength.codigo,
       resultSummary: {
         statistics,
         criterion,
+        sampleStrength,
+        candidateCount: rows.length,
+        rankedCandidateCount: total,
         page: input.page,
         pageSize: input.pageSize,
         returnedListingIds: pageCandidates.map((row) => row.listingId),

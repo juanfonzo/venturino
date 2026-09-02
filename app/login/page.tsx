@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+interface LoginResponse {
+  error?: string;
+  redirectTo?: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [user, setUser] = useState("");
@@ -22,12 +27,12 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user, password }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as LoginResponse;
       if (!res.ok) {
         setError(data.error || "Error al iniciar sesión");
         return;
       }
-      router.push("/dashboard");
+      router.push(data.redirectTo || "/dashboard");
       router.refresh();
     } catch {
       setError("Error de conexión");

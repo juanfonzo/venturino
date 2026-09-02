@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { requireSuperadminApi } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,11 +39,15 @@ const PROCESS_DEFINITIONS: Record<ProcessAction, ProcessDefinition> = {
   },
 };
 
-const processStates = new Map<ProcessAction, ProcessState>();
+const globalForProcesses = globalThis as unknown as {
+  venturinoProcessStates?: Map<ProcessAction, ProcessState>;
+};
+const processStates = globalForProcesses.venturinoProcessStates ?? new Map<ProcessAction, ProcessState>();
+globalForProcesses.venturinoProcessStates = processStates;
 
 export async function GET(request: NextRequest) {
-  const unauthorized = await requireSession(request);
-  if (unauthorized) return unauthorized;
+  const auth = await requireSuperadminApi(request);
+  if (auth.response) return auth.response;
 
   const action = request.nextUrl.searchParams.get("action");
   if (action) {
@@ -63,8 +67,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorized = await requireSession(request);
-  if (unauthorized) return unauthorized;
+  const auth = await requireSuperadminApi(request);
+  if (auth.response) return auth.response;
 
   const body = (await request.json().catch(() => ({}))) as { action?: unknown };
   const action = typeof body.action === "string" ? body.action : "";
@@ -82,15 +86,6 @@ export async function POST(request: NextRequest) {
 
   const state = startNpmScript(action, PROCESS_DEFINITIONS[action]);
   return NextResponse.json({ ok: true, process: state }, { status: 202 });
-}
-
-async function requireSession(request: NextRequest) {
-  const token = request.cookies.get(COOKIE_NAME)?.value;
-  const session = token ? await verifyToken(token) : null;
-  if (!session) {
-    return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
-  }
-  return null;
 }
 
 function isProcessAction(value: string): value is ProcessAction {

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { sanitizeRequestBody } from "@/lib/operational-alerts/sanitize";
 import type {
   DirectReferenceInput,
   ExpandedSearchInput,
@@ -19,7 +20,7 @@ export async function startMarketReferenceAudit(input: {
   clientId: string;
   requestId: string;
   mode: MarketReferenceMode;
-  query: AuditInput;
+  rawBody: string;
 }) {
   try {
     return await prisma.marketReferenceQuery.create({
@@ -27,14 +28,7 @@ export async function startMarketReferenceAudit(input: {
         clientId: input.clientId,
         requestId: input.requestId,
         mode: input.mode,
-        categoria: input.query.categoria,
-        marca: input.query.marca,
-        marcaNorm: input.query.marcaNorm,
-        modelo: input.query.modelo,
-        modeloNorm: input.query.modeloNorm,
-        anio: input.query.anio,
-        page: "page" in input.query ? input.query.page : null,
-        pageSize: "pageSize" in input.query ? input.query.pageSize : null,
+        requestPayload: sanitizeRequestBody(input.rawBody) as Prisma.InputJsonValue,
       },
       select: { id: true },
     });
@@ -46,19 +40,46 @@ export async function startMarketReferenceAudit(input: {
   }
 }
 
+export async function updateMarketReferenceAuditInput(input: {
+  id: number;
+  query: AuditInput;
+}) {
+  await prisma.marketReferenceQuery.update({
+    where: { id: input.id },
+    data: {
+      categoria: input.query.categoria,
+      marca: input.query.marca,
+      marcaNorm: input.query.marcaNorm,
+      modelo: input.query.modelo,
+      modeloNorm: input.query.modeloNorm,
+      anio: input.query.anio,
+      page: "page" in input.query ? input.query.page : null,
+      pageSize: "pageSize" in input.query ? input.query.pageSize : null,
+    },
+  });
+}
+
 export async function completeMarketReferenceAudit(input: {
   id: number;
   resultCount: number;
   resultSummary: Record<string, unknown>;
   durationMs: number;
+  algorithmVersion: string;
+  criterionCode: string;
+  sampleStrengthCode: string;
 }) {
   await prisma.marketReferenceQuery.update({
     where: { id: input.id },
     data: {
       status: "success",
+      httpStatus: 200,
+      failureStage: null,
       resultCount: input.resultCount,
       resultSummary: input.resultSummary as Prisma.InputJsonValue,
       durationMs: input.durationMs,
+      algorithmVersion: input.algorithmVersion,
+      criterionCode: input.criterionCode,
+      sampleStrengthCode: input.sampleStrengthCode,
       completedAt: new Date(),
     },
   });
@@ -67,6 +88,8 @@ export async function completeMarketReferenceAudit(input: {
 export async function failMarketReferenceAudit(input: {
   id: number;
   errorCode: string;
+  httpStatus: number;
+  failureStage: string;
   durationMs: number;
 }) {
   try {
@@ -75,11 +98,24 @@ export async function failMarketReferenceAudit(input: {
       data: {
         status: "error",
         errorCode: input.errorCode,
+        httpStatus: input.httpStatus,
+        failureStage: input.failureStage,
         durationMs: input.durationMs,
         completedAt: new Date(),
       },
     });
   } catch (error) {
     console.error("[market-reference] No se pudo cerrar la auditoría fallida", error);
+  }
+}
+
+export async function markMarketReferenceAlertQueued(id: number) {
+  try {
+    await prisma.marketReferenceQuery.update({
+      where: { id },
+      data: { alertQueuedAt: new Date() },
+    });
+  } catch (error) {
+    console.error("[market-reference] No se pudo registrar la alerta encolada", error);
   }
 }

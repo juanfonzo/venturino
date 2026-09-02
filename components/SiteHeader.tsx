@@ -13,9 +13,12 @@ const navItems = [
   { href: "/postventa", label: "Postventa" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ showSuperadmin = false }: { showSuperadmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
+  const items = showSuperadmin
+    ? [...navItems, { href: "/superadmin", label: "Administración" }]
+    : navItems;
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -33,9 +36,9 @@ export function SiteHeader() {
           <h1 className="text-2xl font-semibold text-jd-black">Radar de Mercado</h1>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <nav className="flex flex-wrap gap-2">
-            {navItems.map((item) => {
-              const active = pathname === item.href;
+          <nav className="flex flex-wrap justify-end gap-2">
+            {items.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
