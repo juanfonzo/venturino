@@ -5,6 +5,8 @@ export const MARKET_CATEGORIES = [
   "Pulverizadoras",
 ] as const;
 
+export const MARKET_REFERENCE_ALGORITHM_VERSION = "market-reference-v1.1";
+
 export type MarketCategory = (typeof MARKET_CATEGORIES)[number];
 export type MarketReferenceMode = "direct" | "expanded";
 
@@ -144,5 +146,8 @@ export interface MarketReferenceServiceResult<T> {
   audit: {
     resultCount: number;
     resultSummary: Record<string, unknown>;
+    algorithmVersion: string;
+    criterionCode: string;
+    sampleStrengthCode: string;
   };
 }

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateCredentials, signToken, COOKIE_NAME } from "@/lib/auth";
+import {
+  COOKIE_NAME,
+  isSuperadmin,
+  signToken,
+  validateCredentials,
+} from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,19 +15,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Usuario y contraseña requeridos" }, { status: 400 });
     }
 
-    if (!validateCredentials(user, password)) {
+    const session = validateCredentials(user, password);
+    if (!session) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    const token = await signToken({ user });
-
-    const res = NextResponse.json({ ok: true });
+    const token = await signToken(session);
+    const res = NextResponse.json({
+      ok: true,
+      redirectTo: isSuperadmin(session) ? "/superadmin" : "/dashboard",
+    });
     res.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return res;

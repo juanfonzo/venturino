@@ -25,6 +25,7 @@
     "test:postventa": "node scripts/evaluatePostventaBenchmark.js --ci",
     "test:postventa-validation-set": "node scripts/evaluatePostventaValidationSet.js --ci",
     "test:market-reference": "node scripts/test-market-reference-api.js",
+    "test:superadmin": "node scripts/test-superadmin.js",
     "verify:market-reference-inventory": "node scripts/verify-market-reference-inventory.js"
   },
   "dependencies": {

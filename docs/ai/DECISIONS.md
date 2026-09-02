@@ -89,3 +89,29 @@ Consecuencias:
 - Nuevas equivalencias requieren evidencia y una regresión específica antes de agregarse.
 - Padawanway puede mostrar `titulo`/`detalle` de criterios y coincidencias sin traducir lógica técnica.
 - El backfill queda restringido a aliases comprobados y no reescribe masivamente modelos ambiguos.
+
+## 2026-09-02 - Superadmin liviano sin cambiar Venturino ni Padawanway
+
+Estado: aceptada
+
+Contexto:
+
+Algorym necesita observar la integración, recibir alertas y revisar resultados reales para mejorar el matching. No se quiere cambiar las credenciales ni la experiencia actual de Venturino, ni solicitar trabajo a Padawanway salvo que sea indispensable.
+
+Decisión:
+
+Agregar un segundo par de credenciales por entorno y firmar en el JWT un nivel fijo `VENTURINO` o `SUPERADMIN`. Mantener una única pantalla de login, proteger el módulo en servidor y ampliar `MarketReferenceQuery` como fuente de observabilidad. Implementar alertas SMTP dentro del proceso con control de ruido inspirado en `whatsapp-python`.
+
+Alternativas consideradas:
+
+- Usuarios y roles persistidos en PostgreSQL: diferido porque sólo existen dos actores conocidos y agregaría complejidad sin valor inmediato.
+- Identificar superadmin únicamente por username en frontend: descartado porque no autoriza en servidor.
+- Pedir `operationId` y feedback a Padawanway: diferido hasta conocer qué datos comerciales aportan valor real.
+- Cron, Redis, outbox o worker de alertas: diferido porque la primera versión puede operar de forma acotada en el contenedor actual.
+
+Consecuencias:
+
+- Las credenciales de Venturino permanecen sin cambios.
+- Los tokens anteriores siguen funcionando como `VENTURINO`.
+- El patrón de dos accesos fijos no debe escalarse a múltiples perfiles sin rediseñar auth.
+- El cooldown y la cola SMTP se reinician junto con el proceso.

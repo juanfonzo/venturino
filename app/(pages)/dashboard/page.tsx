@@ -1,6 +1,5 @@
 import { formatNumber, formatPercent } from "@/lib/utils/format";
 import { AcaraTrendPanel } from "@/components/AcaraTrendPanel";
-import { AdminProcessLauncher } from "@/components/AdminProcessLauncher";
 import { ModelMarketPanel } from "@/components/ModelMarketPanel";
 import { DownloadReportButton } from "@/components/DownloadReportButton";
 import { buildStats } from "@/lib/stats/buildStats";
@@ -46,7 +45,6 @@ export default async function DashboardPage() {
       </section>
 
       <ModelMarketPanel combos={tractorStats.topModelCombos} />
-      <AdminProcessLauncher />
     </div>
   );
 }

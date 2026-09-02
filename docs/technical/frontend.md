@@ -1,6 +1,6 @@
 # Frontend
 
-Última revisión: 2026-06-04.
+Última revisión: 2026-09-02.
 
 ## Regla Visual Del Proyecto
 
@@ -93,3 +93,19 @@ Respetar identidad Venturino/John Deere, paleta `jd`, topbar actual, paneles, ta
 - Para listados nuevos, aplicar paginación server-side si pueden crecer.
 - Para búsquedas nuevas, preferir backend tokenizado si operan sobre datos grandes.
 - No agregar landing page ni hero marketing; la app es herramienta operativa interna.
+
+## Addendum 2026-09-02 — Superadmin
+
+Rutas exclusivas de Algorym:
+
+- `/superadmin`: KPIs, errores recientes, estado de alertas y procesos manuales.
+- `/superadmin/requests`: filtros compactos y tabla paginada.
+- `/superadmin/requests/[id]`: input, normalización, resultado, referencias y revisión interna.
+
+Criterios UX:
+
+- Venturino no ve el acceso administrativo.
+- Se conserva topbar, paleta y componentes existentes.
+- No se agregan textos introductorios extensos.
+- Los listados operan en servidor y las tablas usan `overflow-auto`.
+- El test SMTP se habilita cuando la configuración es válida; las alertas automáticas pueden permanecer desactivadas en desarrollo.

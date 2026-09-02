@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type ProcessAction = "maquinaria" | "postventa";
 
@@ -27,12 +28,11 @@ type ProcessResponse = {
 };
 
 const PROCESS_OPTIONS: ProcessOption[] = [
-  { action: "maquinaria", label: "Maquinaria" },
-  { action: "postventa", label: "Postventa" },
+  { action: "maquinaria", label: "Actualizar maquinaria" },
+  { action: "postventa", label: "Actualizar postventa" },
 ];
 
 export function AdminProcessLauncher() {
-  const [open, setOpen] = useState(false);
   const [running, setRunning] = useState<ProcessAction | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,8 +45,7 @@ export function AdminProcessLauncher() {
   }, []);
 
   async function runProcess(option: ProcessOption) {
-    const confirmed = window.confirm(`Ejecutar proceso: ${option.label}?`);
-    if (!confirmed) return;
+    if (!window.confirm(`¿Ejecutar ${option.label.toLowerCase()}?`)) return;
 
     stopPolling();
     setRunning(option.action);
@@ -65,9 +64,7 @@ export function AdminProcessLauncher() {
       }
 
       handleProcessState(payload.process);
-      if (payload.process.status === "running") {
-        startPolling(option.action);
-      }
+      if (payload.process.status === "running") startPolling(option.action);
     } catch (err) {
       setRunning(null);
       setMessage(null);
@@ -85,7 +82,7 @@ export function AdminProcessLauncher() {
       } catch (err) {
         stopPolling();
         setRunning(null);
-        setError(err instanceof Error ? err.message : "No se pudo consultar el estado del proceso");
+        setError(err instanceof Error ? err.message : "No se pudo consultar el proceso");
       }
     }, 4000);
   }
@@ -116,51 +113,28 @@ export function AdminProcessLauncher() {
   }
 
   return (
-    <div className="relative z-10 flex justify-end">
-      {open ? (
-        <div className="absolute bottom-11 right-0 w-72 rounded-lg border border-jd-black/10 bg-white/95 p-3 text-xs shadow-soft backdrop-blur">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="font-semibold text-jd-black/70">Procesos</p>
-            <button
+    <section className="panel">
+      <div className="panel-header">
+        <h2 className="text-lg font-semibold text-jd-black">Procesos</h2>
+      </div>
+      <div className="panel-body">
+        <div className="flex flex-wrap gap-3">
+          {PROCESS_OPTIONS.map((option) => (
+            <Button
+              key={option.action}
               type="button"
-              onClick={() => setOpen(false)}
-              className="rounded px-2 py-1 text-jd-black/45 transition hover:bg-jd-black/5 hover:text-jd-black"
-              aria-label="Cerrar configuración"
+              variant="outline"
+              size="sm"
+              onClick={() => runProcess(option)}
+              disabled={running !== null}
             >
-              x
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {PROCESS_OPTIONS.map((option) => (
-              <button
-                key={option.action}
-                type="button"
-                onClick={() => runProcess(option)}
-                disabled={running !== null}
-                className="rounded border border-jd-black/10 bg-jd-cream/60 px-3 py-3 text-left transition hover:border-jd-green/40 hover:bg-jd-yellow/30 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <span className="block font-semibold text-jd-black">
-                  {running === option.action ? "Ejecutando..." : option.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {message ? <p className="mt-2 text-[11px] text-jd-green">{message}</p> : null}
-          {error ? <p className="mt-2 text-[11px] text-red-700">{error}</p> : null}
+              {running === option.action ? "Ejecutando..." : option.label}
+            </Button>
+          ))}
         </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-jd-black/10 bg-white/55 text-sm text-jd-black/25 opacity-50 shadow-soft transition hover:bg-white hover:text-jd-black/75 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-jd-green/40"
-        aria-label="Abrir configuración"
-        title="Configuración"
-      >
-        ⚙
-      </button>
-    </div>
+        {message ? <p className="mt-3 text-xs text-jd-green">{message}</p> : null}
+        {error ? <p className="mt-3 text-xs text-red-700">{error}</p> : null}
+      </div>
+    </section>
   );
 }

@@ -4,7 +4,9 @@ import {
   completeMarketReferenceAudit,
   DuplicateMarketReferenceRequestError,
   failMarketReferenceAudit,
+  markMarketReferenceAlertQueued,
   startMarketReferenceAudit,
+  updateMarketReferenceAuditInput,
 } from "@/lib/market-reference/audit";
 import {
   PadawanwayApiAuthError,
@@ -19,18 +21,37 @@ import {
   MarketReferenceServiceError,
   searchExpandedMarketReferences,
 } from "@/lib/market-reference/service";
-import type { MarketReferenceMode } from "@/lib/market-reference/types";
+import type {
+  DirectReferenceInput,
+  ExpandedSearchInput,
+  MarketReferenceMode,
+} from "@/lib/market-reference/types";
 import {
   MarketReferenceValidationError,
   parseDirectReferenceInput,
   parseExpandedSearchInput,
 } from "@/lib/market-reference/validation";
+import { notifyOperationalAlert } from "@/lib/operational-alerts/notify";
 
 const MAX_BODY_BYTES = 16 * 1024;
 const RESPONSE_HEADERS = {
   "Cache-Control": "no-store, private",
   "Content-Type": "application/json; charset=utf-8",
 };
+
+type ParsedQuery = DirectReferenceInput | ExpandedSearchInput;
+
+class MarketReferenceHandlerError extends Error {
+  readonly status: number;
+  readonly code: string;
+
+  constructor(status: number, code: string, message: string) {
+    super(message);
+    this.name = "MarketReferenceHandlerError";
+    this.status = status;
+    this.code = code;
+  }
+}
 
 export async function handleMarketReferenceRequest(
   request: NextRequest,
@@ -39,6 +60,8 @@ export async function handleMarketReferenceRequest(
   const startedAt = Date.now();
   let auditId: number | null = null;
   let requestIdForLog = "unknown";
+  let failureStage = "request";
+  let parsedQuery: ParsedQuery | null = null;
 
   try {
     const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
@@ -56,41 +79,51 @@ export async function handleMarketReferenceRequest(
       return apiError(413, "PAYLOAD_TOO_LARGE", "El cuerpo supera el límite permitido.");
     }
 
+    failureStage = "authentication";
     const auth = verifyPadawanwayRequest(request.headers, rawBody);
-    enforceMarketReferenceRateLimit(auth.clientId);
     requestIdForLog = auth.requestId;
 
-    let parsedBody: unknown;
-    try {
-      parsedBody = JSON.parse(rawBody);
-    } catch {
-      return apiError(400, "INVALID_JSON", "El cuerpo debe ser JSON válido.");
-    }
-
-    const query = mode === "direct"
-      ? parseDirectReferenceInput(parsedBody)
-      : parseExpandedSearchInput(parsedBody);
-
+    failureStage = "audit_start";
     const audit = await startMarketReferenceAudit({
       clientId: auth.clientId,
       requestId: auth.requestId,
       mode,
-      query,
+      rawBody,
     });
     auditId = audit.id;
 
-    const result = mode === "direct"
-      ? await findDirectMarketReferences(query as ReturnType<typeof parseDirectReferenceInput>, auth.requestId)
-      : await searchExpandedMarketReferences(
-          query as ReturnType<typeof parseExpandedSearchInput>,
-          auth.requestId,
-        );
+    failureStage = "rate_limit";
+    enforceMarketReferenceRateLimit(auth.clientId);
 
+    failureStage = "json_parse";
+    let parsedBody: unknown;
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch {
+      throw new MarketReferenceHandlerError(400, "INVALID_JSON", "El cuerpo debe ser JSON válido.");
+    }
+
+    failureStage = "validation";
+    const query = mode === "direct"
+      ? parseDirectReferenceInput(parsedBody)
+      : parseExpandedSearchInput(parsedBody);
+    parsedQuery = query;
+    await updateMarketReferenceAuditInput({ id: audit.id, query });
+
+    failureStage = "matching";
+    const result = mode === "direct"
+      ? await findDirectMarketReferences(query as DirectReferenceInput, auth.requestId)
+      : await searchExpandedMarketReferences(query as ExpandedSearchInput, auth.requestId);
+
+    failureStage = "audit_complete";
     await completeMarketReferenceAudit({
       id: audit.id,
       resultCount: result.audit.resultCount,
       resultSummary: result.audit.resultSummary,
       durationMs: Date.now() - startedAt,
+      algorithmVersion: result.audit.algorithmVersion,
+      criterionCode: result.audit.criterionCode,
+      sampleStrengthCode: result.audit.sampleStrengthCode,
     });
 
     return NextResponse.json(result.response, { status: 200, headers: RESPONSE_HEADERS });
@@ -100,17 +133,58 @@ export async function handleMarketReferenceRequest(
       await failMarketReferenceAudit({
         id: auditId,
         errorCode: mapped.code,
+        httpStatus: mapped.status,
+        failureStage,
         durationMs: Date.now() - startedAt,
       });
     }
+
+    if (shouldAlert(mapped.status)) {
+      try {
+        const alert = notifyOperationalAlert({
+          code: mapped.code,
+          message: mapped.message,
+          severity: mapped.status >= 500 ? "P1" : "P2",
+          policy: mapped.status === 429 ? "rate_limit" : "immediate",
+          context: {
+            component: "market-reference-api",
+            operation: "search",
+            requestId: requestIdForLog,
+            mode,
+            httpStatus: mapped.status,
+            errorCode: mapped.code,
+            failureStage,
+            categoria: parsedQuery?.categoria,
+            marca: parsedQuery?.marca,
+            modelo: parsedQuery?.modelo,
+            anio: parsedQuery?.anio,
+            durationMs: Date.now() - startedAt,
+          },
+          impact: mapped.status >= 500
+            ? "La API no pudo completar una consulta de referencias de mercado."
+            : "La integración alcanzó el límite configurado de solicitudes.",
+          action: mapped.status >= 500
+            ? "Revisar el request-id y la etapa informada en el superadmin."
+            : "Revisar el volumen de requests de Padawanway y la configuración del límite.",
+          error,
+        });
+        if (alert.queued && auditId !== null) await markMarketReferenceAlertQueued(auditId);
+      } catch (alertError) {
+        console.warn("[market-reference] No se pudo encolar la alerta operativa", alertError);
+      }
+    }
+
     if (mapped.status >= 500) {
-      console.error(`[market-reference] requestId=${requestIdForLog}`, error);
+      console.error(`[market-reference] requestId=${requestIdForLog} stage=${failureStage}`, error);
     }
     return apiError(mapped.status, mapped.code, mapped.message, mapped.details, mapped.retryAfter);
   }
 }
 
 function mapError(error: unknown) {
+  if (error instanceof MarketReferenceHandlerError) {
+    return { status: error.status, code: error.code, message: error.message };
+  }
   if (error instanceof PadawanwayApiAuthError) {
     return { status: error.status, code: error.code, message: error.message };
   }
@@ -141,6 +215,10 @@ function mapError(error: unknown) {
     code: "INTERNAL_ERROR",
     message: "No se pudo procesar la consulta.",
   };
+}
+
+function shouldAlert(status: number) {
+  return status >= 500 || status === 429;
 }
 
 function apiError(

@@ -118,3 +118,11 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 - Autoregistro/signup.
 - UI postventa completa y APIs de listado/detalle propuestas en `docs/technical/postventa-ml.md`.
 - Persistencia server-side formal para vínculos ACARA como fuente única; hoy domina localStorage.
+
+## Actualización 2026-09-02 — Acceso y observabilidad interna
+
+- Auth web: se conserva el login por variables de entorno y se incorpora un segundo par `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` para Algorym.
+- Sesión: el JWT distingue `VENTURINO` y `SUPERADMIN`; los tokens históricos sin nivel se interpretan como `VENTURINO`.
+- Módulo nuevo: `/superadmin` permite observar consultas de la API Padawanway, revisar resultados y probar alertas SMTP.
+- Padawanway: el contrato público, los headers HMAC y los bodies permanecen sin cambios.
+- Alcance: no hay usuarios en DB, permisos configurables, tenant, cron, Redis, worker ni MCP implementado.

@@ -1,6 +1,6 @@
 # Seguridad
 
-Última revisión: 2026-07-17.
+Última revisión: 2026-09-02.
 
 ## Estado Real
 
@@ -135,3 +135,15 @@ Este endpoint se usa desde el control discreto del dashboard para ejecutar únic
 - No confiar en frontend para autorización.
 - Si aparecen usuarios reales, roles, tenant, sucursales o datos sensibles por perfil, migrar a modelo de auth completo antes de implementar módulos críticos.
 - Para MCP futuro, exigir permisos server-side y no exponer secretos ni datasets completos.
+
+## Addendum 2026-09-02 — Superadmin
+
+- Se mantienen `AUTH_USER` y `AUTH_PASSWORD` para Venturino.
+- `SUPERADMIN_USER` y `SUPERADMIN_PASSWORD` habilitan un segundo acceso exclusivo de Algorym; el username debe ser distinto de `AUTH_USER`.
+- El JWT agrega `accessLevel: "VENTURINO" | "SUPERADMIN"`; tokens previos sin claim se interpretan como `VENTURINO`.
+- `/superadmin/**`, `/api/superadmin/**` y `/api/admin/processes` requieren autorización `SUPERADMIN` del lado servidor.
+- No existe selector de rol, signup ni tabla de usuarios.
+- El body de Padawanway sólo se persiste luego de validar HMAC y se sanitiza antes de almacenarse.
+- Las alertas SMTP sólo se disparan automáticamente en producción con `ALERT_EMAIL_ENABLED=true`; el test manual exige superadmin y configuración SMTP válida.
+- Nunca exponer en UI/correos: contraseñas, JWT, cookies, `DATABASE_URL`, `MONGODB_URI`, firma/secreto Padawanway ni credenciales SMTP.
+- Este patrón de dos identidades fijas no debe ampliarse a más perfiles; si aparecen nuevos usuarios o permisos, migrar a identidades persistidas y autorización granular.
