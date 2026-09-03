@@ -1,5 +1,7 @@
 # 02_DATA_SOURCES.md
 
+> Estado: antecedente histórico del MVP basado en CSV. La fuente vigente de maquinaria es MongoDB → `pipeline:live` → PostgreSQL; ACARA continúa como CSV local. Consultar `docs/technical/arquitectura.md` y `docs/technical/base-de-datos.md` antes de implementar cambios.
+
 ## 1) tractores_unificados_v3.csv
 - Delimitado por ';' (pero implementar autodetección por posibles ',').
 - Columnas esperadas:

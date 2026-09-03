@@ -1,6 +1,6 @@
 # Manifest
 
-Última revisión coordinada: 2026-09-02.
+Última revisión coordinada: 2026-09-03.
 
 ## Estado General
 
@@ -14,34 +14,38 @@
 | Archivo | Estado | Procesado en | Notas |
 |---|---|---|---|
 | `input/propuesta-comercial.md` | referencia | onboarding 2026-06-03 | No fue reprocesado como intake; el objetivo fue relevar el sistema real existente. |
-| `BUSINESS_CONTEXT.md` | referencia | onboarding 2026-06-03 | Contexto original del MVP. |
-| `DATA_SOURCES.md` | referencia-parcial | onboarding 2026-06-03 | Documento histórico: el sistema actual ya usa PostgreSQL para publicaciones. |
+| `BUSINESS_CONTEXT.md` | histórico | onboarding 2026-06-03 | Contexto comercial inicial del MVP; no especificación de implementación. |
+| `DATA_SOURCES.md` | histórico | onboarding 2026-06-03 | Documento CSV del MVP; el sistema actual usa MongoDB como origen y PostgreSQL para publicaciones. |
 | `APP_ARCHITECTURE_NO_DB.md` | histórico | onboarding 2026-06-03 | Mantener como antecedente; no refleja la arquitectura actual con DB. |
 | `docs/technical/postventa-ml.md` | vigente-específico | onboarding 2026-06-03 | Arquitectura específica de postventa; parte implementada, parte contrato candidato. |
 
-Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivado`, `referencia`, `histórico`, `vigente`.
+Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivado`, `referencia`, `histórico`, `vigente`, `vigente-parcial`, `implementado`, `implementado-según-ledger`, `contrato-candidato`.
 
 ## Artefactos Vigentes
 
 | Artefacto | Estado | Fuente principal | Última actualización |
 |---|---|---|---|
-| `docs/ai/PROJECT_CONTEXT.md` | vigente | onboarding del repo real + migración Next 16 | 2026-06-04 |
-| `docs/technical/arquitectura.md` | vigente | código + Prisma + scripts + docs previos | 2026-06-04 |
-| `docs/technical/frontend.md` | vigente | rutas UI + componentes + CSS real | 2026-06-04 |
-| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-07-21 |
-| `docs/technical/base-de-datos.md` | vigente | Prisma + pipelines + auditoría API | 2026-07-21 |
-| `docs/technical/seguridad.md` | vigente | `lib/auth.ts`, proxy y endpoints auth | 2026-06-04 |
-| `docs/technical/mcp-coverage-map.md` | vigente | onboarding + política MCP-first | 2026-06-03 |
-| `docs/technical/postventa-ml.md` | vigente-específico | análisis postventa previo | 2026-05-22 |
-| `api-doc/` | vigente-compartible | contrato implementado de referencias de mercado | 2026-07-29 |
-| `docs/product/brief.md` | revisar | kit/producto previo | sin confirmar |
-| `docs/product/prd.md` | revisar | kit/producto previo | sin confirmar |
-| `docs/backlog/hitos/hito-02-postventa-ml.md` | vigente-parcial | backlog postventa | 2026-05 |
-| `docs/backlog/features/postventa-01-ingesta-postgres.md` | implementado-según-ledger | código postventa | 2026-05 |
-| `docs/backlog/features/postventa-02-matching-persistido.md` | implementado-según-ledger | código postventa | 2026-05 |
-| `docs/backlog/features/postventa-03-ui-analisis.md` | pendiente | backlog postventa | 2026-05 |
-| `docs/backlog/features/postventa-04-reporte-pdf.md` | pendiente | backlog postventa | 2026-05 |
-| `docs/backlog/features/postventa-05-mcp-contratos.md` | pendiente | backlog postventa | 2026-05 |
+| `docs/ai/PROJECT_CONTEXT.md` | vigente | código, operación y flujos reales | 2026-09-03 |
+| `docs/technical/arquitectura.md` | vigente | código, Prisma, scripts, deploy y operación | 2026-09-03 |
+| `docs/technical/frontend.md` | vigente | rutas UI + componentes + CSS real | 2026-09-03 |
+| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-09-03 |
+| `docs/technical/base-de-datos.md` | vigente | Prisma + pipelines + auditoría API | 2026-09-03 |
+| `docs/technical/referencias-mercado-matching.md` | vigente | casos confirmados, guardrails y verificaciones de la API Padawanway | 2026-09-03 |
+| `docs/technical/postgres-snapshot-sync.md` | vigente | scripts de snapshot completo producción → local | 2026-09-03 |
+| `docs/technical/seguridad.md` | vigente | auth, proxy y endpoints sensibles | 2026-09-03 |
+| `docs/technical/qa.md` | vigente | checks focalizados y flujos críticos | 2026-09-03 |
+| `docs/technical/mcp-coverage-map.md` | vigente | cobertura MCP candidata y deuda activa | 2026-09-03 |
+| `docs/technical/postventa-ml.md` | vigente-específico | código de Postventa y contratos implementados | 2026-09-03 |
+| `docs/technical/superadmin-observabilidad.md` | vigente-específico | acceso, auditoría, revisión y alertas | 2026-09-03 |
+| `api-doc/` | vigente-compartible | contrato operativo de referencias de mercado | 2026-09-03 |
+| `docs/product/brief.md` | histórico | plantilla del kit; no describe el producto actual | 2026-09-03 |
+| `docs/product/prd.md` | histórico | plantilla del kit; no describe el producto actual | 2026-09-03 |
+| `docs/backlog/hitos/hito-02-postventa-ml.md` | vigente-parcial | UI, APIs y reporte realizados; MCP sigue candidato | 2026-09 |
+| `docs/backlog/features/postventa-01-ingesta-postgres.md` | implementado | código postventa | 2026-09-03 |
+| `docs/backlog/features/postventa-02-matching-persistido.md` | implementado | código postventa | 2026-09-03 |
+| `docs/backlog/features/postventa-03-ui-analisis.md` | implementado | UI y APIs postventa | 2026-09-03 |
+| `docs/backlog/features/postventa-04-reporte-pdf.md` | implementado | endpoint y generador PDF postventa | 2026-09-03 |
+| `docs/backlog/features/postventa-05-mcp-contratos.md` | contrato-candidato | cobertura MCP sin servicio implementado | 2026-09-03 |
 
 ## Módulos Reales
 
@@ -56,8 +60,9 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | Reporte Venturino PDF | implementado | `app/api/reports/venturino/route.ts`, `scripts/generateVenturinoReport.js` |
 | Ingesta maquinaria | implementado | `scripts/pipeline-live.js`, `scripts/pipeline-shared.js`, `prisma/schema.prisma` |
 | FX | implementado | `lib/fx-rate.ts`, `scripts/syncFxRate.js`, `app/api/sync-fx-rate/route.ts` |
-| Postventa ingesta/análisis | implementado inicial | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
-| API Padawanway de referencias | implementado; pendiente activación productiva | `app/api/v1/market-references/**`, `lib/market-reference/**`, `lib/normalize/machineIdentity.ts`, `MarketReferenceQuery` |
+| Postventa ingesta/análisis | implementado | `scripts/pipeline-postventa.js`, `lib/postventa/**`, `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
+| API Padawanway de referencias | operativa en producción | `app/api/v1/market-references/**`, `lib/market-reference/**`, `lib/normalize/machineIdentity.ts`, `MarketReferenceQuery` |
+| Superadmin de referencias | implementado | `app/(pages)/superadmin/**`, `lib/superadmin/**`, `lib/operational-alerts/**` |
 | MCP | no implementado | `docs/technical/mcp-coverage-map.md` |
 
 ## Cambios De Cliente
@@ -66,7 +71,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 |---|---|---|---|
 | Onboarding de proyecto existente | procesado | Documentación técnica y contexto para futuras tareas | No requiere feature |
 | Migrar Next.js a 16 y retirar CSVs MVP legacy | procesado | Dependencias, proxy, lint config y documentación actualizados; ACARA CSV activo se conserva | Pendiente decidir migración ACARA a DB si se quiere eliminar todo CSV runtime |
-| API de referencias de mercado para tomas de usados | implementado; pendiente activación productiva | Servicio externo sobre PostgreSQL, matching progresivo, identidad canónica, autenticación HMAC, auditoría e integración Padawanway | Contrato en `docs/changes/processed/2026-07-17-referencias-mercado-api.md` |
+| API de referencias de mercado para tomas de usados | operativo en producción; matching v1.2 | Servicio externo sobre PostgreSQL, matching progresivo, identidad canónica, autenticación HMAC, auditoría y feedback interno | Contrato en `api-doc/` y guía en `docs/technical/referencias-mercado-matching.md` |
 
 ## Riesgos Registrados
 
@@ -74,7 +79,7 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 - Algunos documentos previos muestran mojibake; los documentos actualizados en esta pasada deben quedar en UTF-8 correcto.
 - Existe `.env.example`; mantenerlo sincronizado cuando cambien variables de runtime.
 - No hay suite general; la API Padawanway tiene tests focalizados y verificación read-only contra inventario.
-- Auth actual es suficiente para MVP interno, pero no cubre roles, tenant, permisos ni auditoría.
+- Auth actual separa Venturino y Superadmin mediante dos identidades fijas, pero no cubre usuarios persistidos, roles configurables ni tenant.
 - `npx prisma db push` en deploy evita trazabilidad fina de migraciones para todo el schema.
 - No hay MCP real pese a la política MCP-first; la deuda debe permanecer visible.
 
@@ -88,10 +93,10 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 - Mantener `docs/technical/mcp-coverage-map.md` actualizado para capacidades operativas nuevas.
 - Postventa: `analysis:postventa-matches` y `pipeline:postventa` deben usar los servicios compartidos de `lib/postventa/**`; no duplicar reglas de matching en scripts.
 
-## Actualización coordinada 2026-09-02 — Superadmin y observabilidad
+## Actualización coordinada 2026-09-03 — Superadmin y observabilidad
 
 - Cambio: superadmin exclusivo de Algorym, auditoría ampliada de la API Padawanway, revisión interna y alertas SMTP.
-- Estado: implementado en rama; pendiente de validación con PostgreSQL, navegación y SMTP del entorno local.
+- Estado: implementado y usado para revisar la auditoría de referencias. La entrega SMTP sigue condicionada a configuración válida por entorno.
 - Archivos canónicos nuevos:
   - `docs/technical/superadmin-observabilidad.md`;
   - `docs/changes/processed/2026-09-02-superadmin-observabilidad-api.md`;

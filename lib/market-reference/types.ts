@@ -5,7 +5,7 @@ export const MARKET_CATEGORIES = [
   "Pulverizadoras",
 ] as const;
 
-export const MARKET_REFERENCE_ALGORITHM_VERSION = "market-reference-v1.1";
+export const MARKET_REFERENCE_ALGORITHM_VERSION = "market-reference-v1.2";
 
 export type MarketCategory = (typeof MARKET_CATEGORIES)[number];
 export type MarketReferenceMode = "direct" | "expanded";

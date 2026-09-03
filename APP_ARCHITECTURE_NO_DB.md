@@ -1,5 +1,7 @@
 # 04_APP_ARCHITECTURE_NO_DB.md
 
+> Estado: antecedente histórico, no describe el runtime actual. La aplicación vigente usa PostgreSQL + Prisma para maquinaria, Postventa y auditoría; MongoDB sólo es origen de ingestas y ACARA permanece en CSV. Arquitectura canónica: `docs/technical/arquitectura.md`.
+
 ## Stack
 - Next.js App Router + TypeScript
 - Tailwind + shadcn/ui

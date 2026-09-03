@@ -1,6 +1,6 @@
 # Project Context
 
-Última revisión de onboarding: 2026-06-05.
+Última revisión: 2026-09-03.
 
 ## Proyecto
 
@@ -52,6 +52,10 @@ El sistema ayuda a Venturino a comparar su inventario y publicaciones de mercado
 | Sincronizar FX | `npm run fx:sync` |
 | Ver FX actual | `npm run fx:show` |
 | Generar reporte Venturino | `npm run report:venturino` |
+| Verificar API Padawanway | `npm run test:market-reference` |
+| Reproducir falsos negativos auditados | `npm run verify:market-reference-zero-results` |
+| Verificar superadmin | `npm run test:superadmin` |
+| Importar snapshot PostgreSQL local | `npm run db:snapshot:import -- --snapshot <archivo.dump> --confirm REPLACE_LOCAL_DATABASE` |
 
 No hay script `test` configurado.
 
@@ -61,11 +65,13 @@ Se detectaron nombres en `.env` sin exponer valores:
 
 - `DATABASE_URL`
 - `MONGODB_URI`
-- `AUTH_USER`
-- `AUTH_PASSWORD`
-- `JWT_SECRET`
+- `AUTH_USER`, `AUTH_PASSWORD`, `JWT_SECRET`
+- `SUPERADMIN_USER`, `SUPERADMIN_PASSWORD`
+- `PADAWANWAY_API_*`
+- `LOCAL_SNAPSHOT_DATABASE_URL` y variables de protección para importar snapshots locales
+- `ALERT_*` y `SMTP_*` cuando se habilitan alertas operativas
 
-No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo como contrato sin secretos.
+`.env.example` existe y es el contrato sin secretos. Los valores reales se leen desde `.env.local` o `.env` según el entorno; nunca se documentan en el repositorio.
 
 ## Lenguaje Ubicuo
 
@@ -80,6 +86,9 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 | Comparable | Publicación o producto similar usado para comparar precio | Reglas distintas entre maquinaria y postventa |
 | Postventa | Productos/accesorios Venturino vs MercadoLibre | Modelos Prisma `Postventa*` |
 | Corrida | Ejecución de importación o análisis | `ScrapingRun`, `PostventaImportRun`, `PostventaAnalysisRun` |
+| Consulta de referencia | Request autenticado de Padawanway y su resultado/auditoría | `MarketReferenceQuery` |
+| Snapshot PostgreSQL | Dump lógico completo de producción restaurable sólo sobre la DB local declarada | Ver `docs/technical/postgres-snapshot-sync.md` |
+| Nivel de acceso | Identidad fija de sesión web | `VENTURINO` o `SUPERADMIN` |
 
 ## Alcance Funcional Actual
 
@@ -92,6 +101,9 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 - Reporte PDF Venturino vs mercado.
 - Pipelines de ingesta desde MongoDB a PostgreSQL.
 - Pipeline y análisis persistido de postventa.
+- Sección `/postventa`, APIs paginadas, detalle de candidatos y reporte PDF Postventa.
+- API externa Padawanway de referencias directas y búsqueda ampliada, activa en producción y auditada en PostgreSQL.
+- Superadmin interno de Algorym para observar, revisar y alertar sobre consultas de referencias.
 
 ## Reglas De Negocio Críticas
 
@@ -108,6 +120,9 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 - `pipeline:postventa` importa Mongo a PostgreSQL y luego ejecuta `runPostventaAnalysis` directo; no requiere `POSTVENTA_ANALYSIS_URL`.
 - La calibración offline `analysis:postventa-matches` usa el mismo runtime productivo `lib/postventa/matching.ts`.
 - El PDF comercial Postventa exporta sólo `similar a ML`, `Venturino más caro que ML` y `Venturino más barato que ML`; excluye `sin comparable` y `baja confianza`.
+- La API Padawanway usa sólo publicaciones externas, activas, usadas y con precio USD válido. Sus aliases son acotados por marca/categoría; la guía de casos es `docs/technical/referencias-mercado-matching.md`.
+- Las consultas aceptadas de Padawanway se auditan en `MarketReferenceQuery`; el superadmin permite clasificarlas sin alterar la respuesta histórica enviada al CRM.
+- La base local de análisis se alinea mediante un snapshot completo de PostgreSQL; no se abre acceso público ni remoto directo a producción.
 - Los CSVs de MVP no son fuente vigente. La excepción actual es ACARA, que todavía se lee desde `data/acara_precios_maquinaria_agricola_wide.csv` hasta migrar esa referencia a DB u otra fuente.
 
 ## Fuera De Alcance / No Implementado
@@ -116,13 +131,13 @@ No se encontró `.env.example`. Para futuras tareas grandes conviene crearlo com
 - Servicios de agentes IA.
 - Roles, permisos granulares, tenant o sucursales.
 - Autoregistro/signup.
-- UI postventa completa y APIs de listado/detalle propuestas en `docs/technical/postventa-ml.md`.
 - Persistencia server-side formal para vínculos ACARA como fuente única; hoy domina localStorage.
+- MCP Python/FastAPI real y servicios de agentes IA.
 
-## Actualización 2026-09-02 — Acceso y observabilidad interna
+## Acceso y observabilidad interna
 
 - Auth web: se conserva el login por variables de entorno y se incorpora un segundo par `SUPERADMIN_USER`/`SUPERADMIN_PASSWORD` para Algorym.
 - Sesión: el JWT distingue `VENTURINO` y `SUPERADMIN`; los tokens históricos sin nivel se interpretan como `VENTURINO`.
 - Módulo nuevo: `/superadmin` permite observar consultas de la API Padawanway, revisar resultados y probar alertas SMTP.
 - Padawanway: el contrato público, los headers HMAC y los bodies permanecen sin cambios.
-- Alcance: no hay usuarios en DB, permisos configurables, tenant, cron, Redis, worker ni MCP implementado.
+- Alcance: no hay usuarios en DB, permisos configurables, tenant, Redis, worker ni MCP implementado. El deploy configura cron de FX y backup de PostgreSQL en el host.

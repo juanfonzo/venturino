@@ -22,6 +22,8 @@ Consecuencias:
 
 Estado: reemplazada
 
+Estado actual: antecedente histórico. El widget no se implementó; la integración vigente es la API HMAC descrita en la decisión siguiente y consumida desde el backend de Padawanway.
+
 Contexto:
 
 Venturino necesita consultar referencias de mercado para maquinaria usada tomada como parte de pago desde un dashboard administrado por Padawanway. El panel vive en otro dominio y puede consultar maquinaria que no pertenece al stock actual de Venturino.
@@ -88,6 +90,30 @@ Consecuencias:
 
 - Nuevas equivalencias requieren evidencia y una regresión específica antes de agregarse.
 - Padawanway puede mostrar `titulo`/`detalle` de criterios y coincidencias sin traducir lógica técnica.
+
+## 2026-09-03 - Equivalencias auditadas y búsqueda estructural de familias John Deere
+
+Estado: aceptada
+
+Contexto:
+
+Nueve consultas reales de Padawanway cerraron con cero referencias pese a que PostgreSQL tenía publicaciones externas elegibles. La causa fue una combinación de variantes de escritura confirmadas por negocio y una búsqueda ampliada que no recuperaba modelos largos desde una familia corta como `6J`.
+
+Decisión:
+
+Unificar sólo los aliases confirmados en el alcance exacto categoría/marca: Metalfor `Multiple 3200 SE`/`M 3200`/`M 3200SE`, PLA `MAP 3 3300 H` y John Deere `S770SD40D`. Para familias John Deere de dos caracteres, recuperar solamente `modeloNorm` que empiece con el dígito de serie y termine con su letra; el ranking existente vuelve a comprobar la pertenencia a familia antes de publicar resultados.
+
+Alternativas consideradas:
+
+- Eliminar letras o sufijos globalmente: descartado porque podría fusionar variantes incompatibles.
+- Usar contains/fuzzy sin estructura para familias cortas: descartado porque amplía el conjunto candidato y puede mezclar líneas John Deere ajenas.
+- Mantener los ceros hasta un backfill completo: descartado porque el servicio ya recalcula la identidad al leer y puede recuperar las referencias de forma segura.
+
+Consecuencias:
+
+- El algoritmo pasa a `market-reference-v1.2`, permitiendo diferenciar las nuevas auditorías de las anteriores.
+- Los aliases y la recuperación de familia tienen regresiones unitarias y una verificación read-only sobre los cuatro grupos de auditorías afectados.
+- Cualquier nueva equivalencia requiere el mismo estándar: evidencia, scope categoría/marca y prueba negativa cuando corresponda.
 - El backfill queda restringido a aliases comprobados y no reescribe masivamente modelos ambiguos.
 
 ## 2026-09-02 - Superadmin liviano sin cambiar Venturino ni Padawanway
@@ -115,3 +141,27 @@ Consecuencias:
 - Los tokens anteriores siguen funcionando como `VENTURINO`.
 - El patrón de dos accesos fijos no debe escalarse a múltiples perfiles sin rediseñar auth.
 - El cooldown y la cola SMTP se reinician junto con el proceso.
+
+## 2026-09-03 - Snapshot PostgreSQL completo para análisis local
+
+Estado: aceptada
+
+Contexto:
+
+La base local quedó desactualizada frente a Mongo y frente a la base de producción que alimenta la API Padawanway. Se necesita analizar en profundidad resultados reales de matching sin publicar ni abrir acceso directo a PostgreSQL de producción.
+
+Decisión:
+
+Generar manualmente en el host del VPS un `pg_dump` lógico completo de la base de aplicación, acompañado por un manifest con checksum. Transferir el archive y manifest por SCP/SFTP o mediante R2 privado. La importación local usa una URL exclusiva `LOCAL_SNAPSHOT_DATABASE_URL`, exige confirmación explícita y recrea solamente esa base local.
+
+Alternativas consideradas:
+
+- Sincronización parcial de tablas: descartada porque restringe análisis futuros y puede perder relaciones, auditoría o datos aún no identificados como relevantes.
+- ETL registro por registro con Prisma: descartado porque puede divergir de PostgreSQL, altera secuencias/constraints y no aporta valor frente a `pg_dump`/`pg_restore`.
+- Acceso remoto directo o público a producción: descartado por seguridad y porque no es necesario para el análisis local.
+
+Consecuencias:
+
+- El snapshot contiene datos operativos completos y debe conservarse en ubicaciones privadas e ignoradas por Git.
+- La restauración local es destructiva sólo para la base explícitamente configurada; el script bloquea hosts remotos y entornos de producción.
+- Los roles y privilegios globales del cluster no se sincronizan: el objetivo es alinear schema y datos de la base de aplicación, no replicar credenciales de producción.

@@ -1,6 +1,6 @@
 # Hito 02 - Postventa Venturino vs MercadoLibre
 
-Estado: pendiente
+Estado: implementado parcial
 
 ## Objetivo De Negocio
 
@@ -47,3 +47,4 @@ Permitir que Venturino analice artículos de postventa y accesorios contra publi
 - Cambios en nombres de productos alteran candidatos, como fue requerido.
 - El algoritmo v0 debe versionarse para auditar reportes anteriores.
 - Si se agregan overrides manuales luego, deberán convivir con recalculo automático.
+- El MCP permanece como contrato-candidato hasta definir el servicio Python/FastAPI y su autorización interna.

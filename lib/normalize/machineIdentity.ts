@@ -66,6 +66,12 @@ const CATEGORY_TOKENS = new Set([
   "AUTOPROPULSADO",
 ]);
 
+// These terms describe the listing type, not its model. They stay scoped to the
+// category because the same word can be meaningful in another product line.
+const CATEGORY_TITLE_DESCRIPTORS: Partial<Record<MachineCategory, Set<string>>> = {
+  Pulverizadoras: new Set(["AUTOMOTRIZ", "AUTOMOTRICES"]),
+};
+
 const CONFIGURATION_TOKENS = new Set([
   "4WD",
   "4X4",
@@ -124,6 +130,11 @@ const MODEL_ALIASES: Record<string, AliasRule> = {
   "TRACTORES|JOHN DEERE|5065ES": { modelKey: "5065E", display: "5065E" },
   "TRACTORES|JOHN DEERE|5045DS": { modelKey: "5045D", display: "5045D" },
   "TRACTORES|NEW HOLLAND|T8295270": { modelKey: "T8295", display: "T8.295" },
+  "PULVERIZADORAS|METALFOR|MULTIPLE3200SE": { modelKey: "MULTIPLE3200", display: "Múltiple 3200" },
+  "PULVERIZADORAS|METALFOR|M3200": { modelKey: "MULTIPLE3200", display: "Múltiple 3200" },
+  "PULVERIZADORAS|METALFOR|M3200SE": { modelKey: "MULTIPLE3200", display: "Múltiple 3200" },
+  "PULVERIZADORAS|PLA|MAP33300H": { modelKey: "MAP33300", display: "MAP 3 3300" },
+  "COSECHADORAS|JOHN DEERE|S770SD40D": { modelKey: "S770", display: "S770" },
 };
 
 const MODEL_DISPLAY: Record<string, string> = {
@@ -147,7 +158,7 @@ export function normalizeMachineIdentity(input: {
   const category = normalizeCategory(input.category);
   const brandNorm = normalizeBrand(input.brand);
   const explicitModel = stripSeriesPrefix(input.model);
-  const inferredTitleModel = extractModelFromTitle(input.title, brandNorm);
+  const inferredTitleModel = extractModelFromTitle(input.title, brandNorm, category);
   const useTitleModel = Boolean(
     inferredTitleModel
     && (!explicitModel || (isNumericOnlyModel(explicitModel) && /[A-Z]/i.test(inferredTitleModel))),
@@ -225,13 +236,20 @@ function stripSeriesPrefix(value?: string | null) {
   return stripped || null;
 }
 
-function extractModelFromTitle(title?: string | null, brandNorm?: string | null) {
+function extractModelFromTitle(
+  title?: string | null,
+  brandNorm?: string | null,
+  category?: MachineCategory | null,
+) {
   if (!title) return null;
   const leadingSegment = title.split(/[,;|]/, 1)[0];
   let tokens = (normalizeMatchText(leadingSegment) ?? "").split(" ").filter(Boolean);
   if (tokens.length === 0) return null;
 
-  tokens = tokens.filter((token) => !CATEGORY_TOKENS.has(token));
+  const categoryDescriptors = category ? CATEGORY_TITLE_DESCRIPTORS[category] : undefined;
+  tokens = tokens.filter(
+    (token) => !CATEGORY_TOKENS.has(token) && !categoryDescriptors?.has(token),
+  );
   const brandTokens = new Set((brandNorm ?? "").split(" ").filter(Boolean));
   while (tokens.length > 0 && brandTokens.has(tokens[0])) tokens.shift();
   if (brandNorm === "NEW HOLLAND" && tokens[0] === "HOLLAND") tokens.shift();

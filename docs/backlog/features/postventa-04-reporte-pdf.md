@@ -3,7 +3,7 @@
 Tipo: AFK
 Estado: implementado
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: `postventa-02-matching-persistido`
+Bloqueado por: no bloqueado en código; necesita una corrida persistida para datos reales
 
 ## Valor De Negocio
 
@@ -30,14 +30,14 @@ Crear endpoint PDF `GET /api/reports/postventa` y generador React PDF basado en 
 
 ## Criterios De Aceptación
 
-- [ ] El reporte usa banda fija `±40%`.
-- [ ] El reporte incluye resumen global.
-- [ ] El reporte muestra cada producto Venturino con estado de análisis.
-- [ ] El reporte incluye mediana ML y diferencia porcentual cuando corresponde.
-- [ ] El reporte incluye candidatos usados por producto.
-- [ ] El reporte marca `sin comparable` y `baja confianza`.
-- [ ] El endpoint permite filtrar por estado si se define en query.
-- [ ] El PDF no expone credenciales ni datos técnicos internos.
+- [x] El reporte usa el análisis vigente, incluida su banda configurada.
+- [x] El reporte incluye resumen global.
+- [x] El reporte muestra productos Venturino accionables: `similar a ML`, `Venturino más caro que ML` y `Venturino más barato que ML`.
+- [x] El reporte incluye mediana ML y diferencia porcentual cuando corresponde.
+- [x] El reporte incluye candidatos usados por producto.
+- [x] `sin comparable` y `baja confianza` se excluyen del PDF comercial por decisión de producto.
+- [x] El endpoint permite filtrar por estado, búsqueda, confianza y orden.
+- [x] El PDF no expone credenciales ni datos técnicos internos.
 
 ## Definition Of Ready
 

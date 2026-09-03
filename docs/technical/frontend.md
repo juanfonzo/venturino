@@ -1,6 +1,6 @@
 # Frontend
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Regla Visual Del Proyecto
 
@@ -24,7 +24,8 @@ Respetar identidad Venturino/John Deere, paleta `jd`, topbar actual, paneles, ta
 - Header: `components/SiteHeader.tsx`.
 - Footer: `components/SiteFooter.tsx`.
 - Navegación actual: topbar horizontal con pills.
-- Módulos visibles: Dashboard, Análisis 1, Análisis 2, Explorador, ACARA.
+- Módulos visibles para Venturino: Dashboard, Análisis 1, Análisis 2, Explorador, ACARA y Postventa.
+- El nivel `SUPERADMIN` agrega Administración; Venturino no recibe ese enlace ni acceso a sus rutas.
 - Logout en header mediante `POST /api/auth/logout`.
 - Responsive: header pasa de columna a fila en `sm`; main usa `max-w-6xl` con padding responsive.
 

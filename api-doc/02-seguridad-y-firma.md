@@ -176,7 +176,7 @@ Requisitos:
 - Configuración inicial esperada: 60 requests por minuto para el cliente de Padawanway.
 - La API responde `429` y envía `Retry-After` cuando se supera el límite.
 - Algorym puede complementar esta protección con límites por IP en el proxy de infraestructura.
-- El volumen definitivo debe confirmarse en la reunión antes de producción.
+- Revisar volumen, timeout y reintentos si el uso operativo crece o cambia de patrón.
 
 ## Checklist de seguridad de Padawanway
 

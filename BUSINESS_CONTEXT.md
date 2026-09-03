@@ -1,5 +1,7 @@
 # 01_BUSINESS_CONTEXT.md
 
+> Estado: contexto comercial inicial del MVP. Parámetros como FX fijo, actualización mensual y alcance sólo CSV ya no deben usarse como especificación de implementación. Para el sistema vigente consultar `docs/ai/PROJECT_CONTEXT.md` y `docs/technical/arquitectura.md`.
+
 ## Cliente
 - Ricardo Venturino S.A. (concesionario John Deere). Necesita mejorar decisiones comerciales con información de mercado.
 

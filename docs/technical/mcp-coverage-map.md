@@ -1,6 +1,6 @@
 # MCP Coverage Map
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Estado General
 
@@ -23,7 +23,7 @@ Por política del kit, las capacidades operativas relevantes deben quedar visibl
 | Mercado | Listar publicaciones con filtros | `/api/tractors`, `/explorador` | `mercado_listar_publicaciones` | contrato-candidato | Usuario interno autenticado | Secretos, datasets sin límite | Onboarding | 2026-06-03 |
 | Mercado | Consultar detalle/historial de publicación | `/api/listings/price-history` | `mercado_detalle_publicacion` | contrato-candidato | Usuario interno autenticado | Secretos, logs técnicos | Onboarding | 2026-06-03 |
 | Mercado | Evolución de precios por modelo | `/api/market-evolution`, `ModelMarketPanel` | `mercado_evolucion_modelo` | contrato-candidato | Usuario interno autenticado | Sin datos de conexión | Onboarding | 2026-06-03 |
-| Mercado | Consultar referencias directas y búsqueda ampliada de usados | `/api/v1/market-references/direct`, `/api/v1/market-references/search` | `mercado_buscar_referencias` | contrato-candidato | Identidad técnica Padawanway; usuario interno en MCP futuro | Secretos, metadatos de scraping y datasets sin límite | API Padawanway | 2026-07-17 |
+| Mercado | Consultar referencias directas y búsqueda ampliada de usados | `/api/v1/market-references/direct`, `/api/v1/market-references/search` | `mercado_buscar_referencias` | contrato-candidato | Identidad técnica Padawanway; usuario interno en MCP futuro | Secretos, metadatos de scraping y datasets sin límite | API Padawanway operativa; matching v1.2 | 2026-09-03 |
 | ACARA | Buscar referencias ACARA | `/api/acara/items`, `/api/acara/item/[id]` | `acara_buscar_referencias` | contrato-candidato | Usuario interno autenticado | CSV completo sin paginar | Onboarding | 2026-06-03 |
 | ACARA | Sugerir vínculo ACARA para modelo | `/api/acara/suggest`, `/api/acara/auto-match` | `acara_sugerir_vinculo` | contrato-candidato | Usuario interno autenticado | Sin secretos | Onboarding | 2026-06-03 |
 | ACARA | Gestionar vínculos marca/modelo | `store/useAcaraMappings.ts`, `/api/mappings` | `acara_gestionar_vinculos` | bloqueado | Usuario interno autenticado | N/A | Bloquea fuente canónica de persistencia | 2026-06-03 |
@@ -34,7 +34,7 @@ Por política del kit, las capacidades operativas relevantes deben quedar visibl
 | FX | Consultar cotización vigente | `/api/sync-fx-rate` GET | `fx_obtener_cotizacion` | contrato-candidato | Usuario interno autenticado | Sin secretos | Onboarding | 2026-06-03 |
 | FX | Sincronizar cotización y recalcular precios | `/api/sync-fx-rate` POST | `fx_sincronizar_cotizacion` | bloqueado | Requiere identidad técnica/confirmación | Secretos, detalle infra | Falta auth interna robusta | 2026-06-03 |
 | Postventa | Ejecutar análisis postventa | `/api/postventa/analyze` | `postventa_ejecutar_analisis` | contrato-candidato | Usuario interno técnico + confirmación | Mongo/DB secrets | `postventa-02` | 2026-06-03 |
-| Postventa | Consultar resumen/listado/detalle | Propuesto en `docs/technical/postventa-ml.md` | `postventa_resumen_analisis`, `postventa_listar_productos`, `postventa_detalle_producto` | contrato-candidato | Usuario interno autenticado | Secretos, datasets sin límite | `postventa-05` | 2026-06-03 |
+| Postventa | Consultar resumen/listado/detalle | `/api/postventa/summary`, `/api/postventa/products`, `/api/postventa/products/[id]` | `postventa_resumen_analisis`, `postventa_listar_productos`, `postventa_detalle_producto` | contrato-candidato | Usuario interno autenticado | Secretos, datasets sin límite | `postventa-05` | 2026-09-03 |
 | Agentes IA | Telegram/WhatsApp/asistente | No existe | N/A | no-aplica | N/A | N/A | No hay agente en alcance actual | 2026-06-03 |
 
 ## Deuda MCP Activa

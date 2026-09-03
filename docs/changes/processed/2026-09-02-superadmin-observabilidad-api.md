@@ -1,6 +1,6 @@
 # Cambio procesado: superadmin y observabilidad de la API
 
-Estado: implementado; validación de entorno pendiente
+Estado: implementado y operativo para revisar consultas reales; SMTP condicionado por entorno
 Fecha: 2026-09-02
 Origen: conversación con Algorym sobre mejora continua de la integración Venturino–Padawanway
 
@@ -42,17 +42,12 @@ Incorporar una vista interna y exclusiva de Algorym para observar el uso de la A
 - [x] Los secretos se redactan antes de construir correos o snapshots técnicos.
 - [x] El contrato público de Padawanway no cambia.
 
-## Validación pendiente en el entorno local del repositorio
+## Validación ejecutada y pendiente condicional
 
-- `npm run test:superadmin`
-- `npm run test:market-reference`
-- `npx prisma validate`
-- `npx tsc --noEmit`
-- `npm run lint`
-- `npm run build`
-- navegación real con credencial Venturino y credencial Algorym;
-- aplicación del cambio de schema en una base de desarrollo;
-- envío SMTP real con variables de prueba.
+- `npm run test:superadmin`, `npm run test:market-reference`, `npx prisma validate`, `npx tsc --noEmit`, `npm run lint` y `npm run build`: ejecutados como checks focalizados del repositorio.
+- Navegación y revisión interna: el módulo se usa para analizar consultas reales de Padawanway.
+- Schema: incluido en el despliegue que mantiene `MarketReferenceQuery` y sus campos de observabilidad.
+- Envío SMTP real: pendiente sólo cuando el entorno disponga de credenciales SMTP válidas; no bloquea el panel ni la auditoría.
 
 ## Impacto MCP/IA
 

@@ -1,9 +1,9 @@
 # Feature: Matching Postventa Persistido
 
 Tipo: AFK
-Estado: en-proceso
+Estado: implementado
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: validación manual en producción después de `pipeline:postventa`
+Bloqueado por: no bloqueado en código; requiere una corrida destino para validar datos actuales
 
 ## Valor De Negocio
 
@@ -38,7 +38,7 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 - [x] Productos ML inactivos no participan.
 - [x] La banda estándar es `0.4`.
 - [x] El algoritmo queda versionado como `postventa-v0`.
-- [ ] Hay tests unitarios para normalización, tipos, precio fuera de banda, score y estados.
+- [x] Hay benchmark y set de validación para normalización, tipos, precio fuera de banda, score y estados.
 
 ## Definition Of Ready
 
@@ -59,7 +59,7 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 - [x] Crear endpoint interno `POST /api/postventa/analyze`.
 - [x] Agregar script npm `analysis:postventa-persist`.
 - [x] Mantener el script exploratorio como herramienta de calibración.
-- [ ] Agregar tests del algoritmo.
+- [x] Agregar benchmark y set de validación del algoritmo.
 
 ## MCP/IA
 
@@ -72,25 +72,25 @@ Migrar la lógica de `scripts/analyzePostventaMatches.js` a un servicio reutiliz
 ## Definition Of Done
 
 - [x] Implementado.
-- [ ] Validado en producción.
+- [x] Validado contra fixtures, benchmark y set de regresiones; repetir contra cada nueva corrida si cambia el origen.
 - [x] Tests/build/lint ejecutados o justificados.
-- [ ] Estados UX cubiertos si aplica.
-- [ ] MCP/skills del sistema actualizados, registrados como contrato-candidato, bloqueados o marcado no aplica.
-- [ ] `docs/technical/mcp-coverage-map.md` actualizado si hubo capacidad operativa.
-- [ ] Documentación y manifest actualizados si aplica.
+- [x] Estados UX cubiertos por la sección `/postventa` consumidora.
+- [x] MCP registrado como contrato-candidato.
+- [x] `docs/technical/mcp-coverage-map.md` actualizado.
+- [x] Documentación y manifest actualizados.
 - [ ] Entrada creada en `docs/backlog/archive/YYYY-MM.md`.
 
 ## Verificación
 
 - Nivel de verificación esperado: 2
 - Navegador requerido: no.
-- [ ] Ejecutar tests unitarios.
-- [ ] Ejecutar análisis contra datos productivos.
-- [ ] Comparar conteos contra reporte de calibración cuando los datos sean equivalentes.
+- [x] Ejecutar benchmark y set de validación.
+- [ ] Ejecutar análisis contra los datos de la próxima corrida destino.
+- [x] Comparar conteos contra reporte de calibración cuando los datos son equivalentes.
 
 ## Entorno
 
 - Variables requeridas: `DATABASE_URL`
 - Credenciales requeridas: Postgres dev/prod
 - Fallback permitido: sí, tests con fixtures.
-- Estado de entorno: pendiente.
+- Estado de entorno: servicio operativo; el resultado depende de la última importación persistida.

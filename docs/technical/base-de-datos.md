@@ -1,6 +1,6 @@
 # Base De Datos
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Motor
 
@@ -49,7 +49,7 @@ Campos funcionales principales:
 
 No guarda firma HMAC, secreto, cuerpo crudo ni metadatos de scraping. `resultSummary` es de uso interno y conserva estadísticas, criterio aplicado, ids y snapshot de las referencias devueltas para reproducir qué información vio la integración.
 
-`pipeline:live` y la API comparten `normalizeMachineIdentity`. Los nuevos barridos persisten la identidad canónica en `marcaNorm`/`modeloNorm`; la API también recalcula esa identidad al leer para tolerar filas históricas. El backfill histórico sólo cambia aliases semánticos comprobados y es simulación por defecto.
+`pipeline:live` y la API comparten `normalizeMachineIdentity`. Los nuevos barridos persisten la identidad canónica en `marcaNorm`/`modeloNorm`; la API también recalcula esa identidad al leer para tolerar filas históricas. El backfill histórico sólo cambia aliases semánticos comprobados y es simulación por defecto. Los casos confirmados y sus protecciones están en `docs/technical/referencias-mercado-matching.md`.
 
 ## Postventa
 
@@ -86,7 +86,7 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 | `FxRate` | `syncFxRate` | borra anteriores y crea actual | Sólo cotización actual. |
 | `PostventaProduct` | `pipeline-postventa` | upsert por `source + externalId` | No visto se marca inactive. |
 | `PostventaPriceSnapshot` | `pipeline-postventa` | snapshot por producto/fecha | Historial se conserva. |
-| `PostventaAnalysisRun` | `runPostventaAnalysis` | crea corrida y marca `success`/`failed` | Corridas históricas se conservan. |
+| `PostventaAnalysisRun` | `runPostventaAnalysis` | crea corrida en `running` y la marca `success`/`failed` | Corridas históricas se conservan. |
 
 ## Paginación Y Performance
 
@@ -96,7 +96,7 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 | `/api/acara/items` | offset en memoria | 100 | Fuente CSV. |
 | `/api/model-combos` | `limit` | 100 | Calculado desde listings cargados. |
 | `/api/analisis-2/items` | `limit` | 1000 | Carga all listings para breakdown. |
-| Postventa propuesto | pendiente | 100 recomendado | APIs de listado/detalle aún no implementadas. |
+| Postventa | offset con `page/pageSize`, filtros y orden en PostgreSQL | 100 | `/api/postventa/products` y detalle ya están implementados; el resumen usa la última corrida o la indicada. |
 | Referencias de mercado | offset después de ranking acotado | 50 | Búsqueda previa limitada a 5000 candidatos; respuesta directa limitada a 50 referencias. |
 
 ## Búsqueda
@@ -106,7 +106,7 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 | `Listing` | título, marca, modelo, descripción | `contains` simple, no tokenizado completo | Alinear con `SEARCH_POLICY.md` si crece o si se toca. |
 | ACARA CSV | marca, categoría, descripción | substring simple en memoria | Suficiente para CSV chico/medio; no DB. |
 | Model combos | marca/modelo normalizados | contains compacto en memoria/server | Aceptable en MVP. |
-| Postventa | nombre | scoring propio en matching | Listados buscables pendientes. |
+| Postventa | nombre, estado y confianza | búsqueda normalizada, filtros y paginación server-side sobre análisis persistido | Evaluar índices adicionales si el volumen de corridas crece. |
 | Referencias de mercado | categoría, marca, modelo/título y año | tokens normalizados en DB, filtro exacto posterior para modo directo y ranking para modo ampliado | Evaluar índice de texto si el volumen supera el límite actual. |
 
 ## Migraciones
@@ -121,6 +121,13 @@ Detalle extendido: `docs/technical/postventa-ml.md`.
 - `DATABASE_URL` requerida para Prisma.
 - `MONGODB_URI` requerida para pipelines.
 - `.env.example` documenta las variables esperadas sin incluir credenciales reales.
+- La sincronización completa de producción hacia desarrollo usa `LOCAL_SNAPSHOT_DATABASE_URL`, nunca reutiliza `DATABASE_URL` por seguridad. Ver `docs/technical/postgres-snapshot-sync.md`.
+
+## Sincronización De Entornos
+
+- Producción es la fuente operativa de PostgreSQL para la app y la API Padawanway.
+- La copia local se actualiza mediante `pg_dump` lógico completo, manifest SHA-256 y restauración explícita sobre la URL local declarada; no se expone PostgreSQL de producción por red pública.
+- El snapshot `20260903T140008Z` fue restaurado y permitió validar la auditoría real de `MarketReferenceQuery`. Los conteos de consultas y publicaciones locales corresponden al momento de ese snapshot y no sustituyen una nueva exportación.
 
 ## Fuentes No DB
 

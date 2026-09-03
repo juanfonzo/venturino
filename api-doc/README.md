@@ -1,8 +1,8 @@
 # API de referencias de mercado para Padawanway
 
 Versión del contrato: `v1`  
-Estado: implementado; autenticación productiva activa; prueba funcional conjunta pendiente
-Última revisión: 2026-07-29
+Estado: operativo en producción; matching `market-reference-v1.2`
+Última revisión: 2026-09-03
 
 ## Propósito
 
@@ -39,8 +39,8 @@ El navegador nunca debe comunicarse directamente con esta API. El backend de Pad
 
 | Ambiente | URL base | Estado |
 |---|---|---|
-| Producción | `https://venturino.algorym.app` | Autenticación activa; prueba funcional conjunta pendiente. |
-| Prueba | Pendiente | Definir en la reunión si se requiere un ambiente y credenciales separados. |
+| Producción | `https://venturino.algorym.app` | Operativa y auditada mediante `MarketReferenceQuery`. |
+| Prueba | No provisionado | Si se requiere, definir ambiente y credenciales separados sin reemplazar la operación productiva actual. |
 
 La URL base no debe incluir `/api/v1` ni terminar con `/`. Las rutas versionadas se agregan al realizar cada request.
 
@@ -84,15 +84,15 @@ La URL base no debe incluir `/api/v1` ni terminar con `/`. Las rutas versionadas
 - Firma válida: `200`.
 - Firma inválida: `401 UNAUTHORIZED`.
 - Request-id reutilizado: `409 DUPLICATE_REQUEST`.
-- Cinco tractores usados del inventario de Venturino verificados con datos de prueba.
-- Normalización, familias de modelos, ampliación de años y falsos relacionados cubiertos por checks automatizados.
+- Cinco tractores usados del inventario de Venturino y cuatro grupos históricos de resultados cero verificados contra PostgreSQL local alineado por snapshot.
+- Normalización, familias de modelos, ampliación de años y falsos relacionados cubiertos por checks automatizados. La guía de casos es `docs/technical/referencias-mercado-matching.md`.
 - Build, TypeScript y schema Prisma validados.
 
-## Pendientes para la reunión
+## Consideraciones operativas futuras
 
-- Definir si habrá ambiente y credenciales de prueba separados o un smoke test productivo controlado.
+- Definir si habrá ambiente y credenciales de prueba separados si la operación futura lo requiere.
 - Tecnología del backend de Padawanway para entregar un ejemplo de firma específico si lo necesitan.
 - Volumen esperado de requests y política final de timeout/reintentos.
 - Presentación definitiva de paginación y estados dentro de los dos bloques acordados.
-- Canal seguro para entregar las credenciales.
+- Canal seguro para rotación de credenciales.
 - Responsable y procedimiento de rotación de credenciales.

@@ -1,5 +1,7 @@
 # 08_VALIDATION_AND_STATES.md
 
+> Estado: guía de UX histórica del MVP CSV. Los endpoints y estados actuales se documentan en `docs/technical/backend.md`, `docs/technical/frontend.md` y `docs/technical/qa.md`.
+
 ## Validaciones server-side (API)
 - Filtros: sanitizar strings, límites de rango, paginación.
 - Percentiles: ignorar precio_nor null.

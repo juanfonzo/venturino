@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { normalizeMachineIdentity } from "@/lib/normalize/machineIdentity";
 import {
   buildDirectSearchTokens,
+  buildExpandedFamilySearchPatterns,
   buildMarketReferenceStatistics,
   buildSampleStrength,
   buildSearchTokens,
@@ -170,6 +171,10 @@ export async function searchExpandedMarketReferences(
   requestId: string,
 ): Promise<MarketReferenceServiceResult<ExpandedSearchResponse>> {
   const tokens = buildSearchTokens(input.modeloNorm, input.familiaModelo);
+  const familySearchPatterns = buildExpandedFamilySearchPatterns(
+    input.marcaNorm,
+    input.familiaModelo,
+  );
   if (tokens.length === 0) {
     throw new MarketReferenceServiceError(
       400,
@@ -178,14 +183,24 @@ export async function searchExpandedMarketReferences(
     );
   }
 
-  const where: Prisma.ListingWhereInput = {
-    ...baseMarketWhere(input.categoria),
-    ...(input.marcaNorm ? { marcaNorm: input.marcaNorm } : {}),
-    OR: tokens.flatMap((token) => [
+  const searchConditions: Prisma.ListingWhereInput[] = [
+    ...tokens.flatMap((token): Prisma.ListingWhereInput[] => [
       { modeloNorm: { contains: token, mode: "insensitive" } },
       { modelo: { contains: token, mode: "insensitive" } },
       { titulo: { contains: token, mode: "insensitive" } },
     ]),
+    ...familySearchPatterns.map((pattern): Prisma.ListingWhereInput => ({
+      AND: [
+        { modeloNorm: { startsWith: pattern.modelNormPrefix } },
+        { modeloNorm: { endsWith: pattern.modelNormSuffix } },
+      ],
+    })),
+  ];
+
+  const where: Prisma.ListingWhereInput = {
+    ...baseMarketWhere(input.categoria),
+    ...(input.marcaNorm ? { marcaNorm: input.marcaNorm } : {}),
+    OR: searchConditions,
   };
 
   const rows = await prisma.listing.findMany({

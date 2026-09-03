@@ -1,6 +1,6 @@
 # Cambio procesado: API de referencias de mercado
 
-Estado: implementado; activación productiva pendiente
+Estado: operativo en producción; matching `market-reference-v1.2`
 Fecha: 2026-07-17
 Origen: conversación con Venturino y coordinación con Padawanway
 
@@ -70,16 +70,16 @@ Ambas operaciones requieren firma HMAC con identificador de cliente, timestamp, 
 
 Las reglas se contrastaron con nomenclatura oficial y con los datos reales del repositorio. Entre los casos usados como evidencia están el tractor [New Holland T8.295](https://assets.cnhindustrial.com/nhag/lar/es-ar/assets/pdf/agricultural-tractors/Folleto_T8_new.pdf), el [John Deere 5075E](https://www.deere.com/latin-america/es/tractores/tractores-utilitarios/5075e-75hp/), la separación entre cosechadora y [plataformas John Deere](https://www.deere.com.ar/es/cosechadoras/plataformas/) y el modelo completo [PLA MAP 3 3300](https://www.pla.com.ar/fichas-tecnicas/MAP-3-3300.pdf). La falta de evidencia suficiente implica conservar variantes separadas, no fusionarlas.
 
-## Activación pendiente
+## Operación productiva
 
-- Aplicar el schema/migración en la base productiva.
-- Ejecutar `npm run pipeline:backfill-identity` en producción, revisar el informe y aplicar únicamente con `node scripts/backfill-machine-identity.js --apply` si los aliases detectados son los esperados.
-- Configurar `PADAWANWAY_API_ENABLED`, `PADAWANWAY_API_CLIENT_ID` y `PADAWANWAY_API_SECRET` en GitHub Actions/producción.
-- Intercambiar el secreto por un canal seguro y ejecutar la prueba de integración desde el backend de Padawanway.
+- La API está activa y recibe consultas desde el CRM de Padawanway; `MarketReferenceQuery` conserva la auditoría para revisión interna.
+- El schema, variables `PADAWANWAY_API_*` y secretos de integración ya forman parte del despliegue productivo.
+- Ejecutar `npm run pipeline:backfill-identity` sólo ante un cambio de aliases o una revisión histórica; es simulación por defecto y cualquier `--apply` requiere revisar previamente el informe.
+- Para mejoras del matching, usar el snapshot local actualizado, `npm run verify:market-reference-zero-results` y la guía `docs/technical/referencias-mercado-matching.md`.
 
 ## Verificación 2026-07-21
 
-- `npm run test:market-reference`: 6/6 grupos de checks aprobados, incluidos aliases, preservación de sufijos, familias y expansión de años.
+- `npm run test:market-reference`: 7/7 grupos de checks aprobados, incluidos aliases, preservación de sufijos, familias y expansión de años.
 - `npm run verify:market-reference-inventory`: cinco tractores usados verificados contra PostgreSQL local; las familias ampliadas excluyen falsos relacionados como `6125E` para una búsqueda `5E`.
 - `npx tsc --noEmit`, `npx prisma validate`, `node --check` y `npm run build`: aprobados.
 - `npm run lint`: sin errores; persisten tres warnings preexistentes en UI ajena a esta API.
@@ -87,6 +87,19 @@ Las reglas se contrastaron con nomenclatura oficial y con los datos reales del r
 - CodeGraph se usó como orientación inicial y la revisión directa de archivos fue la fuente de verdad. No aplicó navegador porque el cambio no incorpora interfaz.
 
 Riesgo residual: las equivalencias se mantienen deliberadamente acotadas. Los modelos nuevos o nomenclaturas no cubiertas deben agregarse con evidencia y regresiones, sin recurrir a fuzzy genérico.
+
+## Mejora 2026-09-03: recuperación de falsos negativos auditados
+
+El análisis read-only de las nueve consultas históricas con cero referencias identificó cuatro nomenclaturas que sí tenían publicaciones externas elegibles en PostgreSQL. Se corrigieron sin ampliar el contrato de la API:
+
+- `Multiple 3200 SE`, `M 3200` y `M 3200SE` se unifican con `Múltiple 3200` exclusivamente para `Pulverizadoras` marca `Metalfor`.
+- `MAP 3 3300 H` se unifica con `MAP 3 3300` exclusivamente para `Pulverizadoras` marca `PLA`.
+- `S770SD40D` se unifica con `S770` exclusivamente para `Cosechadoras` marca `John Deere`.
+- La búsqueda ampliada de familias cortas John Deere, como `6J`, recupera filas cuyo modelo normalizado respeta el patrón estructural `6…J`. Categoría, marca, condición, precio mínimo y el guard de familia del ranking siguen siendo obligatorios.
+
+No se eliminaron sufijos de forma global, ni se añadió fuzzy genérico. La simulación de backfill detectó 25 identidades históricas a actualizar —los aliases anteriores y variantes Metalfor esperadas— sin escrituras. La verificación de los casos auditados sobre el snapshot local devolvió: `6J` 38, `Multiple 3200 SE` 25, `MAP 3 3300 H` 6 y `S770SD40D` 9 referencias.
+
+Para repetir la validación read-only con una base actualizada se agregó `npm run verify:market-reference-zero-results`.
 
 ## Verificación 2026-07-22
 

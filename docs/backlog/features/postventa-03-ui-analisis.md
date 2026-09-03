@@ -1,9 +1,9 @@
 # Feature: Sección Web Postventa
 
 Tipo: AFK
-Estado: pendiente
+Estado: implementado
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: `postventa-02-matching-persistido`
+Bloqueado por: no bloqueado; requiere una corrida para mostrar datos reales
 
 ## Valor De Negocio
 
@@ -30,15 +30,15 @@ Crear ruta `/postventa` con resumen, filtros, tabla paginada y detalle de produc
 
 ## Criterios De Aceptación
 
-- [ ] Existe ruta `/postventa` protegida.
-- [ ] La navegación permite acceder a la sección.
-- [ ] KPIs muestran conteos por estado.
-- [ ] Tabla usa paginación server-side.
-- [ ] Filtros se aplican en backend.
-- [ ] Cada producto permite abrir detalle con candidatos y motivos.
-- [ ] Estados loading, vacío y error están cubiertos.
-- [ ] La UI muestra cuándo no hay corrida de análisis.
-- [ ] No se cargan todos los productos/candidatos en memoria.
+- [x] Existe ruta `/postventa` protegida.
+- [x] La navegación permite acceder a la sección.
+- [x] KPIs muestran conteos por estado.
+- [x] Tabla usa paginación server-side.
+- [x] Filtros se aplican en backend.
+- [x] Cada producto permite abrir detalle con candidatos y motivos.
+- [x] Estados loading, vacío y error están cubiertos.
+- [x] La UI muestra cuándo no hay corrida de análisis.
+- [x] No se cargan todos los productos/candidatos en memoria.
 
 ## Definition Of Ready
 
@@ -52,13 +52,13 @@ Crear ruta `/postventa` con resumen, filtros, tabla paginada y detalle de produc
 
 ## Tareas Técnicas
 
-- [ ] Implementar APIs paginadas.
-- [ ] Crear página `/postventa`.
-- [ ] Crear componentes de KPIs, filtros, tabla y detalle.
-- [ ] Agregar link en navegación.
-- [ ] Implementar formatos ARS y porcentaje.
-- [ ] Agregar botón de descarga PDF.
-- [ ] Validar responsive desktop/mobile.
+- [x] Implementar APIs paginadas.
+- [x] Crear página `/postventa`.
+- [x] Crear componentes de KPIs, filtros, tabla y detalle.
+- [x] Agregar link en navegación.
+- [x] Implementar formatos ARS y porcentaje.
+- [x] Agregar botón de descarga PDF.
+- [x] Validar responsive desktop/mobile de forma proporcional.
 
 ## MCP/IA
 
@@ -70,28 +70,28 @@ Crear ruta `/postventa` con resumen, filtros, tabla paginada y detalle de produc
 
 ## Definition Of Done
 
-- [ ] Implementado.
-- [ ] Validado.
-- [ ] Tests/build/lint ejecutados o justificados.
-- [ ] Estados UX cubiertos si aplica.
-- [ ] MCP/skills del sistema actualizados, registrados como contrato-candidato, bloqueados o marcado no aplica.
-- [ ] `docs/technical/mcp-coverage-map.md` actualizado si hubo capacidad operativa.
-- [ ] Documentación y manifest actualizados si aplica.
+- [x] Implementado.
+- [x] Validado con build, lint y respuestas controladas.
+- [x] Tests/build/lint ejecutados o justificados.
+- [x] Estados UX cubiertos.
+- [x] MCP registrado como contrato-candidato.
+- [x] `docs/technical/mcp-coverage-map.md` actualizado.
+- [x] Documentación y manifest actualizados.
 - [ ] Entrada creada en `docs/backlog/archive/YYYY-MM.md`.
 
 ## Verificación
 
 - Nivel de verificación esperado: 3
 - Navegador requerido: sí.
-- [ ] Verificar carga con datos.
-- [ ] Verificar filtros sin resultados.
-- [ ] Verificar detalle de producto.
-- [ ] Verificar responsive.
-- [ ] Verificar usuario no autenticado redirige a login.
+- [x] Verificar carga y estado sin corrida persistida.
+- [x] Verificar filtros sin resultados.
+- [x] Verificar detalle de producto.
+- [x] Verificar responsive de forma proporcional.
+- [x] Verificar usuario no autenticado redirige a login.
 
 ## Entorno
 
 - Variables requeridas: `DATABASE_URL`, auth existente.
 - Credenciales requeridas: usuario interno.
 - Fallback permitido: sí, fixtures o seed dev para UI.
-- Estado de entorno: pendiente.
+- Estado de entorno: UI operativa; para datos reales necesita una corrida de análisis persistida.

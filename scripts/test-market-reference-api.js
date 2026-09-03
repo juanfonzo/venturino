@@ -9,6 +9,7 @@ const {
 const {
   buildSampleStrength,
   buildMarketReferenceStatistics,
+  buildExpandedFamilySearchPatterns,
   filterDirectCandidates,
   rankExpandedCandidates,
   selectDirectCandidates,
@@ -27,7 +28,8 @@ function main() {
   testDirectMatching();
   testAutomaticYearExpansion();
   testExpandedRanking();
-  console.log('Market reference API: 6/6 checks OK');
+  testExpandedFamilySearchPatterns();
+  console.log('Market reference API: 7/7 checks OK');
 }
 
 function testSignedRequest() {
@@ -155,6 +157,29 @@ function testMachineIdentity() {
       display: 'MAP 3 3300',
     },
     {
+      input: { category: 'Pulverizadoras', brand: 'Metalfor', model: 'Multiple 3200 SE' },
+      modelKey: 'MULTIPLE3200',
+      display: 'Múltiple 3200',
+    },
+    {
+      input: {
+        category: 'Pulverizadoras',
+        brand: 'Metalfor',
+        title: 'Pulverizadora automotriz Metalfor M 3200SE, usada',
+      },
+      modelKey: 'MULTIPLE3200',
+      display: 'Múltiple 3200',
+    },
+    {
+      input: { category: 'Pulverizadoras', brand: 'PLA', model: 'MAP 3 3300 H' },
+      modelKey: 'MAP33300',
+      display: 'MAP 3 3300',
+    },
+    {
+      input: { category: 'Cosechadoras', brand: 'John Deere', model: 'S770SD40D' },
+      modelKey: 'S770',
+    },
+    {
       input: { category: 'Cosechadoras', brand: 'New Holland', model: 'Holland CR7.90' },
       modelKey: 'CR790',
       display: 'CR7.90',
@@ -171,6 +196,10 @@ function testMachineIdentity() {
   assert.notEqual(
     normalizeMachineIdentity({ category: 'Tractores', brand: 'John Deere', model: '6100D' }).modelKey,
     normalizeMachineIdentity({ category: 'Tractores', brand: 'John Deere', model: '6100E' }).modelKey,
+  );
+  assert.notEqual(
+    normalizeMachineIdentity({ category: 'Pulverizadoras', brand: 'PLA', model: 'M 3200 SE' }).modelKey,
+    'MULTIPLE3200',
   );
 }
 
@@ -233,6 +262,21 @@ function testExpandedRanking() {
     candidate({ listingId: 6, modelNorm: '6125E', year: 2013 }),
   ], { modelNorm: '5E', familyKey: '5E', year: 2013 });
   assert.deepEqual(johnDeere5E.map((row) => row.listingId), [4, 5]);
+
+  const johnDeere6J = rankExpandedCandidates([
+    candidate({ listingId: 7, modelNorm: '6145J', year: 2016 }),
+    candidate({ listingId: 8, modelNorm: '6180J', year: 2017 }),
+    candidate({ listingId: 9, modelNorm: '6125E', year: 2016 }),
+  ], { modelNorm: '6J', familyKey: '6J', year: 2016 });
+  assert.deepEqual(johnDeere6J.map((row) => row.listingId), [7, 8]);
+}
+
+function testExpandedFamilySearchPatterns() {
+  assert.deepEqual(
+    buildExpandedFamilySearchPatterns('JOHN DEERE', '6J'),
+    [{ modelNormPrefix: '6', modelNormSuffix: 'J' }],
+  );
+  assert.deepEqual(buildExpandedFamilySearchPatterns('New Holland', 'T8'), []);
 }
 
 function candidate(overrides = {}) {

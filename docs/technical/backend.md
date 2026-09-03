@@ -1,6 +1,6 @@
 # Backend
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Stack Real
 
@@ -34,6 +34,13 @@
 | `/api/reports/venturino` | GET | Descargar PDF Venturino vs mercado | `scripts/generateVenturinoReport.js` vía proceso Node aislado |
 | `/api/sync-fx-rate` | GET/POST | Leer/sincronizar FX y recalcular ARS | `lib/fx-rate.ts` |
 | `/api/postventa/analyze` | POST | Ejecutar análisis postventa persistido desde host local | `runPostventaAnalysis` |
+| `/api/postventa/summary` | GET | Resumen de la última corrida postventa o una corrida indicada | `lib/postventa/queries.ts` |
+| `/api/postventa/products` | GET | Listar análisis postventa con filtros, sort y paginación | `lib/postventa/queries.ts` |
+| `/api/postventa/products/[id]` | GET | Ver un análisis postventa y sus candidatos persistidos | `lib/postventa/queries.ts` |
+| `/api/reports/postventa` | GET | Descargar PDF filtrado de la corrida postventa | `getPostventaReportData` + `scripts/generatePostventaReport.js` |
+| `/api/admin/processes` | GET/POST | Consultar o lanzar pipelines permitidos desde Administración | route handler con allowlist y estado en proceso |
+| `/api/superadmin/market-reference-queries/[id]/review` | POST | Registrar una revisión interna de una consulta auditada | `lib/superadmin/market-reference.ts` |
+| `/api/superadmin/alerts/test` | POST | Probar configuración SMTP de alertas operativas | `lib/operational-alerts/**` |
 | `/api/geo/provincias` | GET | Devolver GeoJSON local | FS local |
 | `/api/v1/market-references/direct` | POST | Buscar referencias externas directas para una maquinaria usada | `findDirectMarketReferences` |
 | `/api/v1/market-references/search` | POST | Ejecutar búsqueda ampliada orientativa y paginada | `searchExpandedMarketReferences` |
@@ -54,6 +61,8 @@
 | `lib/market-reference/**` | Contrato, autenticación HMAC, validación, matching, consultas PostgreSQL y auditoría de la integración Padawanway. |
 | `lib/normalize/machineIdentity.ts` | Identidad canónica compartida por API y pipeline; separa modelo, familia y configuraciones comerciales con aliases acotados. |
 
+El registro de casos confirmados, guardrails y procedimiento de extensión está en `docs/technical/referencias-mercado-matching.md`.
+
 ## Scripts Operativos
 
 | Script npm | Archivo | Uso |
@@ -64,8 +73,10 @@
 | `analysis:postventa-persist` | `scripts/run-postventa-analysis.js` | Ejecutar matching postventa persistido directo, sin depender de HTTP local. |
 | `fx:sync` | `scripts/syncFxRate.js` | Sincronizar dólar oficial y recalcular precios. |
 | `report:venturino` | `scripts/generateVenturinoReport.js` | Generar PDF local. |
+| `db:snapshot:import` | `scripts/database/import-postgres-snapshot.js` | Reemplazar una base local desde un snapshot completo y verificado de producción. |
 | `test:market-reference` | `scripts/test-market-reference-api.js` | Validar firma, inputs, matching, exclusión de Venturino y estadísticas. |
 | `verify:market-reference-inventory` | `scripts/verify-market-reference-inventory.js` | Verificar en modo lectura cinco tractores usados del inventario contra PostgreSQL. |
+| `verify:market-reference-zero-results` | `scripts/verify-market-reference-zero-results.js` | Reproducir en modo lectura los cuatro grupos históricos sin referencias que deben recuperarse. |
 
 ## Reportes PDF
 
@@ -102,6 +113,7 @@
 - Condición fija `Usado`, precio USD válido desde 1000 y publicaciones activas en PostgreSQL.
 - La referencia directa exige categoría, marca, modelo y año; mantiene el mismo modelo canónico y amplía automáticamente años hasta reunir contexto suficiente.
 - La búsqueda ampliada tokeniza modelo/familia, admite marca/año opcionales y pagina con máximo 50 resultados por página. El año ordena por cercanía, no actúa como filtro excluyente.
+- El modelo se normaliza con aliases comprobados por categoría/marca. Para familias cortas John Deere, la recuperación previa al ranking usa sólo el patrón estructural de la familia y conserva los filtros de categoría, marca, estado, condición y precio.
 - Las respuestas incluyen criterios y clasificaciones comerciales en español, solidez de muestra y configuraciones separadas del modelo.
 - El conjunto previo al ranking está limitado a 5000 filas para evitar consultas sin cota.
 - Las publicaciones propias de Venturino quedan excluidas de las referencias.
@@ -114,7 +126,8 @@
 - Endpoints devuelven JSON con `error` en fallos principales.
 - Validación de parámetros es manual por endpoint.
 - No hay capa central de schemas tipo Zod.
-- Endpoints locales sensibles validan host `localhost`/`127.0.0.1`, no sesión.
+- El análisis postventa de ejecución directa valida host `localhost`/`127.0.0.1`; los endpoints de lectura postventa usan la sesión protegida por `proxy.ts`.
+- Los procesos manuales y las revisiones de referencias validan `SUPERADMIN` server-side.
 
 ## Performance
 
@@ -128,7 +141,7 @@
 ## Tests
 
 - No hay un runner de tests general del repositorio.
-- La API de referencias cuenta con checks focalizados de autenticación, validación, normalización y matching en `npm run test:market-reference`, además de verificación contra cinco unidades del inventario en `npm run verify:market-reference-inventory`.
+- La API de referencias cuenta con checks focalizados de autenticación, validación, normalización y matching en `npm run test:market-reference`, además de verificaciones read-only del inventario y de los falsos negativos auditados en `npm run verify:market-reference-inventory` y `npm run verify:market-reference-zero-results`.
 - Futuros cambios backend deberían agregar checks focalizados o validación manual documentada.
 
 ## Riesgos

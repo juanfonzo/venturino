@@ -6,7 +6,7 @@ Versión: `v1`
 
 ```text
 Producción: https://venturino.algorym.app/api/v1
-Prueba: pendiente de definición
+Prueba: no provisionado; la integración actual opera en producción
 ```
 
 En el cliente se recomienda guardar `base_url=https://venturino.algorym.app`, sin `/api/v1` ni `/` final, y concatenar las rutas versionadas indicadas en este documento.

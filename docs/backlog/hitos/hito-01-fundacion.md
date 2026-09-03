@@ -1,6 +1,6 @@
 # Hito 1 - Fundación
 
-Estado: pendiente
+Estado: completado
 
 ## Objetivo De Negocio
 
@@ -26,10 +26,10 @@ Dejar una base estable para implementar los primeros flujos reales del cliente s
 
 ## Criterios De Salida
 
-- [ ] Base de datos inicial definida y migrada.
-- [ ] Flujos críticos iniciales identificados.
-- [ ] Estrategia de permisos definida.
-- [ ] Verificación base ejecutada o documentada.
+- [x] Base de datos inicial definida y migrada.
+- [x] Flujos críticos iniciales identificados.
+- [x] Estrategia de acceso inicial definida: identidades fijas Venturino/Superadmin.
+- [x] Verificación base documentada en `docs/technical/qa.md`.
 
 ## Riesgos
 

@@ -5,6 +5,9 @@
 .env.local
 .env.production
 
+# Snapshots confidenciales descargados desde producción.
+.private/postgres-snapshots/
+
 # Node modules
 node_modules/
 .next/

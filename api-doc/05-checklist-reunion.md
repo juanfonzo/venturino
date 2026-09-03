@@ -1,8 +1,8 @@
-# Checklist para la reunión con Padawanway
+# Checklist operativo para Padawanway
 
 ## Resultado esperado
 
-Salir de la reunión con el contrato técnico entendido, responsabilidades asignadas y una fecha para la prueba conjunta.
+Mantener el contrato técnico entendido, las responsabilidades asignadas y la operación productiva trazable. La integración ya realiza consultas mediante el CRM de Padawanway.
 
 ## Agenda sugerida
 
@@ -45,14 +45,14 @@ Salir de la reunión con el contrato técnico entendido, responsabilidades asign
 - Apertura de enlaces externos.
 - Lenguaje de referencias, no tasación.
 
-### 6. Pruebas y producción
+### 6. Operación y futuras pruebas
 
 - URL productiva confirmada: `https://venturino.algorym.app`.
-- Decisión sobre ambiente de prueba separado o smoke test productivo controlado.
-- Prueba Postman inicial.
-- Prueba desde el backend real de Padawanway.
+- Decisión sobre ambiente de prueba separado si se necesita para cambios futuros.
+- Prueba Postman ante una rotación de credenciales o cambio de contrato.
+- Prueba desde el backend real de Padawanway al modificar firma, timeout o tratamiento de errores.
 - Criterios de aceptación.
-- Fecha tentativa de habilitación para uso comercial.
+- Revisión de cambios de contrato, rotación de secretos o incidentes.
 
 ## Preguntas para Guillermo
 
@@ -63,7 +63,7 @@ Salir de la reunión con el contrato técnico entendido, responsabilidades asign
 5. ¿Qué timeout y estrategia de reintentos utilizan normalmente para servicios externos?
 6. ¿Cómo prefieren presentar la paginación o carga incremental de publicaciones?
 7. ¿Quién será responsable de la rotación de credenciales y el contacto técnico ante incidentes?
-8. ¿Qué fecha proponen para la prueba conjunta desde su backend?
+8. Ante un cambio de contrato o credenciales, ¿quién coordina el smoke test desde su backend?
 
 ## Confirmaciones técnicas requeridas
 
@@ -80,18 +80,18 @@ Salir de la reunión con el contrato técnico entendido, responsabilidades asign
 
 | Decisión | Estado previo | Resultado de la reunión |
 |---|---|---|
-| Estrategia de prueba | Pendiente: ambiente separado o smoke productivo | |
+| Estrategia de prueba | Producción operativa; ambiente separado opcional | |
 | URL de prueba | Pendiente sólo si se crea ambiente separado | |
 | URL productiva | `https://venturino.algorym.app` | |
-| Tecnología backend Padawanway | Pendiente | |
+| Tecnología backend Padawanway | No condiciona la integración actual; registrar sólo si cambia el soporte | |
 | Timeout de cliente | Pendiente | |
 | Reintentos máximos | Pendiente | |
 | Volumen esperado | Pendiente | |
-| Rate limit productivo | Propuesta inicial: 60/minuto | |
+| Rate limit productivo | Configurable; valor por defecto documentado: 60/minuto | |
 | Canal de entrega del secreto | Pendiente | |
 | Responsable de rotación e incidentes | Pendiente | |
-| Fecha de prueba conjunta | Pendiente | |
-| Fecha de habilitación comercial | Pendiente | |
+| Responsable de smoke test | Registrar para cambios de contrato, credenciales o incidentes | |
+| Fecha de habilitación comercial | Habilitada; registrar cambios de alcance si aparecen | |
 
 ## Responsabilidades de implementación
 
@@ -104,16 +104,16 @@ Salir de la reunión con el contrato técnico entendido, responsabilidades asign
 - [x] Implementar estadísticas, textos comerciales y paginación.
 - [x] Mantener auditoría interna.
 - [x] Entregar documentación y casos de prueba.
-- [ ] Desplegar schema y configuración en producción.
-- [ ] Entregar URL y credenciales del ambiente acordado por canal seguro.
-- [ ] Acompañar la prueba de integración.
+- [x] Desplegar schema y configuración en producción.
+- [x] Entregar URL y credenciales por canal seguro.
+- [x] Habilitar la integración productiva.
 
 ### Padawanway
 
-- [ ] Implementar cliente en su backend.
-- [ ] Guardar credenciales en entorno seguro.
-- [ ] Generar timestamp, request-id y firma por request.
-- [ ] Implementar los dos bloques de interfaz.
+- [x] Implementar cliente en su backend.
+- [x] Guardar credenciales en entorno seguro.
+- [x] Generar timestamp, request-id y firma por request.
+- [x] Integrar las consultas al CRM.
 - [ ] Permitir editar marca/modelo en la búsqueda ampliada.
 - [ ] Mostrar configuraciones sólo cuando el array tenga elementos.
 - [ ] Manejar loading, vacíos, errores y paginación.
@@ -123,38 +123,37 @@ Salir de la reunión con el contrato técnico entendido, responsabilidades asign
 
 ## Criterios de aceptación de integración
 
-- [ ] La firma generada por Padawanway es aceptada.
-- [ ] La consulta directa devuelve publicaciones o estado vacío controlado.
-- [ ] La búsqueda ampliada puede ejecutarse con la sugerencia recibida.
-- [ ] La interfaz diferencia mismo modelo de modelo relacionado.
-- [ ] Muestra limitada o inexistente se comunica claramente.
-- [ ] Los precios se presentan como referencias en USD.
-- [ ] Los enlaces externos funcionan.
-- [ ] No se muestran HP, horas ni información interna de datos.
-- [ ] `configuracion=[]` no genera un bloque vacío ni se interpreta como error.
-- [ ] Firma inválida, replay y rate limit se manejan correctamente.
-- [ ] Algorym puede localizar una consulta usando request-id.
+- [x] La firma generada por Padawanway es aceptada en la integración productiva.
+- [x] La consulta directa devuelve publicaciones o estado vacío controlado.
+- [x] La búsqueda ampliada puede ejecutarse con la sugerencia recibida.
+- [ ] Confirmar en cada cambio visual que la interfaz diferencia mismo modelo de modelo relacionado.
+- [ ] Confirmar en cada cambio visual que muestra limitada o inexistente se comunica claramente.
+- [ ] Confirmar en cada cambio visual que los precios se presentan como referencias en USD.
+- [ ] Confirmar en cada cambio visual que los enlaces externos funcionan.
+- [x] No se devuelven HP, horas ni información interna de datos en el contrato.
+- [ ] Confirmar en cada cambio visual que `configuracion=[]` no genera un bloque vacío ni se interpreta como error.
+- [x] Firma inválida, replay y rate limit están cubiertos por los checks focalizados de Algorym.
+- [x] Algorym puede localizar una consulta usando request-id en la auditoría interna.
 
 ## Checklist de salida a producción
 
 ### Algorym
 
-- [ ] Aplicar los cambios de persistencia requeridos en producción.
-- [ ] Ejecutar auditoría de normalización en modo simulación.
-- [ ] Verificar en GitHub Secrets `PADAWANWAY_API_ENABLED`, `PADAWANWAY_API_CLIENT_ID`, `PADAWANWAY_API_SECRET`, `PADAWANWAY_API_MAX_SKEW_SECONDS` y `PADAWANWAY_API_RATE_LIMIT_PER_MINUTE`.
-- [ ] Confirmar HTTPS, proxy y límites perimetrales.
-- [ ] Verificar consulta firmada en producción.
+- [x] Aplicar los cambios de persistencia requeridos en producción.
+- [x] Ejecutar auditoría de normalización en modo simulación.
+- [x] Configurar `PADAWANWAY_API_ENABLED`, `PADAWANWAY_API_CLIENT_ID`, `PADAWANWAY_API_SECRET`, `PADAWANWAY_API_MAX_SKEW_SECONDS` y `PADAWANWAY_API_RATE_LIMIT_PER_MINUTE` en el despliegue productivo.
+- [x] Confirmar HTTPS y proxy para la operación productiva.
+- [x] Verificar consulta firmada en producción.
 - [ ] Confirmar monitoreo y contacto de soporte.
 
 ### Padawanway
 
-- [ ] Configurar `VENTURINO_API_URL`, `VENTURINO_API_CLIENT_ID` y `VENTURINO_API_SECRET` en su backend.
-- [ ] Confirmar `VENTURINO_API_URL=https://venturino.algorym.app`, sin `/api/v1` ni `/` final.
-- [ ] Confirmar que el secreto no está en el frontend.
-- [ ] Confirmar sincronización de reloj del servidor.
-- [ ] Confirmar timeout, reintentos y tratamiento de `Retry-After`.
-- [ ] Ejecutar la prueba conjunta en el ambiente acordado.
-- [ ] Ejecutar un smoke test productivo final controlado antes del uso comercial.
+- [x] Configurar `VENTURINO_API_URL`, `VENTURINO_API_CLIENT_ID` y `VENTURINO_API_SECRET` en su backend.
+- [x] Confirmar `VENTURINO_API_URL=https://venturino.algorym.app`, sin `/api/v1` ni `/` final.
+- [x] Mantener el secreto fuera del frontend según el contrato backend a backend.
+- [ ] Documentar reloj, timeout, reintentos y tratamiento de `Retry-After` si se modifica el cliente.
+- [x] Ejecutar la integración productiva inicial.
+- [ ] Ejecutar un smoke test controlado al rotar secretos o cambiar el contrato.
 - [ ] Confirmar textos y estados con Venturino.
 
 ## Soporte inicial

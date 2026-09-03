@@ -26,7 +26,9 @@
     "test:postventa-validation-set": "node scripts/evaluatePostventaValidationSet.js --ci",
     "test:market-reference": "node scripts/test-market-reference-api.js",
     "test:superadmin": "node scripts/test-superadmin.js",
-    "verify:market-reference-inventory": "node scripts/verify-market-reference-inventory.js"
+    "verify:market-reference-inventory": "node scripts/verify-market-reference-inventory.js",
+    "verify:market-reference-zero-results": "node scripts/verify-market-reference-zero-results.js",
+    "db:snapshot:import": "node scripts/database/import-postgres-snapshot.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

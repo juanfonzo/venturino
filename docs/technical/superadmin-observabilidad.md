@@ -1,6 +1,6 @@
 # Superadmin Y Observabilidad De La API
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Propósito
 
@@ -103,3 +103,4 @@ El explorador usa paginación server-side de 25 registros y filtros aplicados en
 - No solicita `operationId` ni feedback a Padawanway.
 - No monitorea una caída total del contenedor desde fuera del proceso.
 - La cola y el cooldown de alertas se reinician si reinicia la aplicación.
+- El módulo ya se usa para revisar consultas reales; la entrega SMTP sigue condicionada a que el entorno tenga variables SMTP válidas.

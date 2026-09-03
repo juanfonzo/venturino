@@ -8,6 +8,10 @@ Archivos esperados:
 - `base-de-datos.md`
 - `backend.md`
 - `frontend.md`
+- `postgres-snapshot-sync.md`
+- `referencias-mercado-matching.md`
+- `superadmin-observabilidad.md`
+- `postventa-ml.md`
 - `mcp-python.md` cuando aplique
 - `seguridad.md`
 - `qa.md`

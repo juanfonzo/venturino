@@ -415,7 +415,7 @@ jobs:
 
           printf '%s\n' \
             "0 11 * * * docker exec venturino npm run fx:sync >/dev/null 2>&1 # venturino-managed-fx-sync" \
-            "30 3 * * * docker exec -u postgres venturino-db pg_dump -Fc --no-owner --no-acl -d venturino | gzip -c > /tmp/venturino_db_\$(date +\%F_\%H-\%M-\%S).dump.gz # venturino-managed-db-backup" \
+            "30 3 * * * docker exec -u postgres venturino-db pg_dump -Fc --no-owner --no-acl -d venturino_db | gzip -c > /tmp/venturino_db_\$(date +\%F_\%H-\%M-\%S).dump.gz # venturino-managed-db-backup" \
             >> "$TMP_NEW"
 
           crontab "$TMP_NEW"

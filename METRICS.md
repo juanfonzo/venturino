@@ -1,5 +1,7 @@
 # 05_METRICS.md
 
+> Estado: definición histórica de métricas del MVP. La fuente de maquinaria actual es PostgreSQL y los KPIs implementados deben verificarse en `lib/stats/**`, `docs/technical/backend.md` y las pantallas vigentes.
+
 ## Métricas globales (dashboard)
 - total_publicaciones
 - con_precio (% precio_nor != null)

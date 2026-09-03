@@ -1,5 +1,7 @@
 # 07_MAPS_AND_GEO.md
 
+> Estado: antecedente de diseño del MVP. La aplicación conserva GeoJSON local, pero este documento no es contrato actual de rutas, métricas ni UI; consultar `docs/technical/frontend.md` y `docs/technical/backend.md`.
+
 ## Decisión MVP
 - No usar latitud/longitud.
 - Usar únicamente `ubicacion` -> provincia/ciudad.

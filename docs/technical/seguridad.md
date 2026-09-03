@@ -1,17 +1,17 @@
 # Seguridad
 
-Última revisión: 2026-09-02.
+Última revisión: 2026-09-03.
 
 ## Estado Real
 
-El sistema tiene autenticación simple para app interna:
+El sistema tiene autenticación simple con dos identidades fijas para la app interna:
 
-- Login con usuario/contraseña desde variables de entorno.
+- Login con `AUTH_*` para Venturino y `SUPERADMIN_*` para Algorym, desde variables de entorno.
 - JWT firmado con `jose`.
 - Cookie HttpOnly `venturino_token`.
 - `proxy.ts` protege rutas privadas por defecto.
 - No hay usuarios en DB.
-- No hay roles, permisos, tenant ni sucursales.
+- No hay roles configurables, tenant ni sucursales. Sólo existen los niveles fijos `VENTURINO` y `SUPERADMIN`.
 - No hay signup/autoregistro.
 
 ## Autenticación
@@ -19,7 +19,7 @@ El sistema tiene autenticación simple para app interna:
 | Aspecto | Estado |
 |---|---|
 | Proveedor | Propio simple en `lib/auth.ts` |
-| Credenciales | `AUTH_USER`, `AUTH_PASSWORD` |
+| Credenciales | `AUTH_USER`, `AUTH_PASSWORD`, `SUPERADMIN_USER`, `SUPERADMIN_PASSWORD` |
 | Secreto JWT | `JWT_SECRET`, fallback dev hardcodeado |
 | Login UI | `app/login/page.tsx` |
 | Login API | `POST /api/auth/login` |
@@ -60,10 +60,10 @@ Las rutas `/api/v1/market-references/**` son públicas sólo para que no dependa
 Payload actual:
 
 ```ts
-{ user: string }
+{ user: string, accessLevel: "VENTURINO" | "SUPERADMIN" }
 ```
 
-No incluye tenant, rol, permisos ni unidad operativa.
+Los tokens históricos sin `accessLevel` se interpretan como `VENTURINO`. No incluye tenant, roles configurables, permisos granulares ni unidad operativa.
 
 ## Signup/Registro
 
@@ -74,8 +74,8 @@ La app no contempla autoregistro. El acceso se crea/configura por variables de e
 ## Tenant, Roles Y Permisos
 
 - Tenant obligatorio: no implementado.
-- Roles: no implementados.
-- Permisos granulares: no implementados.
+- Roles configurables: no implementados; existen dos niveles fijos.
+- Permisos granulares: no implementados; las rutas superadmin se validan server-side.
 - Alcance de datos: app interna single-tenant para Venturino.
 
 No asumir permisos finos en futuras features. Si se agregan usuarios reales, administración, datos sensibles por rol o módulos operativos, aplicar `docs/ai/AUTH_POLICY.md` y rediseñar auth server-side.
@@ -91,11 +91,11 @@ Endpoints operativos protegidos por host local:
 
 Riesgo: validan `host` (`localhost`/`127.0.0.1`), no identidad técnica. Suficiente para cron local controlado, pero no para exposición externa. El pipeline `pipeline:postventa` ya no depende de este endpoint: ejecuta `runPostventaAnalysis` directo desde el script.
 
-Endpoint operativo protegido por sesión:
+Endpoints operativos protegidos por sesión `SUPERADMIN`:
 
 - `POST /api/admin/processes`
 
-Este endpoint se usa desde el control discreto del dashboard para ejecutar únicamente procesos allowlist: `pipeline:live` y `pipeline:postventa`. Requiere cookie de sesión válida, no acepta comandos arbitrarios, usa mutex por acción y timeout. La ejecución se dispara en segundo plano y la UI consulta estado con `GET /api/admin/processes` para evitar timeouts HTTP/proxy durante pipelines largos. Riesgo residual: como no existen roles, cualquier usuario autenticado puede verlo/ejecutarlo; si se agregan usuarios reales, debe restringirse a rol/admin.
+Este endpoint se usa desde Superadmin para ejecutar únicamente procesos allowlist: `pipeline:live` y `pipeline:postventa`. No acepta comandos arbitrarios, usa mutex por acción y timeout. La ejecución se dispara en segundo plano y la UI consulta estado con `GET /api/admin/processes` para evitar timeouts HTTP/proxy durante pipelines largos. Riesgo residual: el permiso depende de una identidad fija; si se agregan usuarios reales, debe migrarse a roles/autorización granular.
 
 ## Datos Sensibles
 
@@ -122,8 +122,8 @@ Este endpoint se usa desde el control discreto del dashboard para ejecutar únic
 | Riesgo | Severidad | Mitigación actual | Acción recomendada |
 |---|---|---|---|
 | Fallback `JWT_SECRET` dev hardcodeado | media | Variables en deploy | Exigir `JWT_SECRET` en producción y documentar `.env.example`. |
-| Sin roles/permisos | media | Uso interno single-tenant | No agregar capacidades sensibles sin auth granular. |
-| Control manual de pipelines sin rol admin | media | Requiere sesión y allowlist server-side | Restringir por rol/admin cuando exista modelo de usuarios. |
+| Sólo dos identidades fijas | media | Separación Venturino/Superadmin server-side | Migrar a usuarios y autorización granular si crece el equipo. |
+| Control manual de pipelines | media | Requiere Superadmin y allowlist server-side | Mantener fuera de Venturino; migrar a rol/admin al crear usuarios reales. |
 | Endpoints locales por host | media | Cron dentro de contenedor/host | Usar header secreto si se exponen desde UI o red externa. |
 | `/api/postventa/analyze` público en middleware | media | Handler exige localhost | Revisar antes de UI postventa. |
 | Sin rate limiting login | baja/media | App interna | Agregar si se expone públicamente. |

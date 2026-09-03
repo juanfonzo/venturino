@@ -1,9 +1,9 @@
 # Feature: Superadmin Y Observabilidad De La API
 
 Tipo: AFK
-Estado: completada-en-demo
+Estado: implementada y operativa para la revisión interna de consultas
 Hito: mejora continua de referencias de mercado
-Bloqueado por: validación con DB y SMTP del entorno local
+Bloqueado por: SMTP real depende de configuración por entorno; no bloquea la observabilidad
 
 ## Valor De Negocio
 
@@ -51,4 +51,4 @@ Permite que Algorym supervise la integración y convierta consultas reales en ev
 
 - Variables requeridas: credenciales superadmin y, para alertas, SMTP.
 - Fallback permitido: alertas deshabilitadas; el superadmin de consultas sigue operativo.
-- Estado: código preparado; validación real pendiente.
+- Estado: panel, auditoría y revisión operativos; el envío SMTP se verifica sólo con credenciales válidas del entorno.

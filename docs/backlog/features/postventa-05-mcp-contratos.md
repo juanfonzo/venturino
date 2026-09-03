@@ -1,9 +1,9 @@
 # Feature: Contratos MCP Postventa
 
 Tipo: AFK
-Estado: pendiente
+Estado: contrato-candidato
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: `postventa-02-matching-persistido`
+Bloqueado por: base MCP Python/FastAPI y autorización interna no definidas
 
 ## Valor De Negocio
 
@@ -16,7 +16,7 @@ Documentar y, si el hito lo requiere, implementar herramientas MCP para resumen,
 ## Dependencias
 
 - Datos: análisis persistido.
-- Backend: APIs de postventa.
+- Backend: `/api/postventa/summary`, `/api/postventa/products`, `/api/postventa/products/[id]` y `/api/reports/postventa`.
 - Frontend: no aplica.
 - Permisos: usuario interno autenticado/autorizado.
 - MCP/IA: módulo MCP Python/FastAPI.
@@ -30,7 +30,7 @@ Documentar y, si el hito lo requiere, implementar herramientas MCP para resumen,
 
 ## Criterios De Aceptación
 
-- [ ] `docs/technical/mcp-coverage-map.md` registra las capacidades postventa.
+- [x] `docs/technical/mcp-coverage-map.md` registra las capacidades postventa.
 - [ ] Cada tool define entrada, salida, permisos y límites.
 - [ ] Listados tienen `limit <= 100`.
 - [ ] No se exponen credenciales ni conexión Mongo.
@@ -66,20 +66,20 @@ Documentar y, si el hito lo requiere, implementar herramientas MCP para resumen,
 
 ## Definition Of Done
 
-- [ ] Implementado o explícitamente dejado como contrato-candidato.
+- [x] Explícitamente dejado como contrato-candidato.
 - [ ] Validado.
 - [ ] Tests/build/lint ejecutados o justificados.
 - [ ] Estados UX cubiertos si aplica.
 - [ ] MCP/skills del sistema actualizados, registrados como contrato-candidato, bloqueados o marcado no aplica.
-- [ ] `docs/technical/mcp-coverage-map.md` actualizado si hubo capacidad operativa.
-- [ ] Documentación y manifest actualizados si aplica.
+- [x] `docs/technical/mcp-coverage-map.md` actualizado.
+- [x] Documentación y manifest actualizados.
 - [ ] Entrada creada en `docs/backlog/archive/YYYY-MM.md`.
 
 ## Verificación
 
 - Nivel de verificación esperado: 2 si sólo contratos, 3 si se implementan tools.
 - Navegador requerido: no.
-- [ ] Validar coverage map.
+- [x] Validar coverage map.
 - [ ] Validar límites de listado.
 - [ ] Validar que no se expongan campos sensibles.
 
@@ -88,4 +88,4 @@ Documentar y, si el hito lo requiere, implementar herramientas MCP para resumen,
 - Variables requeridas: las del MCP y backend vigente.
 - Credenciales requeridas: según despliegue MCP.
 - Fallback permitido: sí para contratos; no para implementación real.
-- Estado de entorno: pendiente.
+- Estado de entorno: bloqueado hasta definir e implementar el servicio MCP.

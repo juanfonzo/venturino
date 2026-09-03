@@ -190,6 +190,26 @@ export function buildSearchTokens(modelNorm: string, familyKey?: string | null) 
   )];
 }
 
+export interface ExpandedFamilySearchPattern {
+  modelNormPrefix: string;
+  modelNormSuffix: string;
+}
+
+// PostgreSQL needs a bounded way to retrieve a John Deere short family such as
+// 6J before the in-memory ranker can apply its exact family guard.
+export function buildExpandedFamilySearchPatterns(
+  brandNorm: string | null,
+  familyKey: string | null,
+): ExpandedFamilySearchPattern[] {
+  if (normalizeText(brandNorm) !== "JOHN DEERE") return [];
+
+  const family = compactModel(familyKey ?? "");
+  const match = family.match(/^(\d)([A-Z])$/);
+  if (!match) return [];
+
+  return [{ modelNormPrefix: match[1], modelNormSuffix: match[2] }];
+}
+
 export function buildDirectSearchTokens(modelNorm: string) {
   const compact = compactModel(modelNorm);
   const numericCore = compact.match(/\d{3,}/)?.[0];

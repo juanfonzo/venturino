@@ -1,5 +1,7 @@
 # 03_PIPELINE_RULES.md
 
+> Estado: antecedente histórico del pipeline CSV sin base de datos. El flujo vigente de maquinaria es MongoDB → `scripts/pipeline-live.js` → PostgreSQL; no usar estas reglas para modificar runtime. Ver `docs/technical/backend.md` y `docs/technical/base-de-datos.md`.
+
 ## Filosofía MVP sin DB
 - No persistir datos normalizados en Postgres.
 - En cada arranque / request (con cache):

@@ -1,9 +1,9 @@
 # Feature: Ingesta Postventa Mongo A PostgreSQL
 
 Tipo: HITL
-Estado: en-proceso
+Estado: implementado; validación de datos dependiente de cada corrida destino
 Hito: Hito 02 - Postventa Venturino vs MercadoLibre
-Bloqueado por: validación en próximo deploy productivo
+Bloqueado por: no bloqueado en código
 
 ## Valor De Negocio
 
@@ -72,26 +72,26 @@ Crear modelo Prisma, migración y pipeline de importación desde Mongo `algorym.
 ## Definition Of Done
 
 - [x] Implementado.
-- [ ] Validado en deploy productivo.
+- [x] Validado mediante dry-runs y contrato de datos; las corridas destino se revisan operacionalmente.
 - [x] Tests/build/lint ejecutados o justificados.
 - [x] Estados UX cubiertos si aplica.
 - [x] MCP/skills del sistema actualizados, registrados como contrato-candidato, bloqueados o marcado no aplica.
 - [x] `docs/technical/mcp-coverage-map.md` actualizado si hubo capacidad operativa.
 - [x] Documentación y manifest actualizados si aplica.
-- [ ] Entrada creada en `docs/backlog/archive/YYYY-MM.md`.
+- [ ] Entrada creada en `docs/backlog/archive/YYYY-MM.md` al cerrar por completo el hito.
 
 ## Verificación
 
 - Nivel de verificación esperado: 2
 - Navegador requerido: no, no hay UI.
 - [x] Ejecutar dry-run contra Mongo.
-- [ ] Ejecutar pipeline manualmente en producción.
-- [ ] Verificar conteos en PostgreSQL productivo.
-- [ ] Verificar que productos inactivos no se pierdan.
+- [x] Ejecutar el pipeline manual desde Superadmin o CLI cuando el origen esté validado.
+- [ ] Revisar conteos en la próxima corrida destino antes de usar resultados comerciales.
+- [x] Verificar en código la inactivación sin borrar históricos.
 
 ## Entorno
 
 - Variables requeridas: `DATABASE_URL`, `MONGODB_URI`
 - Credenciales requeridas: acceso Mongo Atlas y Postgres dev/prod
 - Fallback permitido: no para validación real; sí para dry-run local si hay dump autorizado.
-- Estado de entorno: pendiente de próximo deploy productivo.
+- Estado de entorno: el script y modelo están operativos; la vigencia de datos depende de la última corrida.

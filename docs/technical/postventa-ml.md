@@ -1,8 +1,8 @@
 # Arquitectura: Postventa Venturino vs MercadoLibre
 
-Estado: implementado inicial, pendiente de validación en entorno destino
+Estado: implementado; la disponibilidad de datos depende de una corrida de importación/análisis en el entorno destino
 
-Fecha: 2026-06-05
+Última revisión: 2026-09-03
 
 Fuente principal: conversación de refinamiento + `reports/postventa-match-analysis.md` + `lib/postventa/matching.ts`.
 
@@ -26,11 +26,10 @@ El sistema debe:
 - El matching sigue el nombre vigente del producto. Si `producto_id` se mantiene pero cambia el nombre, el próximo análisis debe recalcular candidatos con el nombre nuevo.
 - Los productos Venturino y ML se consideran comparables sólo si están activos en la última extracción de su origen.
 - Los productos ML que ya no aparecen en la última extracción se marcan inactivos y no participan del análisis vigente, pero conservan trazabilidad histórica.
-- El reporte PDF usa banda fija de precio `±40%`.
+- El pipeline estándar usa banda de precio `±40%`; el PDF refleja los candidatos persistidos por la corrida seleccionada.
 - El estado `similar a ML` usa umbral estándar `±10%`, persistido por corrida en `PostventaAnalysisRun.similarityThreshold`.
 - El listado `/postventa` ordena por defecto productos con candidatos/comparables primero y deja `sin comparable` al final.
 - El reporte PDF estándar exporta sólo productos comercialmente comparables: `similar a ML`, `Venturino más caro que ML` y `Venturino más barato que ML`. Excluye `sin comparable` y `baja confianza`.
-- La UI puede permitir ajustar la banda de precio para exploración, sin alterar el reporte estándar.
 - La UI muestra candidatos sugeridos, incluso si algunos son de baja confianza.
 - `baja confianza` queda visible en UI como evidencia no accionable, pero no entra al PDF comercial.
 
@@ -38,13 +37,13 @@ El sistema debe:
 
 | Módulo | Responsabilidad | Archivos esperados |
 |---|---|---|
-| Ingesta postventa | Leer Mongo `productos`, detectar últimas fechas por origen, deduplicar por id estable y persistir en PostgreSQL | `scripts/pipeline-postventa.js`, `lib/postventa/import.ts` |
+| Ingesta postventa | Leer Mongo `productos`, detectar últimas fechas por origen, deduplicar por id estable y persistir en PostgreSQL | `scripts/pipeline-postventa.js` |
 | Modelo de datos | Productos, snapshots de precio, corridas de importación, corridas de análisis, candidatos | `prisma/schema.prisma`, migración Prisma |
 | Matching | Normalizar nombres, inferir tipos, puntuar candidatos, excluir outliers de precio y calcular mediana | `lib/postventa/matching.ts` |
 | API web | Listados, detalle por producto, resumen, ejecución de análisis y descarga PDF | `app/api/postventa/**`, `app/api/reports/postventa/route.ts` |
 | UI postventa | Dashboard compacto, filtros, tabla de productos completa y detalle de candidatos en modal | `app/(pages)/postventa/page.tsx`, `components/postventa/**` |
 | Reporte PDF | PDF compacto de productos comparables con estado, mediana, brecha y candidato principal | `app/api/reports/postventa/route.ts`, `scripts/generatePostventaReport.js` |
-| MCP candidato | Herramientas para consultar resumen, listar productos y ver detalle | `mcp/app/tools/postventa.py` |
+| MCP candidato | Herramientas para consultar resumen, listar productos y ver detalle | `docs/technical/mcp-coverage-map.md`; no existe servicio MCP en el repo |
 
 ## Flujo De Datos
 
@@ -62,12 +61,13 @@ MongoDB Atlas
        postventa_analysis_runs
        postventa_product_analyses
        postventa_match_candidates
-    -> Next.js UI / PDF / MCP candidato
+    -> Next.js UI y PDF
+    -> contratos MCP candidatos documentados
 ```
 
 La calibración offline (`scripts/analyzePostventaMatches.js`) y el análisis persistido (`lib/postventa/run-analysis.ts`) ejecutan el mismo módulo de matching: `lib/postventa/matching.ts`.
 
-## Modelo De Datos Propuesto
+## Modelo De Datos Implementado
 
 ### `PostventaImportRun`
 
@@ -86,7 +86,7 @@ Registra cada importación desde Mongo.
 | `newCount` | `Int` | altas |
 | `updatedCount` | `Int` | actualizaciones |
 | `deactivatedCount` | `Int` | productos no vistos en última extracción |
-| `status` | `String` | `success`, `failed`, `dry_run` |
+| `status` | `String` | La importación productiva actual registra `success`; `--dry-run` no persiste corrida. |
 | `createdAt` | `DateTime` | default `now()` |
 
 ### `PostventaProduct`
@@ -164,7 +164,7 @@ Corrida del algoritmo de matching.
 | `minScore` | `Int` | default `20` |
 | `venturinoDate` | `DateTime? @db.Date` | fecha usada |
 | `mlDate` | `DateTime? @db.Date` | fecha usada |
-| `status` | `String` | `success`, `failed`, `draft` |
+| `status` | `String` | `running`, `success`, `failed` |
 | `summary` | `Json?` | conteos por estado/confianza |
 | `createdAt` | `DateTime` | default `now()` |
 
@@ -207,7 +207,7 @@ Candidatos ML sugeridos por producto.
 
 Estos datos comerciales de ML son informativos para UI y análisis humano; no modifican scoring, guardrails ni mediana del matching.
 
-## Contratos Backend
+## Contratos Backend Implementados
 
 ### `GET /api/postventa/summary`
 
@@ -229,12 +229,15 @@ type Output = {
     id: number
     algorithmVersion: string
     priceBand: number
+    similarityThreshold: number
     topN: number
+    minScore: number
     venturinoDate: string | null
     mlDate: string | null
     createdAt: string
-  }
-  counts: Record<string, number>
+  } | null
+  kpis: Record<string, number>
+  statusCounts: Record<string, number>
   confidenceCounts: Record<string, number>
 }
 ```
@@ -250,25 +253,45 @@ Filtros:
 - `search`;
 - `status`;
 - `confidence`;
-- `minDiffPct`;
-- `maxDiffPct`;
-- `hasComparable`;
-- `sort`: `name`, `priceArs`, `ventVsMedianPct`, `status`.
+- `sortBy`: `name`, `priceArs`, `ventVsMedianPct`, `status`, `confidence` o `comparableFirst`;
+- `sortDir`: `asc` o `desc`.
 
 Salida:
 
 ```ts
 type Output = {
+  analysisRun: {
+    id: number
+    algorithmVersion: string
+    priceBand: number
+    similarityThreshold: number
+    topN: number
+    minScore: number
+    venturinoDate: string | null
+    mlDate: string | null
+    createdAt: string
+  } | null
   items: Array<{
+    id: number
     productId: number
     externalId: string
     name: string
     priceArs: number | null
+    url: string | null
     status: string
     medianMlPriceArs: number | null
     ventVsMedianPct: number | null
     bestConfidence: string
+    strongCandidateCount: number
     totalCandidates: number
+    excludedByPrice: number
+    excludedByScore: number
+    bestCandidate: {
+      name: string
+      priceArs: number | null
+      score: number
+      confidence: string
+    } | null
   }>
   total: number
   page: number
@@ -278,52 +301,44 @@ type Output = {
 
 ### `GET /api/postventa/products/[id]`
 
-Detalle del producto Venturino, candidatos usados y snapshots relevantes.
+Detalle del análisis de un producto Venturino y sus candidatos usados.
 
 Salida:
 
 ```ts
 type Output = {
-  product: {
-    id: number
-    externalId: string
-    name: string
-    priceArs: number | null
-    url: string | null
-    active: boolean
-  }
-  analysis: {
-    status: string
-    medianMlPriceArs: number | null
-    ventVsMedianPct: number | null
-    bestConfidence: string
-  }
+  id: number
+  productId: number
+  externalId: string
+  name: string
+  priceArs: number | null
+  url: string | null
+  status: string
+  medianMlPriceArs: number | null
+  ventVsMedianPct: number | null
+  bestConfidence: string
   candidates: Array<{
+    id: number
     rank: number
     mlProductId: number
     mlExternalId: string
     name: string
-    priceArs: number
+    priceArs: number | null
+    installmentTotalArs: number | null
+    installmentsQuantity: number | null
+    freeShipping: boolean | null
     url: string | null
     score: number
     confidence: string
-    diffPct: number
+    diffPct: number | null
     reasons: string[]
-  }>
-  priceHistory: Array<{
-    source: "venturino" | "ml"
-    productId: number
-    snapshotDate: string
-    priceArs: number | null
-    name: string
-    activeInRun: boolean
   }>
 }
 ```
 
 ### `POST /api/postventa/analyze`
 
-Ejecuta o reejecuta análisis sobre productos activos. Debe quedar protegido por auth y pensado para uso interno.
+Ejecuta o reejecuta análisis sobre productos activos. Es una ruta pública sólo en el proxy para permitir uso local controlado; el handler rechaza todo host que no sea `localhost` o `127.0.0.1`. El pipeline productivo no depende de esta ruta: llama al servicio directamente.
 
 Entrada:
 
@@ -332,44 +347,27 @@ type Input = {
   priceBand?: number
   topN?: number
   minScore?: number
-  persist?: boolean
+  similarityThreshold?: number
 }
 ```
-
-Validaciones:
-
-- `priceBand` entre `0.05` y `2`;
-- `topN` entre `1` y `50`;
-- `minScore` entre `0` y `100`.
 
 ### `GET /api/reports/postventa`
 
-Genera PDF con última corrida o una corrida específica.
-
-Query:
-
-```ts
-type Input = {
-  analysisRunId?: number
-  status?: string
-}
-```
-
-El reporte estándar usa `priceBand = 0.4` aunque la UI permita exploración con otros valores.
+Genera PDF con última corrida o una corrida específica. Admite `analysisRunId`, `search`, `status`, `confidence`, `sortBy` y `sortDir`.
 
 El endpoint fuerza exportación `comparableOnly`, por lo que `sin comparable` y `baja confianza` quedan excluidos aunque existan otros filtros activos.
 
-## UI Propuesta
+## UI Implementada
 
 Ruta: `/postventa`
 
 Layout operativo:
 
 - KPIs superiores: productos Venturino, comparables, más caro, más barato, baja confianza, sin comparable.
-- Filtros compactos: búsqueda, estado, confianza, rango de diferencia, cantidad de candidatos.
+- Filtros compactos: búsqueda, estado y confianza.
 - Tabla paginada server-side con columnas: producto, precio Venturino, estado, mediana ML, brecha, confianza, candidatos.
 - Tabla de ancho completo con acción `Ver` por registro.
-- Modal de detalle con candidatos usados, motivos de score, links a ML y trazabilidad de precio.
+- Modal de detalle con candidatos usados, motivos de score, links a ML y términos comerciales disponibles.
 - Acción de descarga PDF.
 - Estado vacío para primera importación y para filtros sin resultados.
 - Estado de error si no hay corrida de análisis persistida.
