@@ -7,11 +7,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const dataset = await loadAcara();
-    const item = dataset.items.find((entry) => entry.id === params.id);
+    const item = dataset.items.find((entry) => entry.id === id);
 
     if (!item) {
       return NextResponse.json({ error: "Item no encontrado" }, { status: 404 });

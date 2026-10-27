@@ -1,0 +1,199 @@
+﻿# http://CONTINUITY.md
+
+## Goal (incl. success criteria):
+- App interna para analisis de mercado de maquinaria agricola y postventa Venturino.
+- Datos vigentes de maquinaria desde PostgreSQL/Prisma, alimentados por pipeline MongoDB; ACARA sigue desde CSV local.
+- Normalizacion de precio, ubicacion, estado, marca/modelo, flags, dedupe e historial de precios.
+- 2026-07-17: implementar una API de referencias de mercado para tomas de maquinaria usada consumida desde el backend de Padawanway, sin alterar los módulos actuales.
+- 2026-05-21: relevar el repo actual en profundidad y confeccionar contexto de proyecto para agentes IA.
+- 2026-05-22: iniciar analisis postventa Venturino vs ML desde Mongo productos para calibrar matching automatico.
+
+## Constraints/Assumptions:
+- FX fallback 1500 ARS/USD; cotizacion vigente puede venir de `FxRate` via DolarAPI.
+- condicion es fuente de verdad para estado.
+- Sin lat/lon, solo ubicacion texto -> provincia/ciudad.
+- PostgreSQL/Prisma es fuente actual de publicaciones, historial, FX y postventa.
+- Mapping ACARA dominante en localStorage + export/import JSON; endpoint `data/mappings.json` existe pero no es fuente colaborativa robusta.
+- ACARA CSV puede cambiar delimitador (autodetect).
+- CSV ACARA real: `data/acara_precios_maquinaria_agricola_wide.csv`; sin fallback en raiz.
+- 2026-07-17: `pipeline:live` se ejecuta manualmente después de cada scraping; las publicaciones limpias quedan en PostgreSQL y el nuevo servicio debe consumir sólo esa base.
+
+## Key decisions:
+- Choropleth con GeoJSON local (version simplificada).
+- Persistencia opcional de mappings en data/mappings.json via API Node, pero la UI usa principalmente localStorage.
+- API server-side para filtros/paginacion/percentiles.
+- Precio USD < 1000 tratado como sin dato para filtrar valores erroneos.
+- Next.js migrado a 16.2.7; requiere Node >= 20.9.0.
+- Diseno UI propio Venturino/John Deere prevalece sobre guia visual base del kit.
+- API de referencias de mercado separada de Análisis 1, con operaciones de referencias directas y búsqueda ampliada orientativa; no devuelve tasación ni recomendación de compra.
+- Acceso máquina a máquina desde el backend de Padawanway mediante requests firmados; no se implementa iframe ni frontend de Algorym.
+- Primera versión sin HP ni horas y sin exponer fechas, estado, cobertura o metadatos internos del scraping.
+- Matching directo por modelo canónico con ampliación automática de años; las configuraciones se informan aparte y no se usan para excluir resultados.
+- Aliases conservadores por marca/categoría: no fusionar sufijos de líneas distintas por fuzzy genérico.
+
+## State:
+- Done:
+  - 2026-06-03 onboarding del repo existente completado proporcionalmente: CodeGraph disponible usado como orientación, lectura directa de rutas, APIs, loaders, Prisma, auth, pipelines, UI y docs previos.
+  - 2026-06-03 docs actualizados en UTF-8: PROJECT_CONTEXT, MANIFEST, arquitectura, frontend, backend, base-de-datos, seguridad y mcp-coverage-map.
+  - 2026-06-04 Next.js migrado a 16.2.7, `middleware.ts` reemplazado por `proxy.ts`, ESLint configurado para Next 16 y CSVs legacy de MVP retirados.
+  - 2026-06-04 reporte PDF corregido: `/api/reports/venturino` usa `scripts/generateVenturinoReport.js` en proceso Node aislado porque React PDF falla dentro del bundle Next 16 con React error #31.
+  - 2026-06-04 UX/UI desktop puntos 1-4 corregidos: precios de maquinaria USD < 1000 como sin dato, modales/drawers con semántica dialog, controles nombrados y targets compactos agrandados.
+  - PROJECT_CONTEXT.md creado en docs/ai/ con alcance, arquitectura, flujos, APIs, datos, deploy y riesgos actuales.
+  - Script analytics postventa creado: scripts/analyzePostventaMatches.js.
+  - Reporte de calibracion generado: reports/postventa-match-analysis.md.
+  - JSON de apoyo generado: data/postventa_match_analysis.json.
+  - Mejora visual del grafico ACARA (grid, gradiente, tooltip, dots) en AcaraSeriesChart.
+  - Dashboard sin cobertura ACARA, con mapa de provincias (cantidad, precio referencia y precio alto) y trendline ACARA.
+  - Provincias page eliminada y nav ajustado.
+  - Explorador modal muestra tractor evaluado + referencia ACARA con anio usado.
+  - ACARA: paginacion en lista, buscador con limpiar, UX de vinculos mejorado.
+  - Auto-match ACARA por similitud (brand/model) con fallback en Explorador y Comparables.
+  - Precio $0 tratado como sin dato en loader.
+  - Explorador sin modelo, botones borde, columna Ref. ACARA, sugerencias auto-match.
+  - Comparables con autocomplete, ajustes opcionales, explicacion score y Ref. ACARA.
+  - Dashboard simplificado y oportunidades explicadas.
+  - ACARA UX mejorado; serie ordenada por anio ascendente.
+  - Seccion Calidad eliminada.
+  - Loader de tractores prioriza CSV en data/ y fallback a root.
+  - Auto-match ACARA ignora referencias sin precio; "Sugerido" solo si hay valor.
+  - Explorador/Comparables resaltan "Nuevo (anio antiguo)" y filtran estado Nuevo con anio viejo.
+  - Parseo de anio usa titulo/descripcion cuando falta el campo.
+  - Comparables: buscador de publicaciones solo con precio y rango Nuevo acotado a anios recientes.
+  - ACARA: busqueda de combos de mercado y mas opciones via stats (topModelCombos=200).
+  - Autocomplete de publicaciones usa searchScope=core para evitar ruido de descripcion.
+  - Comparables con guias de uso y microcopy para interpretar resultados.
+  - 2026-07-17 API Padawanway de referencias de mercado implementada: endpoints directo/ampliado, HMAC, replay protection, rate limit, auditoría PostgreSQL, documentación y tests focalizados.
+  - 2026-07-17 migración `20260717160000_add_market_reference_api` aplicada sólo a PostgreSQL local; verificación read-only completada con cinco tractores usados de Venturino.
+  - 2026-07-21 mejora de disponibilidad implementada: cascada automática de años, clasificaciones comerciales en español, solidez de muestra y sugerencia de familia para búsqueda ampliada.
+  - 2026-07-21 normalización compartida entre API y `pipeline:live`; backfill local conservador corrigió cuatro aliases comprobados y quedó en cero cambios pendientes.
+  - 2026-07-21 paquete `api-doc/` preparado para reunión y handoff con Padawanway: resumen, contrato, seguridad/firma, Postman, guía frontend y checklist de producción.
+  - 2026-07-22 contrato simplificado: request-id queda como único identificador de trazabilidad y el nombre de la empresa integradora se unifica como Padawanway en código, configuración y documentación.
+  - 2026-07-27 credenciales locales de la integración Padawanway generadas y asentadas en `.env`; client-id y secreto de ambos lados quedaron correlacionados sin exponerlos en documentación ni Git.
+  - 2026-07-27 URL pública para Padawanway confirmada y registrada como `https://venturino.algorym.app`, sin barra final para concatenar los endpoints versionados.
+  - 2026-07-27 pipeline de despliegue actualizado para inyectar desde GitHub Secrets las cinco variables `PADAWANWAY_API_*`, incluidos ventana temporal y rate limit.
+  - 2026-07-29 documentación Padawanway actualizada con URL productiva, estrategia de prueba pendiente, semántica de `configuracion`, variables exactas y preguntas de reunión refinadas.
+  - 2026-09-03 mejora de matching de referencias implementada tras revisar nueve ceros auditados con el snapshot productivo local: aliases exactos Metalfor/PLA/John Deere, descriptor de título `automotriz` limitado a pulverizadoras y recuperación estructural de familias John Deere cortas. Algoritmo `market-reference-v1.2`; `test:market-reference` 7/7, TypeScript y los cuatro grupos históricos verificados en modo lectura.
+  - 2026-09-03 guía canónica creada en `docs/technical/referencias-mercado-matching.md`: catálogo de casos resueltos, auditorías de origen, guardrails, regresiones y procedimiento para nuevos falsos negativos de Padawanway.
+- Now:
+  - 2026-09-03 documentación técnica y de integración reconciliada con el runtime actual: MongoDB alimenta PostgreSQL mediante pipelines, PostgreSQL abastece UI/API/auditoría, Padawanway opera por HMAC en producción y la copia local se renueva mediante snapshot completo verificado. Los archivos del MVP CSV quedaron marcados como históricos; los contratos MCP siguen candidatos, no implementados.
+  - 2026-09-03 relevamiento read-only para mejorar el matching de referencias Padawanway: CodeGraph y lectura directa confirmaron Mongo `algorym.venturino` -> `pipeline:live` -> PostgreSQL `Listing` -> API/auditoría `MarketReferenceQuery` -> Superadmin. Antes de alinear la base local, Mongo tenía extracciones más recientes que `Listing`; no ejecutar `pipeline:live` hasta confirmar frescura/consistencia de ese origen. El snapshot restaurado permitió revisar nueve ceros históricos reales y verificar sus referencias elegibles.
+  - 2026-09-03 sincronización PostgreSQL producción -> local implementada y ejecutada: `scripts/database/export-postgres-snapshot.sh` generó en el VPS el snapshot completo `venturino-postgres-20260903T140008Z.dump` de `venturino_db`, con manifest y SHA-256 verificado. `scripts/database/import-postgres-snapshot.js` lo restauró correctamente en la base local declarada `venturino`. Transferencia por SCP/SFTP o R2 privado documentada en `docs/technical/postgres-snapshot-sync.md`; la próxima sincronización requiere repetir el proceso manual de exportación, transferencia, checksum e importación.
+  - 2026-09-03 API Padawanway operativa en producción desde el CRM. La configuración, el schema, la autenticación HMAC y la auditoría ya están activos; las pruebas futuras se limitan a cambios de contrato, rotación de credenciales o incidentes.
+  - 2026-06-10 diagnóstico puntual Postventa Honda cortadoras: Mongo `algorym.productos` contiene Venturino `332868795` HRG466SKEP y `332865987` HRX476VYEH al 2026-05-30, pero no contiene ML con `HRG466`, `SKEP`, `HRX476`, `VYEH` ni `cortadora Honda`; el motor productivo devuelve `sin comparable` por falta de equivalente extraído, no por falso negativo de matching.
+  - 2026-06-10 verificación adicional: Mongo activo actual perfila 127 Venturino y 4111 ML; búsqueda web actual muestra que MercadoLibre sí tiene páginas/listados para HRG466C1-SKEP y HRX476, por lo que el problema probable está en cobertura/query del scraping ML, no en el pipeline Mongo -> Postgres ni en la regla de matching.
+  - 2026-06-10 segunda revisión Honda tras nuevo scraping: Mongo activo ML 2026-06-10 contiene 5209 ML, 253 Honda, con familias HRG466, HRX476, WB20, GX200, etc. Las cortadoras HRG466/HRX476, motobomba WB20XH2 y motor GX200QX tienen candidatos ML activos dentro de banda, pero quedan `sin comparable` por regla de modelo Honda exacto; requiere mejorar normalización/compatibilidad de modelos por familia y variante. WJR2525 y GP200 siguen sin equivalente exacto extraído.
+  - 2026-06-10 mejora matching Honda implementada: normalización por familia/modelo Honda (`HRG466`, `HRX476`, `WB20`, `GX200`), sinónimos `cortacésped/cortacesped` y `desmalezadora`, guardrail de fluidos por litros y filtro de baja confianza no técnica. Validación: análisis 127 productos => 78 comparables, 49 sin comparable, 2 baja confianza; `test:postventa`, `test:postventa-validation-set`, `tsc`, `lint`, `build` y dry-run pipeline OK.
+  - 2026-06-10 nueva corrida scraper Honda: Mongo activo ML 2026-06-10 contiene 5307 ML únicos con precio y 335 Honda ML; ahora hay 15 GP200 y 16 WJR2525. GP200 matchea con el algoritmo vigente; WJR2525 requirió ajustar extracción de familia Honda con separadores y tipificar `fumigadora/aspersora/pulverizador` como `MOCHILA`. Validación: análisis 127 productos => 80 comparables, 47 sin comparable, 2 baja confianza; gates OK.
+  - 2026-06-11 cambio cliente Postventa ML: se incorporan campos informativos `precio_cuotas`, `cantidad_cuotas` y `envio_gratis` desde Mongo para productos/candidatos ML; se muestran sólo en cards de candidatos (`Envío gratis` y total financiado/cantidad de cuotas). No afectan matching ni PDF. Requiere aplicar migración `20260611120000_add_postventa_ml_commercial_terms`.
+  - 2026-06-04 relevamiento data/flujo Postventa: lectura de scripts, Prisma y reporte de calibracion; CodeGraph consultado pero la lectura directa fue la fuente principal.
+  - Mongo Atlas no fue accesible desde este entorno para perfilado live (`querySrv ECONNREFUSED`), por lo que la calidad cruda debe confirmarse desde servidor/red con acceso.
+  - Postgres local/dev contiene importacion postventa #1 con 127 productos Venturino activos y 3903 ML activos; no contiene `PostventaAnalysisRun` persistida.
+  - Calibracion JSON previa sobre 127 productos: 67 con comparable, 60 sin comparable, 46 mas caro, 19 mas barato, 2 baja confianza; 26 comparables tienen brecha menor o igual a 5%.
+  - Mongo Atlas perfilado con hosts directos por falla SRV en Node: `algorym.productos` tiene 8497 docs, activos actuales postventa 127 Venturino al 2026-05-30 y 4108 ML normalizados al 2026-05-31.
+  - Matching temporal sobre Mongo actual: 64 comparables, 63 sin comparable, 41 mas caro, 20 mas barato, 3 baja confianza; 34 comparables tienen brecha menor o igual a 10%.
+  - `algorym.venturino` corresponde a dataset de maquinaria/publicaciones y no sirve para postventa porque no trae `producto_id`, `ml_item_id` ni `nombre` en el contrato del pipeline postventa.
+  - `algorym.productos` solo tiene indice `_id`; conviene evaluar indices por `origen`, fecha de scraping y ids estables si el volumen crece.
+  - Decision usuario: `DATABASE_URL` local no esta actualizado respecto de produccion y no debe tomarse como fuente para validar postventa.
+  - Decision usuario: el analisis postventa debe ejecutarse automaticamente despues de cada importacion mensual, igual que el flujo de maquinaria Mongo -> pipeline -> Postgres -> app.
+  - Decision usuario: la UI Postventa debe mostrar solo resultados del algoritmo vigente, sin revision/override manual en primera version.
+  - Decision implementada: usar `similar a ML` con umbral +/-10% para primera version de reporte/UI Postventa.
+  - Simulacion PDF Postventa creada en `reports/postventa-pdf-simulation.md`: recomienda `similar a ML` +/-10%, estructura PDF, KPIs y performance de ~522k pares en ~2,7 s.
+  - 2026-06-04 implementado primer ajuste postventa: `similar a ML` +/-10% en algoritmo productivo, `similarityThreshold` persistido en `PostventaAnalysisRun`, fallback de IDs ML desde URL, `pipeline:postventa` dispara analisis automatico y `pipeline:postventa:import-only` queda como escape.
+  - Calibracion Mongo actual regenerada: 127 Venturino, 4111 ML activos, 63 sin comparable, 33 similar, 17 mas caro, 11 mas barato, 3 baja confianza.
+  - 2026-06-04 creado evaluador benchmark Postventa: `npm run analysis:postventa-evaluate` genera `reports/postventa-benchmark-evaluation.md` y `npm run test:postventa` valida gates de clasificacion.
+  - 2026-06-04 segunda iteracion benchmark Postventa: diccionario `jarro/taza/mug` y comparacion de bateria por Ah. Evaluacion 5/5 gates OK, cobertura comparable 55,9%, sin comparable 44,1%, baja confianza 2,4%, 33 brechas accionables.
+  - Cobertura por familias tras segunda iteracion: JARRO 6/6 comparables, BATERIA 1/2 comparables; 150Ah, aceites por litros, ISG, correas, Honda, manometros y varios repuestos tecnicos quedan sin forzar por falta de evidencia ML equivalente.
+  - 2026-06-04 set de validacion etiquetado Postventa creado: `data/postventa_validation_set.json` con 28 productos dificiles y `reports/postventa-validation-set.md` con criterios analiticos. Prioriza guardrails de precision: aceites/litros, ISG, correas Draper, repuestos con part number, Honda por modelo exacto.
+  - 2026-06-04 guardrails Postventa implementados y testeados: fluidos por linea/litros, ISG no comparable con llaves fisicas, bateria por Ah, Honda por modelo exacto, correa Draper, cincel por medida y cap a baja confianza para filtro/inyeccion/cuchilla sin part number.
+  - `test:postventa-validation-set` creado. Ultima corrida: 5/5 gates OK, 28 casos, positivos 2/2, falsos positivos accionables 0, 1 warning no bloqueante en `PV-VAL-018` porque queda en baja confianza con candidato rechazado visible solo como evidencia.
+  - Benchmark general tras guardrails: 127 productos, 70 comparables (55,1%), 57 sin comparable (44,9%), baja confianza 5 (3,9%), 31 brechas accionables; `test:postventa` sigue 5/5 gates OK.
+  - 2026-06-04 control administrativo discreto agregado al final del dashboard: ruedita pequena abre acciones `Maquinaria` y `Postventa`. Endpoint privado `POST /api/admin/processes` ejecuta solo scripts allowlist (`pipeline:live`, `pipeline:postventa`) con sesion valida, mutex por accion y timeout.
+  - 2026-06-04 seccion UI Postventa implementada en `/postventa`: resumen, filtros, tabla paginada, detalle de candidatos ML, estados de carga/error/vacio y endpoints read-only `/api/postventa/summary`, `/api/postventa/products` y `/api/postventa/products/[id]`.
+  - Validacion Postventa UI: `npx tsc --noEmit`, `npm run lint` (4 warnings preexistentes), `npm run build`, login HTTP local y GET autenticado de `/postventa` y `/api/postventa/summary` OK. Navegador integrado no disponible en esta sesion (`iab` unavailable).
+  - 2026-06-04 reporte PDF Postventa implementado: `/api/reports/postventa`, `scripts/generatePostventaReport.js`, boton `Descargar PDF` en `/postventa` y servicio `getPostventaReportData` con mismos filtros server-side.
+  - Validacion Reporte Postventa: `node --check`, `npx tsc --noEmit`, `npm run lint` (mismas 4 warnings preexistentes), `npm run build`, render PDF con fixture temporal (`%PDF`) y endpoint local autenticado responde 404 JSON controlado porque la DB local no tiene corrida Postventa persistida.
+  - 2026-06-05 control de procesos ajustado: los botones muestran solo `Maquinaria` y `Postventa`; `/api/admin/processes` inicia pipelines en segundo plano y expone `GET` de estado para evitar 504 por requests largas. Dry-run de `pipeline:live` validado contra Mongo: conecta, detecta ultimas fechas y procesa 11591 registros sin escribir DB.
+  - 2026-06-05 ajustes Postventa: listado ordena por defecto comparables/candidatos primero y deja `sin comparable` al final; busqueda tokenizada reforzada con variantes simples; reporte PDF fuerza export comparable-only excluyendo `sin comparable`.
+  - 2026-06-05 matching Postventa refinado para herramientas: separa `CAJA_HERRAMIENTAS` de `KIT_HERRAMIENTAS`, evita mezclar caja con kits/switch/llaves de arranque, bloquea comparacion juguete vs articulo operativo y restringe `kit/set/caja` a contexto real de herramientas.
+  - Validacion Postventa tras ajustes: `analysis:postventa-matches -- --sample 1000` => 127 productos, 69 con comparable (54,3%), 58 sin comparable (45,7%), 6 baja confianza (4,7%). `test:postventa` 5/5 gates OK; `test:postventa-validation-set` 5/5 gates OK con 29 casos, 3/3 positivos y 0 falsos positivos accionables.
+  - 2026-06-05 revision pre-subida Postventa con kit dev IA: hallazgo corregido en metadata `similarityThreshold` de la API de lectura; matching productivo y calibracion offline unificados sobre `lib/postventa/matching.ts`.
+  - 2026-06-05 pipeline Postventa ajustado: `pipeline:postventa` y `analysis:postventa-persist` ejecutan `runPostventaAnalysis` directo via runtime TS local, sin depender de `POSTVENTA_ANALYSIS_URL` ni endpoint HTTP local.
+  - 2026-06-05 reporte PDF Postventa definido como benchmark comercial: exporta solo estados accionables (`similar a ML`, `Venturino mas caro que ML`, `Venturino mas barato que ML`) y excluye `sin comparable` y `baja confianza`.
+  - 2026-06-05 validacion final Postventa: `node --check` scripts tocados OK, `npx tsc --noEmit` OK, `analysis:postventa-matches -- --sample 1000` OK, `test:postventa` 5/5, `test:postventa-validation-set` 5/5, `pipeline:postventa -- --dry-run --no-sample` OK, `npm run lint` OK con 4 warnings preexistentes, `npm run build` OK.
+  - 2026-06-05 ajustes Postventa PDF/UI: reporte PDF compactado para reducir saltos de página (fixture 33 filas accionables: 4 páginas vs PDF adjunto de 13 páginas); tabla Postventa pasa a ancho completo con botón `Ver` y detalle en modal simple.
+  - Validación local de Postventa PDF/UI: `node --check scripts/generatePostventaReport.js`, `npx tsc --noEmit`, `npm run lint` y `npm run build` OK. Browser integrado no disponible (`iab`). HTTP local: login y `/postventa` OK; endpoints de datos fallan contra DB local por schema desactualizado (`column existe does not exist`), no representativo de producción.
+  - 2026-06-08 diagnóstico Dashboard tendencia: `MarketEvolutionChart` quedaba visualmente vacío en modo series por rango cuando cada rango tenía un solo punto histórico, porque las líneas multi-serie usaban `dot={false}`. Ajustado para mostrar dots/activeDots en series por rango.
+  - Validación Dashboard tendencia: CodeGraph `query/context` usado como orientación, lectura directa de `ModelMarketPanel`, `MarketEvolutionChart` y `/api/market-evolution`; `npx tsc --noEmit`, `npm run lint` y `npm run build` OK. Browser integrado no disponible (`iab`).
+  - 2026-06-08 iteración estrategia usados Dashboard: para maquinaria usada, el panel deja de activar buckets por rango de año y muestra p25/p50/p75 agregados por fecha de extracción del modelo seleccionado. Motivo: los rangos de año fragmentan muestras chicas y dificultan ver tendencia temporal.
+  - 2026-06-08 ajuste final Dashboard tendencia: filtro de estado queda sólo `Usado`/`Nuevo` con default `Usado`; `MarketEvolutionChart` usa `ResponsiveContainer width/height` explícito y `ComposedChart` para renderizar de forma robusta área + líneas.
+  - 2026-06-08 corrección Dashboard tendencia: el endpoint devuelve puntos válidos, pero el render seguía quedando blanco en producción. `MarketEvolutionChart` reemplazó Recharts por SVG propio estable manteniendo contrato `points`/`series`, con p50 visible, p25/p75 y soporte de series por bucket.
+  - Contexto canónico actualizado para futuras tareas del kit. App real: Next.js 16.2.7, PostgreSQL/Prisma, MongoDB pipelines, ACARA CSV activo, auth JWT simple, diseño propio Venturino/John Deere.
+  - Analisis postventa ejecutado sobre 127 productos activos Venturino y ML ultima extraccion.
+  - Resultado final calibracion: 46 Venturino mas caro, 19 mas barato, 60 sin comparable, 2 baja confianza.
+  - Reglas refinadas: tipos especificos, juguetes, ISG, navaja/cuchilla/cuchillo, penalizacion por tipo tecnico incompatible y banda precio +/-40%.
+  - Arquitectura postventa documentada en docs/technical/postventa-ml.md.
+  - Backlog Hito 02 creado con features postventa 01-05.
+  - postventa-01 implementado en codigo: modelos Prisma, pipeline-postventa y script npm manual.
+  - postventa-02 implementado en codigo: matching TS v0, runPostventaAnalysis, endpoint local y script npm manual.
+- Next:
+  - Activar API Padawanway en producción: aplicar schema, configurar `PADAWANWAY_API_*`, compartir secreto por canal seguro y validar requests firmados desde Padawanway.
+  - Para cambios grandes futuros: usar los docs técnicos actualizados como punto de partida; no forzar sidebar base del kit.
+  - Si el objetivo es eliminar todo CSV runtime, migrar primero ACARA desde `data/acara_precios_maquinaria_agricola_wide.csv` a DB u otra fuente definida.
+  - Ampliar estrategia de tests general y decidir MCP base Python/FastAPI si se priorizan capacidades IA-first.
+  - Usar docs/ai/PROJECT_CONTEXT.md como punto de partida para nuevos agentes.
+  - Ajustar postventa para que `pipeline:postventa` ejecute importacion y analisis persistido en una sola corrida automatizable mensual.
+  - Siguiente slice recomendado: correr pipeline/analisis Postventa contra DB destino y verificar descarga real con datos persistidos; luego ajustar UX fina o agregar export CSV/XLSX si negocio lo pide.
+  - Ajustes finos de UX (empty/error states, performance).
+  - Reglas de outliers y umbral YEAR_CONDITION_CONFLICT.
+
+## Open questions (UNCONFIRMED):
+- Si los vínculos ACARA deben seguir en localStorage o migrar a DB.
+- Si la app seguirá single-tenant interna o requerirá roles/permisos.
+- Si el control de procesos debe quedar para todos los usuarios autenticados o restringirse a rol/admin cuando exista modelo de usuarios.
+- Cuándo implementar MCP Python/FastAPI real.
+- Si ACARA debe migrar a PostgreSQL para eliminar la última dependencia CSV.
+- Umbral final de YEAR_CONDITION_CONFLICT.
+- Regla de outliers.
+
+## Working set (files/ids/commands):
+- docs/ai/PROJECT_CONTEXT.md
+- scripts/analyzePostventaMatches.js
+- scripts/pipeline-postventa.js
+- scripts/run-postventa-analysis.js
+- lib/postventa/matching.ts
+- lib/postventa/run-analysis.ts
+- app/api/postventa/analyze/route.ts
+- proxy.ts
+- prisma/schema.prisma
+- prisma/migrations/20260522190000_add_postventa/migration.sql
+- .github/workflows/pipeline.yml
+- package.json
+- reports/postventa-match-analysis.md
+- scripts/generateVenturinoReport.js
+- app/api/reports/venturino/route.ts
+- data/postventa_match_analysis.json
+- docs/technical/postventa-ml.md
+- docs/backlog/hitos/hito-02-postventa-ml.md
+- docs/changes/processed/2026-07-17-referencias-mercado-api.md
+- api-doc/README.md
+- app/api/v1/market-references/direct/route.ts
+- app/api/v1/market-references/search/route.ts
+- lib/market-reference/
+- prisma/migrations/20260717160000_add_market_reference_api/migration.sql
+- scripts/test-market-reference-api.js
+- scripts/verify-market-reference-inventory.js
+- scripts/backfill-machine-identity.js
+- lib/normalize/machineIdentity.ts
+- api-doc/
+- docs/backlog/features/postventa-01-ingesta-postgres.md
+- docs/backlog/features/postventa-02-matching-persistido.md
+- docs/backlog/features/postventa-03-ui-analisis.md
+- docs/backlog/features/postventa-04-reporte-pdf.md
+- docs/backlog/features/postventa-05-mcp-contratos.md
+- components/AcaraSeriesChart.tsx
+- app/(pages)/dashboard/page.tsx
+- components/ProvinceDistributionPanel.tsx
+- components/AcaraTrendPanel.tsx
+- components/ChoroplethMap.tsx
+- app/(pages)/explorador/page.tsx
+- app/(pages)/acara/page.tsx

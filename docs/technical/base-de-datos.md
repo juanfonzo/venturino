@@ -1,0 +1,167 @@
+# Base De Datos
+
+Última revisión: 2026-09-03.
+
+## Motor
+
+- PostgreSQL.
+- ORM: Prisma 5.
+- Schema: `prisma/schema.prisma`.
+- Cliente: `lib/db/prisma.ts`.
+- Deploy actual: GitHub Actions ejecuta `npx prisma db push`.
+
+## Entidades
+
+| Entidad Prisma | Tabla | Propósito |
+|---|---|---|
+| `ScrapingRun` | `scraping_runs` | Corrida de ingesta de publicaciones de maquinaria. |
+| `Listing` | `listings` | Publicación de maquinaria normalizada. |
+| `PriceHistory` | `price_history` | Snapshot de precio por publicación y corrida. |
+| `FxRate` | `fx_rates` | Cotización vigente para conversión ARS/USD. |
+| `PostventaImportRun` | `postventa_import_runs` | Corrida de ingesta de productos postventa. |
+| `PostventaProduct` | `postventa_products` | Producto Venturino o ML normalizado. |
+| `PostventaPriceSnapshot` | `postventa_price_snapshots` | Historial de precio/nombre postventa. |
+| `PostventaAnalysisRun` | `postventa_analysis_runs` | Corrida del algoritmo postventa. |
+| `PostventaProductAnalysis` | `postventa_product_analyses` | Resultado por producto Venturino. |
+| `PostventaMatchCandidate` | `postventa_match_candidates` | Candidatos ML por producto analizado. |
+| `MarketReferenceQuery` | `market_reference_queries` | Auditoría interna de consultas de referencias enviadas por Padawanway. |
+
+## Modelo `Listing`
+
+Campos funcionales principales:
+
+- Identidad/origen: `id`, `origen`, `url @unique`.
+- Categoría: `categoriaRaw`, `categoria`.
+- Marca/modelo: `marca`, `marcaNorm`, `modelo`, `modeloNorm`.
+- Atributos: `anio`, `hp`, `horas`, raws respectivos.
+- Estado: `condicionRaw`, `condicion`.
+- Precio: `precioRaw`, `monedaRaw`, `monedaNorm`, `precioUsd`, `precioArs`.
+- Ubicación: `ubicacionRaw`, `provincia`, `ciudad`.
+- Vendedor: `vendedor`, `tipoVendedor`, `esCompetidor`, `competidorNombre`.
+- Lifecycle: `active`, `firstSeenAt`, `lastSeenAt`, `createdAt`, `scrapingRunId`.
+- Calidad: `flags String[]`.
+
+Índices actuales: `origen`, `categoria`, `marcaNorm`, `condicion`, `provincia`, `precioUsd`, `esCompetidor`, `scrapingRunId`, `active` y el compuesto `active + categoria + condicion + marcaNorm + modeloNorm` para referencias de mercado.
+
+## Auditoría De Referencias De Mercado
+
+`MarketReferenceQuery` conserva identificador de cliente y request, modo, filtros normalizados, paginación, estado, cantidad de resultados, resumen interno, error y duración. El unique `clientId + requestId` funciona como protección persistente contra replay.
+
+No guarda firma HMAC, secreto, cuerpo crudo ni metadatos de scraping. `resultSummary` es de uso interno y conserva estadísticas, criterio aplicado, ids y snapshot de las referencias devueltas para reproducir qué información vio la integración.
+
+`pipeline:live` y la API comparten `normalizeMachineIdentity`. Los nuevos barridos persisten la identidad canónica en `marcaNorm`/`modeloNorm`; la API también recalcula esa identidad al leer para tolerar filas históricas. El backfill histórico sólo cambia aliases semánticos comprobados y es simulación por defecto. Los casos confirmados y sus protecciones están en `docs/technical/referencias-mercado-matching.md`.
+
+## Postventa
+
+Postventa usa modelos separados para no mezclar maquinaria con accesorios/productos:
+
+- `PostventaProduct` tiene unique compuesto `source + externalId`.
+- Para productos ML, `PostventaProduct` conserva datos comerciales informativos de MercadoLibre: total financiado (`installmentTotalArs`), cantidad de cuotas (`installmentsQuantity`) y envío gratis (`freeShipping`). En productos Venturino quedan nulos.
+- `PostventaPriceSnapshot` tiene unique `productId + snapshotDate`.
+- `PostventaProductAnalysis` tiene unique `analysisRunId + venturinoProductId`.
+- `PostventaMatchCandidate` tiene unique por rank y por candidato ML dentro del análisis; copia los datos comerciales ML usados en esa corrida para mostrar condiciones de financiación/envío sin afectar el matching.
+- Relaciones con `onDelete: Cascade` en snapshots/candidatos dependientes.
+
+Detalle extendido: `docs/technical/postventa-ml.md`.
+
+## Relaciones
+
+| Origen | Destino | Cardinalidad | Regla |
+|---|---|---|---|
+| `ScrapingRun` | `Listing` | 1:N | `Listing.scrapingRunId` opcional. |
+| `ScrapingRun` | `PriceHistory` | 1:N | Cada snapshot pertenece a una corrida. |
+| `Listing` | `PriceHistory` | 1:N | Cascade al borrar listing. |
+| `PostventaImportRun` | `PostventaProduct` | 1:N opcional | Última corrida que vio el producto. |
+| `PostventaImportRun` | `PostventaPriceSnapshot` | 1:N | Snapshot por corrida. |
+| `PostventaImportRun` | `PostventaAnalysisRun` | 1:N opcional | Análisis asociado a importación. |
+| `PostventaAnalysisRun` | `PostventaProductAnalysis` | 1:N | Cascade al borrar corrida. |
+| `PostventaProductAnalysis` | `PostventaMatchCandidate` | 1:N | Cascade al borrar análisis de producto. |
+
+## Lifecycle
+
+| Entidad | Crear | Actualizar | Retención |
+|---|---|---|---|
+| `Listing` | `pipeline-live` | upsert por `url`, marca active true si visto | No visto en última corrida se marca `active=false`. |
+| `PriceHistory` | `pipeline-live` | snapshot por `listingId + snapshotDate` | Historial se conserva. |
+| `FxRate` | `syncFxRate` | borra anteriores y crea actual | Sólo cotización actual. |
+| `PostventaProduct` | `pipeline-postventa` | upsert por `source + externalId` | No visto se marca inactive. |
+| `PostventaPriceSnapshot` | `pipeline-postventa` | snapshot por producto/fecha | Historial se conserva. |
+| `PostventaAnalysisRun` | `runPostventaAnalysis` | crea corrida en `running` y la marca `success`/`failed` | Corridas históricas se conservan. |
+
+## Paginación Y Performance
+
+| Lista/Entidad | Método | Máximo | Observación |
+|---|---|---|---|
+| `/api/tractors` | offset con `page/pageSize` | 100 | Con dedupe trae todos los filtrados antes de cortar página. |
+| `/api/acara/items` | offset en memoria | 100 | Fuente CSV. |
+| `/api/model-combos` | `limit` | 100 | Calculado desde listings cargados. |
+| `/api/analisis-2/items` | `limit` | 1000 | Carga all listings para breakdown. |
+| Postventa | offset con `page/pageSize`, filtros y orden en PostgreSQL | 100 | `/api/postventa/products` y detalle ya están implementados; el resumen usa la última corrida o la indicada. |
+| Referencias de mercado | offset después de ranking acotado | 50 | Búsqueda previa limitada a 5000 candidatos; respuesta directa limitada a 50 referencias. |
+
+## Búsqueda
+
+| Entidad | Campos buscables | Estrategia actual | Deuda |
+|---|---|---|---|
+| `Listing` | título, marca, modelo, descripción | `contains` simple, no tokenizado completo | Alinear con `SEARCH_POLICY.md` si crece o si se toca. |
+| ACARA CSV | marca, categoría, descripción | substring simple en memoria | Suficiente para CSV chico/medio; no DB. |
+| Model combos | marca/modelo normalizados | contains compacto en memoria/server | Aceptable en MVP. |
+| Postventa | nombre, estado y confianza | búsqueda normalizada, filtros y paginación server-side sobre análisis persistido | Evaluar índices adicionales si el volumen de corridas crece. |
+| Referencias de mercado | categoría, marca, modelo/título y año | tokens normalizados en DB, filtro exacto posterior para modo directo y ranking para modo ampliado | Evaluar índice de texto si el volumen supera el límite actual. |
+
+## Migraciones
+
+- Existe migración SQL versionada para postventa: `prisma/migrations/20260522190000_add_postventa/migration.sql`.
+- Existe migración SQL versionada para la API: `prisma/migrations/20260717160000_add_market_reference_api/migration.sql`.
+- No se observó migración inicial versionada para todas las tablas principales.
+- Workflow usa `prisma db push`, lo que puede aplicar cambios sin migración formal.
+
+## Variables Y Entorno
+
+- `DATABASE_URL` requerida para Prisma.
+- `MONGODB_URI` requerida para pipelines.
+- `.env.example` documenta las variables esperadas sin incluir credenciales reales.
+- La sincronización completa de producción hacia desarrollo usa `LOCAL_SNAPSHOT_DATABASE_URL`, nunca reutiliza `DATABASE_URL` por seguridad. Ver `docs/technical/postgres-snapshot-sync.md`.
+
+## Sincronización De Entornos
+
+- Producción es la fuente operativa de PostgreSQL para la app y la API Padawanway.
+- La copia local se actualiza mediante `pg_dump` lógico completo, manifest SHA-256 y restauración explícita sobre la URL local declarada; no se expone PostgreSQL de producción por red pública.
+- El snapshot `20260903T140008Z` fue restaurado y permitió validar la auditoría real de `MarketReferenceQuery`. Los conteos de consultas y publicaciones locales corresponden al momento de ese snapshot y no sustituyen una nueva exportación.
+
+## Fuentes No DB
+
+- ACARA todavía depende de `data/acara_precios_maquinaria_agricola_wide.csv` y no está modelado en Prisma.
+- Los CSVs históricos del MVP fueron retirados; si se necesita eliminar todo consumo CSV, la siguiente tarea es migrar ACARA a una tabla o fuente externa versionada.
+
+## Datos Sensibles Para MCP/IA
+
+- No exponer `MONGODB_URI`, `DATABASE_URL`, secretos auth ni URLs internas firmadas.
+- Para herramientas MCP futuras, devolver sólo campos necesarios y paginados.
+- Postventa y publicaciones pueden exponer URLs públicas de mercado, pero no credenciales ni datos técnicos de infraestructura.
+
+## Riesgos
+
+- `active` es clave para no mezclar datos vigentes e históricos.
+- Cambios en normalización de scripts modifican datos persistidos y métricas.
+- Falta estrategia de reset/seed documentada.
+- Falta test de migraciones y constraints.
+- Potenciales índices adicionales si crecen búsquedas por texto o reportes históricos.
+
+## Addendum 2026-09-02 — `MarketReferenceQuery`
+
+La auditoría de referencias incorpora:
+
+- campos de entrada normalizados opcionales para registrar errores previos a validación;
+- `httpStatus`, `failureStage` y `requestPayload` sanitizado;
+- `algorithmVersion`, `criterionCode` y `sampleStrengthCode`;
+- revisión interna (`reviewStatus`, motivo, notas, autor y fecha);
+- `alertQueuedAt` para identificar consultas que encolaron una alerta.
+
+Índices adicionales:
+
+- `status + createdAt`;
+- `reviewStatus + createdAt`;
+- `errorCode + createdAt`.
+
+El listado superadmin usa paginación server-side de 25 filas y filtros en PostgreSQL. La migración versionada es `prisma/migrations/20260902120000_add_superadmin_observability/migration.sql`.

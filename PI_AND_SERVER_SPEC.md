@@ -1,5 +1,7 @@
 # 09_API_AND_SERVER_SPEC.md
 
+> Estado: especificación histórica del MVP sin base de datos. No enumera las rutas ni contratos actuales; consultar `docs/technical/backend.md` y `api-doc/README.md` para APIs vigentes.
+
 ## Objetivo
 - Mantener la lógica de negocio en server para:
   - parsing CSV

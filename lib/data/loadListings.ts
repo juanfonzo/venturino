@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { dedupeListingsByUnit } from "@/lib/dedupe/listingUnits";
 import type { TractorItem, TractorsDataset } from "@/lib/types";
 import { normalizeMatchText } from "@/lib/normalize/text";
+import { normalizeListingPriceUsd } from "@/lib/utils/price";
 
 // Infer the Listing type from Prisma client
 type Listing = NonNullable<Awaited<ReturnType<typeof prisma.listing.findFirst>>>;
@@ -11,6 +12,8 @@ type Listing = NonNullable<Awaited<ReturnType<typeof prisma.listing.findFirst>>>
  * used throughout the UI and stats code.
  */
 function listingToTractorItem(row: Listing): TractorItem {
+  const precioUsd = normalizeListingPriceUsd(row.precioUsd);
+
   return {
     id: row.url,
     origen: row.origen,
@@ -29,7 +32,7 @@ function listingToTractorItem(row: Listing): TractorItem {
     ubicacion: row.ubicacionRaw,
     condicion: row.condicionRaw,
     descripcion: row.descripcion,
-    precio_nor: row.precioUsd ? Number(row.precioUsd) : null,
+    precio_nor: precioUsd,
     moneda_norm: row.monedaNorm as "USD" | "ARS" | null,
     estado_norm: row.condicion as "Nuevo" | "Usado" | null,
     provincia: row.provincia,
@@ -273,9 +276,11 @@ function buildWhere(query: ListingQuery) {
   }
 
   if (query.hasPrice === true) {
-    conditions.push({ precioUsd: { not: null } });
+    conditions.push({ precioUsd: { gte: 1000 } });
   } else if (query.hasPrice === false) {
-    conditions.push({ precioUsd: null });
+    conditions.push({
+      OR: [{ precioUsd: null }, { precioUsd: { lt: 1000 } }],
+    });
   }
 
   // Always filter to active listings only

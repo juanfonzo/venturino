@@ -228,6 +228,7 @@ export default function AcaraPage() {
           </ul>
           <div className="flex flex-wrap items-center gap-2">
             <Input
+              aria-label="Buscar ítems ACARA"
               placeholder="Buscar por marca, categoria o descripcion"
               value={search}
               onChange={(event) => {
@@ -368,6 +369,7 @@ export default function AcaraPage() {
               <p className="text-xs uppercase text-jd-black/50">Modelos de mercado</p>
               <div className="mt-2 space-y-2">
                 <Input
+                  aria-label="Buscar modelo de mercado"
                   placeholder="Buscar modelo de mercado"
                   value={comboSearch}
                   onChange={(event) => setComboSearch(event.target.value)}
@@ -384,7 +386,7 @@ export default function AcaraPage() {
                     return (
                       <button
                         key={combo.key}
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                        className={`inline-flex min-h-9 items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold ${
                           isSelected
                             ? "bg-jd-green text-white"
                             : isMapped
@@ -432,7 +434,7 @@ export default function AcaraPage() {
                   {suggestions.map((item) => (
                     <button
                       key={item.id}
-                      className="flex w-full items-center justify-between rounded-xl border border-jd-black/10 bg-white/80 px-3 py-2 text-left text-xs hover:bg-jd-cream/60"
+                      className="flex min-h-10 w-full items-center justify-between rounded-xl border border-jd-black/10 bg-white/80 px-3 py-2 text-left text-xs hover:bg-jd-cream/60"
                       onClick={() =>
                         setSelectedItem({
                           id: item.id,
@@ -471,9 +473,9 @@ export default function AcaraPage() {
               <Button variant="ghost" onClick={handleExport}>
                 Exportar vinculos
               </Button>
-              <label className="cursor-pointer rounded-full bg-jd-yellow px-4 py-2 text-xs font-semibold">
+              <label className="inline-flex min-h-9 cursor-pointer items-center rounded-full bg-jd-yellow px-4 py-2 text-xs font-semibold">
                 Importar vinculos
-                <input type="file" className="hidden" onChange={handleImport} />
+                <input type="file" className="hidden" onChange={handleImport} aria-label="Importar vínculos" />
               </label>
             </div>
           </div>

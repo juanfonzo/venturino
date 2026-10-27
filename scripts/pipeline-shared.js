@@ -1,8 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const dns = require('dns').promises;
+const { requireTypeScript } = require('./register-ts');
 
 let cachedPipelineFunctions = null;
+let cachedMachineIdentity = null;
+
+function loadMachineIdentity() {
+  if (!cachedMachineIdentity) {
+    cachedMachineIdentity = requireTypeScript('lib/normalize/machineIdentity.ts');
+  }
+  return cachedMachineIdentity;
+}
 
 function loadEnvFile(envPath = path.join(__dirname, '..', '.env')) {
   if (!fs.existsSync(envPath)) return;
@@ -54,6 +64,7 @@ module.exports = {
   parseHp,
   parseHoras,
   normalizePrice,
+  FALLBACK_FX_RATE,
   extractPriceFromTitle,
   deriveLocation,
   normalizeCondicion,
@@ -127,10 +138,11 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
     if (extracted.monedaRaw) monedaRaw = extracted.monedaRaw;
   }
 
-  const { precioUsd, monedaNorm, priceFlags } = P.normalizePrice(
+  const { precioUsd, precioArs, monedaNorm, priceFlags } = P.normalizePrice(
     precioRaw !== null && precioRaw !== undefined ? precioRaw.toString() : null,
     monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
     origen,
+    P.FALLBACK_FX_RATE || 1500,
   );
 
   const { provincia, ciudad } = P.deriveLocation(doc.ubicacion, doc.localidad, doc.provincia);
@@ -140,22 +152,20 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
   const { esCompetidor, competidorNombre } = P.detectCompetitor(vendedor, origen);
 
   const marca = doc.marca || null;
-  const { marcaNorm, modeloForNorm } = P.normalizeBrandAndModel(marca, doc.modelo);
+  const { marcaNorm: preprocessedBrand, modeloForNorm } = P.normalizeBrandAndModel(marca, doc.modelo);
   const modelo = doc.modelo || null;
-  let modeloNorm = P.normalizeModel(modeloForNorm);
+  const identity = loadMachineIdentity().normalizeMachineIdentity({
+    category: categoria,
+    brand: preprocessedBrand || marca,
+    model: modeloForNorm,
+    title: titulo,
+    hp,
+  });
+  const marcaNorm = identity.brandNorm || preprocessedBrand;
+  const modeloNorm = identity.modelKey;
 
-  if (modeloNorm && /^\d[\d ]*$/.test(modeloNorm) && titulo) {
-    const titleInferred = P.inferModelFromTitle(titulo, marca, marcaNorm);
-    if (titleInferred && /[A-Z]/.test(titleInferred)) {
-      modeloNorm = titleInferred;
-      extraFlags.push('MODEL_INFERRED_FROM_TITLE');
-    }
-  }
-
-  if (!modeloNorm && titulo) {
-    modeloNorm = P.inferModelFromTitle(titulo, marca, marcaNorm);
-    if (modeloNorm) extraFlags.push('MODEL_INFERRED_FROM_TITLE');
-  }
+  if (identity.source === 'title') extraFlags.push('MODEL_INFERRED_FROM_TITLE');
+  if (identity.aliasApplied) extraFlags.push('MODEL_CANONICALIZED');
 
   const allExtraFlags = [...extraFlags, ...condicionFlags, ...(priceFlags || [])];
   const flags = P.buildFlags({ precioUsd, anio, hp, horas, provincia, condicion, extraFlags: allExtraFlags });
@@ -187,6 +197,7 @@ function normalizeMongoDoc(doc, P = loadPipelineFunctions()) {
     monedaRaw: monedaRaw !== null && monedaRaw !== undefined ? monedaRaw.toString() : null,
     monedaNorm,
     precioUsd: precioUsd !== null ? Math.round(precioUsd * 100) / 100 : null,
+    precioArs: precioArs !== null ? Math.round(precioArs * 100) / 100 : null,
     ubicacionRaw: doc.ubicacion || doc.localidad || null,
     provincia,
     ciudad,
@@ -265,9 +276,34 @@ function pickLatestByDate(items, getDate) {
   return latest;
 }
 
+async function resolveMongoUri(uri) {
+  if (!uri || !uri.startsWith('mongodb+srv://')) return uri;
+
+  try {
+    const parsed = new URL(uri.replace('mongodb+srv://', 'http://'));
+    const resolver = new dns.Resolver();
+    resolver.setServers(['8.8.8.8', '1.1.1.1']);
+    const records = await resolver.resolveSrv(`_mongodb._tcp.${parsed.hostname}`);
+    if (!records.length) return uri;
+
+    const hosts = records
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((record) => `${record.name}:${record.port}`)
+      .join(',');
+    const params = new URLSearchParams(parsed.searchParams);
+    params.set('tls', 'true');
+    if (!params.has('authSource')) params.set('authSource', 'admin');
+
+    return `mongodb://${parsed.username}:${parsed.password}@${hosts}${parsed.pathname}?${params.toString()}`;
+  } catch {
+    return uri;
+  }
+}
+
 module.exports = {
   loadEnvFile,
   loadPipelineFunctions,
+  resolveMongoUri,
   normalizeMongoDoc,
   createProcessingStats,
   addRecordToStats,

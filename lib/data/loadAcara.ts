@@ -1,23 +1,23 @@
 import fs from "fs/promises";
 import path from "path";
 import { detectDelimiter, parseCsvToObjects } from "@/lib/utils/csv";
-import { normalizeCurrency, parsePriceRaw, FX_RATE } from "@/lib/normalize/price";
+import { normalizeCurrency, parsePriceRaw } from "@/lib/normalize/price";
+import { getCurrentFxRate } from "@/lib/fx-rate";
 import { normalizeText, normalizeLoose } from "@/lib/normalize/text";
 import { createStableId } from "@/lib/utils/id";
 import type { AcaraDataset, AcaraItem, AcaraSeriesPoint } from "@/lib/types";
 
 const DATA_PATH = path.join(process.cwd(), "data", "acara_precios_maquinaria_agricola_wide.csv");
-const FALLBACK_PATH = path.join(process.cwd(), "acara_precios_maquinaria_agricola_wide.csv");
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cache: AcaraDataset | null = null;
 
-function parseSeriesValue(rawValue: string | null | undefined, currency: string | null) {
+function parseSeriesValue(rawValue: string | null | undefined, currency: string | null, fxRate: number) {
   const parsed = parsePriceRaw(rawValue ?? null);
   if (parsed === null) return null;
   const currencyNorm = normalizeCurrency(currency, rawValue ?? null);
   if (currencyNorm === "USD") return parsed;
-  if (currencyNorm === "ARS") return parsed / FX_RATE;
+  if (currencyNorm === "ARS") return parsed / fxRate;
   return parsed;
 }
 
@@ -27,19 +27,16 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
     return cache;
   }
 
-  let raw: string;
+  const fxRate = await getCurrentFxRate();
+
   try {
-    raw = await fs.readFile(DATA_PATH, "utf8");
-  } catch {
-    try {
-      raw = await fs.readFile(FALLBACK_PATH, "utf8");
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : "Unknown error";
-      throw new Error(
-        `ACARA CSV no encontrado. Paths probados: ${DATA_PATH} | ${FALLBACK_PATH}. Detalle: ${detail}`,
-      );
-    }
+    await fs.access(DATA_PATH);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`ACARA CSV no encontrado. Path probado: ${DATA_PATH}. Detalle: ${detail}`);
   }
+
+  const raw = await fs.readFile(DATA_PATH, "utf8");
   const delimiter = detectDelimiter(raw);
   const rows = parseCsvToObjects(raw, delimiter);
 
@@ -57,7 +54,7 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
       const trimmedKey = key.trim();
       if (!trimmedKey) return;
       const yearLabel = trimmedKey;
-      const valueUsd = parseSeriesValue(value, row.currency ?? null);
+      const valueUsd = parseSeriesValue(value, row.currency ?? null, fxRate);
       series.push({ yearLabel, valueUsd });
     });
 
@@ -93,7 +90,7 @@ export async function loadAcara(force = false): Promise<AcaraDataset> {
 
   let fileMtimeMs: number | null = null;
   try {
-    const stat = await fs.stat(DATA_PATH).catch(async () => fs.stat(FALLBACK_PATH));
+    const stat = await fs.stat(DATA_PATH);
     fileMtimeMs = stat.mtimeMs;
   } catch {
     fileMtimeMs = null;

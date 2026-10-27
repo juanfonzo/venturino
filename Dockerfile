@@ -49,6 +49,7 @@ COPY --from=builder /app/public ./public
 
 # Copiar scripts de pipeline (necesarios para ejecución en producción)
 COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/lib ./lib
 
 # Directorio para outputs del pipeline (ej. sample dry-run)
 RUN mkdir -p /app/data

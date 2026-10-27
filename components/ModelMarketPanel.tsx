@@ -33,7 +33,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
   const [comboSearchLoading, setComboSearchLoading] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedMeta, setSelectedMeta] = useState<{ marca: string; modelo: string } | null>(null);
-  const [estado, setEstado] = useState<"" | "Nuevo" | "Usado">("");
+  const [estado, setEstado] = useState<"Nuevo" | "Usado">("Usado");
 
   const { mappings, loaded: mappingsLoaded } = useAcaraMappings();
   const [acaraItem, setAcaraItem] = useState<AcaraItem | null>(null);
@@ -164,8 +164,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
         selectedMeta.marca,
       )}&model=${encodeURIComponent(selectedMeta.modelo)}`;
       const estadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
-      const yearPresetParam = estado === "Usado" ? "&yearBucketPreset=used_default" : "";
-      return `${base}${estadoParam}${yearPresetParam}`;
+      return `${base}${estadoParam}`;
     })();
     const listingsEstadoParam = estado ? `&estado=${encodeURIComponent(estado)}` : "";
 
@@ -206,7 +205,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
     return () => {
       cancelled = true;
     };
-  }, [categoria, selectedMeta?.marca, selectedMeta?.modelo, estado]);
+  }, [categoria, selectedMeta, estado]);
 
   useEffect(() => {
     if (!mappingsLoaded) return;
@@ -269,7 +268,9 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
 
   const listingPriceStats = useMemo(() => {
     const rows = listings?.rows ?? [];
-    const prices = rows.map((row) => row.precio_nor).filter((v): v is number => v !== null);
+    const prices = rows
+      .map((row) => row.precio_nor)
+      .filter((v): v is number => v !== null && Number.isFinite(v) && v > 0);
     prices.sort((a, b) => a - b);
     const mid = Math.floor(prices.length / 2);
     const median = prices.length
@@ -309,7 +310,11 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
         <div className="grid gap-3 lg:grid-cols-3">
           <div>
             <p className="text-xs uppercase text-jd-black/50">Categoría</p>
-            <Select value={categoria} onChange={(e) => setCategoria(e.target.value as Categoria)}>
+            <Select
+              aria-label="Categoría"
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value as Categoria)}
+            >
               {CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -319,8 +324,11 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
           </div>
           <div>
             <p className="text-xs uppercase text-jd-black/50">Estado</p>
-            <Select value={estado} onChange={(e) => setEstado(e.target.value as "" | "Nuevo" | "Usado")}>
-              <option value="">Todos</option>
+            <Select
+              aria-label="Estado"
+              value={estado}
+              onChange={(e) => setEstado(e.target.value as "Nuevo" | "Usado")}
+            >
               <option value="Usado">Usado</option>
               <option value="Nuevo">Nuevo</option>
             </Select>
@@ -328,6 +336,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
           <div className="lg:col-span-2">
             <p className="text-xs uppercase text-jd-black/50">Buscar modelo de mercado</p>
             <Input
+              aria-label="Buscar modelo de mercado"
               placeholder="Ej: John Deere 6110"
               value={comboSearch}
               onChange={(e) => setComboSearch(e.target.value)}
@@ -354,7 +363,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
             return (
               <button
                 key={combo.key}
-                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                className={`min-h-9 rounded-full px-3 py-2 text-xs font-semibold transition ${
                   isSelected
                     ? "bg-jd-green text-white"
                     : "bg-jd-cream/70 text-jd-black hover:bg-jd-cream"
@@ -404,11 +413,11 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                     </span>
                   ) : null}
                 </div>
-                {estado === "Usado" && marketSeries?.length ? (
-                  <p className="mt-1 text-xs text-jd-black/60">
-                    Mediana (p50) por rango de año de fabricación.
-                  </p>
-                ) : null}
+                <p className="mt-1 text-xs text-jd-black/60">
+                  {estado === "Usado"
+                    ? "Mediana y dispersión por fecha de extracción para el modelo seleccionado."
+                    : "Mediana (p50) y percentiles por fecha de extracción."}
+                </p>
                 <div className="mt-2">
                   <MarketEvolutionChart points={market ?? []} series={marketSeries} />
                 </div>
@@ -492,7 +501,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                     </div>
                     <a
                       href="/acara"
-                      className="rounded-full border border-jd-black/20 px-3 py-1.5 text-xs font-semibold text-jd-black hover:bg-jd-black/5"
+                      className="inline-flex min-h-9 items-center rounded-full border border-jd-black/20 px-3 py-2 text-xs font-semibold text-jd-black hover:bg-jd-black/5"
                     >
                       Abrir ACARA
                     </a>
@@ -537,7 +546,7 @@ export function ModelMarketPanel({ combos }: { combos: ModelComboStat[] }) {
                     href={selectedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm font-semibold text-jd-green underline"
+                    className="inline-flex min-h-9 items-center text-sm font-semibold text-jd-green underline"
                   >
                     {selectedUrl}
                   </a>

@@ -49,7 +49,11 @@ export function ProvinceDistributionPanel() {
           <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Mapa</p>
           <h2 className="text-lg font-semibold text-jd-black">Distribucion por provincia</h2>
         </div>
-        <Select value={metric} onChange={(event) => setMetric(event.target.value as "count" | "p50" | "p75")}>
+        <Select
+          aria-label="Indicador del mapa"
+          value={metric}
+          onChange={(event) => setMetric(event.target.value as "count" | "p50" | "p75")}
+        >
           <option value="count">Cantidad</option>
           <option value="p50">Precio referencia</option>
           <option value="p75">Precio alto</option>
