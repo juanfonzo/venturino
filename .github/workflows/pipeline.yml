@@ -61,6 +61,9 @@ jobs:
             StrictHostKeyChecking no
           EOF
 
+      - name: Check PostgreSQL backup host prerequisites as algorym
+        run: bash scripts/install-remote-postgres-backup.sh --check-host
+
       # 6) Deploy container
       - name: Deploy container
         run: |
@@ -106,3 +109,6 @@ jobs:
       - name: Apply database changes
         run: |
           ssh algorym "docker exec $SERVICE npx prisma db push"
+
+      - name: Install PostgreSQL backups to Cloudflare R2 as algorym
+        run: bash scripts/install-remote-postgres-backup.sh

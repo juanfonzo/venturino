@@ -1,5 +1,7 @@
 # Pipeline: Flujo de datos MongoDB → PostgreSQL
 
+Respaldos de PostgreSQL: [horarios, R2 y recuperación](postgres-backups.md).
+
 ## Arquitectura
 
 ```
