@@ -23,7 +23,7 @@ export type ReviewReason = (typeof REVIEW_REASONS)[number];
 export const REVIEW_REASON_LABELS: Record<ReviewReason, string> = {
   no_references: "Sin referencias",
   limited_sample: "Muestra insuficiente",
-  normalization: "Modelo mal normalizado",
+  normalization: "Modelo identificado incorrectamente",
   related_model: "Modelo relacionado incorrecto",
   price_outlier: "Precio atípico",
   duplicate: "Publicación duplicada",

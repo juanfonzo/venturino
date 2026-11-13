@@ -9,6 +9,7 @@ import {
 import { ReviewForm } from "@/components/superadmin/ReviewForm";
 import { requireSuperadminPage } from "@/lib/auth/session";
 import { getMarketReferenceQueryById } from "@/lib/superadmin/market-reference";
+import { describeMarketReferenceError, getMarketReferenceMachine } from "@/lib/superadmin/query-display";
 import {
   REVIEW_REASON_LABELS,
   type ReviewReason,
@@ -43,6 +44,8 @@ export default async function SuperadminRequestDetailPage({
 
   const query = await getMarketReferenceQueryById(id);
   if (!query) notFound();
+  const error = describeMarketReferenceError(query);
+  const machine = getMarketReferenceMachine(query);
 
   const summary = asRecord(query.resultSummary);
   const statistics = asRecord(summary.statistics);
@@ -58,9 +61,9 @@ export default async function SuperadminRequestDetailPage({
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-jd-black/50">Consulta #{query.id}</p>
           <h2 className="text-2xl font-semibold text-jd-black">
-            {query.marca || "Sin marca"} {query.modelo || ""}
+            {machine.label}
           </h2>
-          <p className="mt-1 font-mono text-xs text-jd-black/45">{query.requestId}</p>
+          <p className="mt-1 break-all font-mono text-xs text-jd-black/45">{query.requestId}</p>
         </div>
         <Link
           href="/superadmin/requests"
@@ -70,12 +73,33 @@ export default async function SuperadminRequestDetailPage({
         </Link>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <SummaryItem label="Estado"><QueryStatusBadge status={query.status} /></SummaryItem>
         <SummaryItem label="Revisión"><QueryReviewBadge status={query.reviewStatus} /></SummaryItem>
         <SummaryItem label="Resultados" value={String(query.resultCount)} />
         <SummaryItem label="Duración" value={query.durationMs === null ? "—" : formatDuration(query.durationMs)} />
       </section>
+
+      {query.status === "error" ? (
+        <section className="panel border-red-200 bg-red-50/70" aria-labelledby="query-error-title">
+          <div className="panel-header"><h3 id="query-error-title" className="font-semibold text-red-900">{error.title}</h3></div>
+          <div className="panel-body text-sm text-red-900">
+            {error.details.length > 0 ? (
+              <ul className="list-disc space-y-1 pl-5">
+                {error.details.map((detail, index) => <li key={index}>{detail}</li>)}
+              </ul>
+            ) : (
+              <p>{error.message}</p>
+            )}
+            {query.errorCode === "INVALID_INPUT" ? (
+              <p className="mt-3">{error.details.length > 0
+                ? "Completá o corregí los datos indicados en el CRM antes de volver a consultar."
+                : "Revisá los datos enviados desde el CRM antes de volver a consultar."}</p>
+            ) : null}
+            {!query.resultSummary ? <p className="mt-3 text-xs">El motivo detallado no se guardó en esta consulta.</p> : null}
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="panel">
@@ -83,14 +107,12 @@ export default async function SuperadminRequestDetailPage({
           <div className="panel-body grid gap-4 sm:grid-cols-2">
             <DataItem label="Fecha" value={formatDate(query.createdAt)} />
             <DataItem label="Tipo" value={query.mode === "direct" ? "Directa" : "Ampliada"} />
-            <DataItem label="Categoría" value={query.categoria || "—"} />
-            <DataItem label="Año" value={query.anio ? String(query.anio) : "—"} />
-            <DataItem label="Marca original" value={query.marca || "—"} />
-            <DataItem label="Marca normalizada" value={query.marcaNorm || "—"} />
-            <DataItem label="Modelo original" value={query.modelo || "—"} />
-            <DataItem label="Modelo normalizado" value={query.modeloNorm || "—"} />
-            <DataItem label="Versión" value={query.algorithmVersion} />
-            <DataItem label="HTTP" value={query.httpStatus ? String(query.httpStatus) : "—"} />
+            <DataItem label="Categoría" value={machine.category || "—"} />
+            <DataItem label="Año" value={machine.year ? String(machine.year) : "—"} />
+            <DataItem label="Marca enviada" value={machine.brand || "—"} />
+            <DataItem label="Marca identificada" value={query.marcaNorm || "—"} />
+            <DataItem label="Modelo enviado" value={machine.model || "—"} />
+            <DataItem label="Modelo identificado" value={query.modeloNorm || "—"} />
           </div>
         </div>
 
@@ -105,8 +127,6 @@ export default async function SuperadminRequestDetailPage({
             <DataItem label="P75" value={formatUsd(numberValue(statistics.p75))} />
             <DataItem label="Máximo" value={formatUsd(numberValue(statistics.max))} />
             <DataItem label="Muestra" value={String(numberValue(statistics.sampleSize) ?? query.resultCount)} />
-            {query.errorCode ? <DataItem label="Error" value={query.errorCode} /> : null}
-            {query.failureStage ? <DataItem label="Etapa" value={query.failureStage} /> : null}
           </div>
         </div>
       </section>
@@ -173,11 +193,21 @@ export default async function SuperadminRequestDetailPage({
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="panel">
-          <div className="panel-header"><h3 className="font-semibold text-jd-black">Input registrado</h3></div>
+          <div className="panel-header"><h3 className="font-semibold text-jd-black">Información para soporte</h3></div>
           <div className="panel-body">
-            <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-xl bg-jd-black/[0.04] p-4 text-xs text-jd-black/70">
-              {formatJson(query.requestPayload)}
-            </pre>
+            <details>
+              <summary className="cursor-pointer text-sm font-semibold text-jd-green">Ver datos técnicos</summary>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <DataItem label="Código" value={query.errorCode || "—"} />
+                <DataItem label="Etapa" value={query.failureStage || "—"} />
+                <DataItem label="Versión" value={query.algorithmVersion} />
+                <DataItem label="HTTP" value={query.httpStatus ? String(query.httpStatus) : "—"} />
+              </div>
+              <p className="mb-2 mt-4 text-xs font-semibold">Datos recibidos</p>
+              <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-xl bg-jd-black/[0.04] p-4 text-xs text-jd-black/70">
+                {formatJson(query.requestPayload)}
+              </pre>
+            </details>
           </div>
         </div>
 

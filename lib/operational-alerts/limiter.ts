@@ -1,4 +1,4 @@
-export type OperationalAlertPolicy = "immediate" | "transient" | "rate_limit" | "high_volume";
+export type OperationalAlertPolicy = "immediate" | "transient" | "rate_limit" | "high_volume" | "invalid_input";
 
 export const OPERATIONAL_ALERT_POLICIES: Record<
   OperationalAlertPolicy,
@@ -8,6 +8,7 @@ export const OPERATIONAL_ALERT_POLICIES: Record<
   transient: { threshold: 5, windowSeconds: 300 },
   rate_limit: { threshold: 3, windowSeconds: 300 },
   high_volume: { threshold: 20, windowSeconds: 300 },
+  invalid_input: { threshold: 5, windowSeconds: 300 },
 };
 
 interface AlertLimiterState {

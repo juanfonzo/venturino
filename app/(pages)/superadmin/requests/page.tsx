@@ -11,6 +11,7 @@ import {
   listMarketReferenceQueries,
   parseMarketReferenceListFilters,
 } from "@/lib/superadmin/market-reference";
+import { describeMarketReferenceError, getMarketReferenceMachine } from "@/lib/superadmin/query-display";
 
 export const dynamic = "force-dynamic";
 
@@ -122,15 +123,17 @@ export default async function SuperadminRequestsPage({
                 </tr>
               </thead>
               <tbody>
-                {result.rows.map((row) => (
+                {result.rows.map((row) => {
+                  const machine = getMarketReferenceMachine(row);
+                  return (
                   <tr key={row.id}>
                     <td className="whitespace-nowrap text-xs text-jd-black/60">{formatDate(row.createdAt)}</td>
                     <td>
                       <Link href={`/superadmin/requests/${row.id}`} className="font-semibold hover:text-jd-green">
-                        {row.marca || "—"} {row.modelo || ""}
+                        {machine.label}
                       </Link>
                       <p className="mt-1 max-w-64 truncate text-xs text-jd-black/50">
-                        {row.categoria || "Sin categoría"} · {row.anio || "Sin año"}
+                        {machine.category || "Sin categoría"} · {machine.year || "Sin año"}
                       </p>
                       <p className="mt-1 max-w-64 truncate font-mono text-[11px] text-jd-black/40">
                         {row.requestId}
@@ -140,13 +143,19 @@ export default async function SuperadminRequestsPage({
                       {row.mode === "direct" ? "Directa" : "Ampliada"}
                     </td>
                     <td>{row.resultCount}</td>
-                    <td><QueryStatusBadge status={row.status} /></td>
+                    <td className="max-w-64">
+                      <QueryStatusBadge status={row.status} />
+                      {row.status === "error" ? (
+                        <p className="mt-2 text-xs text-jd-black/65">{describeMarketReferenceError(row).explanation}</p>
+                      ) : null}
+                    </td>
                     <td><QueryReviewBadge status={row.reviewStatus} /></td>
                     <td className="whitespace-nowrap text-xs text-jd-black/60">
                       {row.durationMs === null ? "—" : formatDuration(row.durationMs)}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           ) : (

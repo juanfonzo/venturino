@@ -1,5 +1,17 @@
 ﻿# http://CONTINUITY.md
 
+## Último relevamiento (2026-11-13)
+- Pedido actual completado localmente: mejorar errores por datos faltantes de la API CRM, auditoría, presentación administrativa y alertas repetidas. Aprobado por chat, con español comprensible, ñ y tildes.
+- Revisados AGENTS, guía del kit, contexto/manifest/políticas aplicables, documentación técnica, schema Prisma, auth/proxy, layouts, rutas, loaders, servicios, pipelines, deploy y backups. CodeGraph disponible y utilizado; lectura directa complementaria de archivos críticos.
+- Stack instalado confirmado: Next.js 16.2.7, React 18.2.0, Prisma 5.22.0 y TypeScript 5.5.4. MongoDB alimenta PostgreSQL mediante pipelines; ACARA mantiene CSV y vínculos principalmente en localStorage. MCP/agentes del producto siguen sin implementación.
+- Historial más reciente: backups PostgreSQL a R2 incorporados en octubre, con scripts, tests Linux y evidencia en `docs/postgres-backups.md`; contexto/manifest técnicos conservan revisión de septiembre.
+- Implementación: conserva HTTP 400, `INVALID_INPUT`, `details` y `anio`; agrega `fields` opcional. Mensajes indican qué completar/corregir sin errores derivados. Auditoría conserva respuesta segura en `resultSummary.error`, con versión vigente. No hay migración ni cambios de matching/permisos.
+- Administración: motivos legibles, marca/modelo recibidos como alternativa, datos técnicos desplegables y lista móvil de errores recientes. Históricos sin detalle mantienen explicación general. Alertas `INVALID_INPUT`: cinco en cinco minutos por cliente/operación, con cooldown existente.
+- Verificación: `test:market-reference` 8/8, `test:superadmin` 8/8; TypeScript, build, lint y UTF-8 OK (3 advertencias previas de lint y caniuse-lite antiguo). HTTP firmado y PostgreSQL local comprobaron validación, auditoría, firma inválida, búsqueda válida/directa/ampliada, replay y permisos. Cola SMTP validada con transporte sustituido, sin correos reales.
+- Navegación desktop/móvil: resumen, lista, detalle, soporte y estados vacíos; consola sin errores. Navegador nativo no disponible (host/pipe ausentes); alternativa Playwright CLI. PostgreSQL local volvió a estar accesible: nueve filas de prueba retiradas y 53 originales preservadas; servidor, navegador y artefactos temporales cerrados/limpios.
+- Cierre: contrato/guía CRM, documentación de observabilidad/backend/QA, MANIFEST, MCP coverage y `docs/backlog/archive/2026-11.md` actualizados. MCP sigue contrato-candidato. Sin commit, PR ni despliegue solicitado; el incidente productivo de la captura no se consultó.
+- Siguiente paso: desplegar cuando el usuario lo indique y coordinar adopción de `fields` en Padawanway si se quieren errores junto a cada campo. Las secciones siguientes conservan contexto histórico y pueden contener pendientes ya resueltos.
+
 ## Goal (incl. success criteria):
 - App interna para analisis de mercado de maquinaria agricola y postventa Venturino.
 - Datos vigentes de maquinaria desde PostgreSQL/Prisma, alimentados por pipeline MongoDB; ACARA sigue desde CSV local.

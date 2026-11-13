@@ -1,6 +1,6 @@
 # Manifest
 
-Última revisión coordinada: 2026-09-03.
+Última revisión coordinada: 2026-11-13.
 
 ## Estado General
 
@@ -28,16 +28,16 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 | `docs/ai/PROJECT_CONTEXT.md` | vigente | código, operación y flujos reales | 2026-09-03 |
 | `docs/technical/arquitectura.md` | vigente | código, Prisma, scripts, deploy y operación | 2026-09-03 |
 | `docs/technical/frontend.md` | vigente | rutas UI + componentes + CSS real | 2026-09-03 |
-| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-09-03 |
+| `docs/technical/backend.md` | vigente | route handlers + services + scripts | 2026-11-13 |
 | `docs/technical/base-de-datos.md` | vigente | Prisma + pipelines + auditoría API | 2026-09-03 |
 | `docs/technical/referencias-mercado-matching.md` | vigente | casos confirmados, guardrails y verificaciones de la API Padawanway | 2026-09-03 |
 | `docs/technical/postgres-snapshot-sync.md` | vigente | scripts de snapshot completo producción → local | 2026-09-03 |
 | `docs/technical/seguridad.md` | vigente | auth, proxy y endpoints sensibles | 2026-09-03 |
-| `docs/technical/qa.md` | vigente | checks focalizados y flujos críticos | 2026-09-03 |
-| `docs/technical/mcp-coverage-map.md` | vigente | cobertura MCP candidata y deuda activa | 2026-09-03 |
+| `docs/technical/qa.md` | vigente | checks focalizados y flujos críticos | 2026-11-13 |
+| `docs/technical/mcp-coverage-map.md` | vigente | cobertura MCP candidata y deuda activa | 2026-11-13 |
 | `docs/technical/postventa-ml.md` | vigente-específico | código de Postventa y contratos implementados | 2026-09-03 |
-| `docs/technical/superadmin-observabilidad.md` | vigente-específico | acceso, auditoría, revisión y alertas | 2026-09-03 |
-| `api-doc/` | vigente-compartible | contrato operativo de referencias de mercado | 2026-09-03 |
+| `docs/technical/superadmin-observabilidad.md` | vigente-específico | acceso, auditoría, revisión y alertas | 2026-11-13 |
+| `api-doc/` | vigente-compartible | contrato operativo de referencias de mercado | 2026-11-13 |
 | `docs/product/brief.md` | histórico | plantilla del kit; no describe el producto actual | 2026-09-03 |
 | `docs/product/prd.md` | histórico | plantilla del kit; no describe el producto actual | 2026-09-03 |
 | `docs/backlog/hitos/hito-02-postventa-ml.md` | vigente-parcial | UI, APIs y reporte realizados; MCP sigue candidato | 2026-09 |
@@ -104,3 +104,11 @@ Estados válidos: `pendiente`, `en-proceso`, `procesado`, `rechazado`, `archivad
 - Módulo real: `app/(pages)/superadmin/**`, `lib/superadmin/**` y `lib/operational-alerts/**`.
 - Compatibilidad: no cambia `AUTH_USER`/`AUTH_PASSWORD`, el login visible ni el contrato de Padawanway.
 - Riesgos residuales: dos perfiles fijos por entorno; cola/cooldown SMTP locales al proceso; no hay monitor externo ni MCP real.
+
+## Actualización 2026-11-13 — Solicitudes CRM incompletas
+
+- Implementado localmente: errores por campo en lenguaje claro, persistencia de motivos en `resultSummary.error`, presentación en Administración y alertas agrupadas por repetición.
+- Compatible con `v1`: conserva HTTP 400, `INVALID_INPUT`, `details` y claves como `anio`; agrega `fields` opcional. Textos visibles con ñ y tildes.
+- Sin migración, dependencias ni cambios en reglas de matching o permisos. Los registros anteriores conservan su información original.
+- Alcance y validación compactados en `docs/backlog/archive/2026-11.md`; contrato y guía del CRM actualizados en `api-doc/`.
+- MCP: observabilidad continúa como contrato-candidato; no se implementó un servicio nuevo. Despliegue productivo fuera de esta verificación local.

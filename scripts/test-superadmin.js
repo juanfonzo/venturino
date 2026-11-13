@@ -11,6 +11,7 @@ const {
 const {
   decideOperationalAlert,
   resetOperationalAlertLimiterForTests,
+  OPERATIONAL_ALERT_POLICIES,
 } = requireTypeScript('lib/operational-alerts/limiter.ts');
 const {
   sanitizeAlertContext,
@@ -23,15 +24,23 @@ const {
 const {
   parseReviewPayload,
   ReviewValidationError,
+  REVIEW_REASON_LABELS,
 } = requireTypeScript('lib/superadmin/review.ts');
+const {
+  describeMarketReferenceError,
+  getMarketReferenceMachine,
+} = requireTypeScript('lib/superadmin/query-display.ts');
 
 async function main() {
   await testCredentialsAndSessions();
   testAlertConfiguration();
   testSanitization();
   testAlertLimiter();
+  testValidationAlertThreshold();
+  await testValidationAlertDelivery();
+  testQueryErrorDisplay();
   testReviewValidationAndEmail();
-  console.log('Superadmin: 5/5 checks OK');
+  console.log('Superadmin: 8/8 checks OK');
 }
 
 async function testCredentialsAndSessions() {
@@ -133,7 +142,87 @@ function testAlertLimiter() {
   assert.equal(suppressed.suppressed, 1);
 }
 
+function testValidationAlertThreshold() {
+  resetOperationalAlertLimiterForTests();
+  const policy = OPERATIONAL_ALERT_POLICIES.invalid_input;
+  assert.deepEqual(policy, { threshold: 5, windowSeconds: 300 });
+  const decide = (fingerprint, nowMs) => decideOperationalAlert({ ...policy, fingerprint, nowMs, cooldownSeconds: 900 });
+  const decisions = [0, 1, 2, 3, 4].map(index => decide('client-a|direct|INVALID_INPUT', 1000 + index));
+  assert.deepEqual(decisions.map(item => item.send), [false, false, false, false, true]);
+  assert.equal(decide('client-a|direct|INVALID_INPUT', 2000).send, false);
+  assert.equal(decide('client-b|direct|INVALID_INPUT', 2000).occurrences, 1);
+  assert.equal(decide('client-a|expanded|INVALID_INPUT', 2000).occurrences, 1);
+  // Una solicitud aislada fuera de la ventana no completa el umbral anterior.
+  assert.equal(decide('client-b|direct|INVALID_INPUT', 303000).occurrences, 1);
+  assert.equal(decide('client-a|direct|INVALID_INPUT', 902000).send, false);
+}
+
+async function testValidationAlertDelivery() {
+  const transport = requireTypeScript('lib/operational-alerts/smtp.ts');
+  const originalSend = transport.sendOperationalEmail;
+  const config = {
+    APP_ENV: 'production', ALERT_EMAIL_ENABLED: 'true', ALERT_COOLDOWN_SECONDS: '900',
+    SMTP_SERVER: 'smtp.example.com', SMTP_PORT: '587', SMTP_USER: 'sender@example.com',
+    SMTP_PASS: 'test-only-smtp-password', SMTP_FROM: 'sender@example.com', SMTP_TO: 'support@example.com',
+  };
+  const previous = Object.fromEntries(Object.keys(config).map(key => [key, process.env[key]]));
+  const delivered = [];
+  // El único doble es el transporte externo: nunca se envía un correo real.
+  transport.sendOperationalEmail = async input => { delivered.push(input); };
+  Object.assign(process.env, config);
+  resetOperationalAlertLimiterForTests();
+  try {
+    const { notifyOperationalAlert } = requireTypeScript('lib/operational-alerts/notify.ts');
+    const input = {
+      code: 'INVALID_INPUT', message: 'Se repiten consultas de maquinaria con datos incompletos o incorrectos.',
+      policy: 'invalid_input', fingerprint: 'validation-delivery-test',
+      context: { details: ['Completá el año de la maquinaria.'], secret: 'must-not-appear' },
+    };
+    for (let index = 0; index < 4; index += 1) assert.equal(notifyOperationalAlert(input).reason, 'threshold');
+    assert.equal(delivered.length, 0);
+    assert.equal(notifyOperationalAlert(input).queued, true);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(delivered.length, 1);
+    assert.match(delivered[0].body, /Completá el año de la maquinaria\./);
+    assert.match(delivered[0].body, /Ocurrencias para disparar: 5/);
+    assert.equal(delivered[0].body.includes('must-not-appear'), false);
+    assert.equal(delivered[0].body.includes(config.SMTP_PASS), false);
+    assert.equal(notifyOperationalAlert(input).reason, 'cooldown');
+    assert.equal(delivered.length, 1);
+  } finally {
+    transport.sendOperationalEmail = originalSend;
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    resetOperationalAlertLimiterForTests();
+  }
+}
+
+function testQueryErrorDisplay() {
+  const message = 'Completá el año de la maquinaria.';
+  const saved = describeMarketReferenceError({
+    errorCode: 'INVALID_INPUT',
+    resultSummary: { error: { code: 'INVALID_INPUT', message, details: [message] } },
+  });
+  assert.equal(saved.explanation, message);
+  assert.deepEqual(saved.details, [message]);
+  const legacy = describeMarketReferenceError({ errorCode: 'INVALID_INPUT', resultSummary: null });
+  assert.deepEqual(legacy.details, []);
+  assert.equal(legacy.message, 'La consulta contiene datos incompletos o incorrectos.');
+  const machine = getMarketReferenceMachine({
+    marca: null, modelo: null, categoria: null, anio: null,
+    requestPayload: { marca: 'John Deere', modelo: '6145J', categoria: 'Tractores' },
+  });
+  assert.equal(machine.label, 'John Deere 6145J');
+  assert.equal(machine.year, null);
+  assert.equal(machine.category, 'Tractores');
+  assert.equal(getMarketReferenceMachine({ marca: null, modelo: null, categoria: null, requestPayload: null }).label, 'Maquinaria sin identificar');
+  assert.equal(getMarketReferenceMachine({ marca: 'John Deere', modelo: '6145J', categoria: 'Tractores', anio: 2016, requestPayload: { marca: 'Otra' } }).brand, 'John Deere');
+}
+
 function testReviewValidationAndEmail() {
+  assert.equal(REVIEW_REASON_LABELS.normalization, 'Modelo identificado incorrectamente');
   assert.deepEqual(parseReviewPayload({
     status: 'review',
     reason: 'normalization',

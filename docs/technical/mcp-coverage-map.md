@@ -1,6 +1,6 @@
 # MCP Coverage Map
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-11-13.
 
 ## Estado General
 
@@ -63,3 +63,7 @@ Por política del kit, las capacidades operativas relevantes deben quedar visibl
 | Observabilidad | Revisar resultado de matching | `/api/superadmin/market-reference-queries/[id]/review` | `observabilidad_referencias_revisar` | contrato-candidato | Superadmin + confirmación | Secretos e infraestructura | Superadmin | 2026-09-02 |
 
 La implementación MCP queda diferida. Un MCP futuro debe reutilizar los servicios existentes, separar lectura de métricas de la mutación de revisión y no exponer bodies completos ni errores técnicos por defecto.
+
+### Actualización 2026-11-13 — Motivos de solicitudes rechazadas
+
+`observabilidad_referencias_listar` conserva estado `contrato-candidato`. Su contrato deberá incluir una explicación comprensible del rechazo y los campos a corregir a partir de `resultSummary.error`, respetando el acceso Superadmin, la paginación y la exclusión de secretos. Los errores históricos pueden carecer de motivos detallados. No se implementó un servicio MCP nuevo ni se alteraron permisos.

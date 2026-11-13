@@ -337,13 +337,32 @@ Formato común:
 {
   "error": {
     "code": "INVALID_INPUT",
-    "message": "La solicitud contiene datos inválidos.",
+    "message": "Completá el año de la maquinaria.",
     "details": [
-      "anio debe ser un entero entre 1950 y el próximo año calendario."
+      "Completá el año de la maquinaria."
+    ],
+    "fields": [
+      {
+        "field": "anio",
+        "code": "required",
+        "message": "Completá el año de la maquinaria."
+      }
     ]
   }
 }
 ```
+
+Para `INVALID_INPUT`, `message` y `details` contienen textos en español orientados al vendedor, con tildes y ñ. Se distingue un dato faltante de un valor incorrecto y se evita informar errores derivados del mismo campo.
+
+`fields` es una ampliación compatible y opcional de `v1`. Permite asociar cada mensaje al campo del formulario sin interpretar el texto:
+
+- `field`: clave del contrato (`body`, `categoria`, `marca`, `modelo`, `anio`, `page` o `pageSize`). Las claves existentes se conservan; la etiqueta visible de `anio` es «Año».
+- `code`: `required`, `invalid_type`, `invalid_length` o `invalid_value`.
+- `message`: explicación y corrección sugerida para ese campo.
+
+Padawanway debe validar los datos obligatorios antes de enviar la consulta y presentar `fields[].message` junto al campo correspondiente. Si no utiliza `fields`, puede mostrar la lista `details` y usar `message` como alternativa. Los códigos son para lógica de integración; no deben ser el único mensaje visible al vendedor.
+
+La operación directa conserva categoría, marca, modelo y año obligatorios. La búsqueda ampliada permite omitir marca y año. Si falta alguno de estos datos, el CRM puede ofrecer explícitamente la búsqueda ampliada como orientación; la API no cambia de operación automáticamente ni completa datos supuestos.
 
 | HTTP | Código | Acción recomendada |
 |---|---|---|

@@ -10,6 +10,19 @@ export const MARKET_REFERENCE_ALGORITHM_VERSION = "market-reference-v1.2";
 export type MarketCategory = (typeof MARKET_CATEGORIES)[number];
 export type MarketReferenceMode = "direct" | "expanded";
 
+export interface MarketReferenceFieldError {
+  field: "body" | "categoria" | "marca" | "modelo" | "anio" | "page" | "pageSize";
+  code: "required" | "invalid_type" | "invalid_length" | "invalid_value";
+  message: string;
+}
+
+export interface MarketReferenceErrorPayload {
+  code: string;
+  message: string;
+  details?: string[];
+  fields?: MarketReferenceFieldError[];
+}
+
 export interface CommercialLabel {
   codigo: string;
   titulo: string;

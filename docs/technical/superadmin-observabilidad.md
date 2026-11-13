@@ -1,6 +1,6 @@
 # Superadmin Y Observabilidad De La API
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-11-13.
 
 ## Propósito
 
@@ -50,6 +50,10 @@ SUPERADMIN_PASSWORD=
 
 La auditoría comienza luego de verificar la firma HMAC. Las solicitudes no autenticadas no persisten su cuerpo. Una vez autenticado el request, pueden quedar registrados fallos de rate limit, JSON, validación, matching o cierre de auditoría.
 
+Los errores nuevos conservan en `resultSummary.error` la respuesta segura enviada al CRM (`code`, `message`, `details` y `fields` cuando corresponda). Se reutiliza la columna JSON existente; no se requiere migración. No se guarda el objeto de excepción ni su stack. Los registros históricos sin estos motivos mantienen una explicación general, sin atribuirles campos faltantes que no se conocen.
+
+El resumen, el listado y el detalle muestran motivos en lenguaje comprensible. La marca/modelo recibidos se usan como alternativa de presentación cuando la validación no permitió guardar los campos identificados. El código y la etapa quedan en el detalle, dentro de «Información para soporte».
+
 ## Revisión Interna
 
 Estados:
@@ -74,6 +78,8 @@ La implementación toma como referencia el comportamiento de `whatsapp-python` y
 - dos intentos de SMTP;
 - liberación del cooldown si la entrega falla;
 - el canal nunca propaga su error al request de negocio.
+
+Para `INVALID_INPUT` autenticado se aplica la política `invalid_input`: cinco rechazos en cinco minutos por cliente y operación. Después se respeta `ALERT_COOLDOWN_SECONDS` (900 segundos por defecto). Una consulta incompleta aislada no envía correo. La alerta incluye los motivos del último rechazo y no afirma que todas las solicitudes del grupo hayan fallado por los mismos campos. Los errores 5xx y 429 conservan sus políticas anteriores.
 
 Variables:
 

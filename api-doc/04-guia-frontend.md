@@ -93,8 +93,14 @@ No usar “comparables exactos” para este bloque. Cada resultado ya incluye `c
 ### Error
 
 - Mostrar un mensaje comercial simple al vendedor.
+- Para `400 INVALID_INPUT`, indicar exactamente qué debe completar o corregir. Ejemplo: «Completá el año de la maquinaria».
+- Usar `error.fields[].field` para asociar `error.fields[].message` al campo del formulario. Como alternativa compatible, mostrar `error.details`; si no está disponible, usar `error.message`.
+- Escribir «año» y «años», con ñ. Mantener la clave técnica `anio` sólo en el intercambio de datos.
+- Validar categoría, marca, modelo y año antes de consultar referencias directas. Una búsqueda ampliada admite omitir marca y año, pero debe ofrecerse de forma explícita.
+- Mantener los datos ingresados y permitir corregirlos; no reintentar automáticamente una solicitud inválida sin cambios.
 - Registrar técnicamente request-id, status y código de error en el backend/log de Padawanway.
 - No mostrar firma, secreto, stack trace ni detalles internos.
+- Evitar mensajes sobre «normalización» u otros procesos técnicos. Los códigos, como `INVALID_INPUT`, no reemplazan una explicación para la persona.
 
 ## Publicaciones
 

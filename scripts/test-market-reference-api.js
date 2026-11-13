@@ -24,12 +24,13 @@ const {
 function main() {
   testSignedRequest();
   testValidation();
+  testValidationMessages();
   testMachineIdentity();
   testDirectMatching();
   testAutomaticYearExpansion();
   testExpandedRanking();
   testExpandedFamilySearchPatterns();
-  console.log('Market reference API: 7/7 checks OK');
+  console.log('Market reference API: 8/8 checks OK');
 }
 
 function testSignedRequest() {
@@ -102,6 +103,59 @@ function testValidation() {
     () => parseDirectReferenceInput({ categoria: 'Tractores', marca: 'JD', modelo: '6R' }),
     (error) => error instanceof MarketReferenceValidationError,
   );
+}
+
+function testValidationMessages() {
+  const base = { categoria: 'Tractores', marca: 'John Deere', modelo: '6145J', anio: 2016 };
+  const requiredMessages = {
+    categoria: 'Seleccioná el tipo de maquinaria: tractor, cosechadora, sembradora o pulverizadora.',
+    marca: 'Completá la marca de la maquinaria.',
+    modelo: 'Completá el modelo de la maquinaria.',
+    anio: 'Completá el año de la maquinaria.',
+  };
+  for (const [field, message] of Object.entries(requiredMessages)) {
+    for (const value of [undefined, null, '', '   ']) {
+      assert.throws(() => parseDirectReferenceInput({ ...base, [field]: value }), (error) => {
+        assert(error instanceof MarketReferenceValidationError);
+        assert.deepEqual(error.issues, [message]);
+        assert.deepEqual(error.fields, [{ field, code: 'required', message }]);
+        assert.equal(error.message, message);
+        assert.doesNotMatch(error.message, /normaliza|\banios?\b/i);
+        return true;
+      });
+    }
+  }
+  assert.throws(() => parseDirectReferenceInput({}), (error) => {
+    assert.deepEqual(error.fields.map(issue => issue.field), ['categoria', 'marca', 'modelo', 'anio']);
+    assert.equal(error.issues.length, 4);
+    return true;
+  });
+  for (const anio of [1949, new Date().getFullYear() + 2, 2016.5, [2016], {}, true]) {
+    assert.throws(() => parseDirectReferenceInput({ ...base, anio }), (error) => {
+      assert.equal(error.fields[0].field, 'anio');
+      assert.equal(error.fields[0].code, 'invalid_value');
+      assert.match(error.issues[0], /año válido/);
+      return true;
+    });
+  }
+  assert.equal(parseDirectReferenceInput({ ...base, anio: '2016' }).anio, 2016);
+  assert.throws(() => parseDirectReferenceInput({ ...base, modelo: '!!!' }), (error) => {
+    assert.deepEqual(error.fields.map(issue => issue.code), ['invalid_value']);
+    assert.doesNotMatch(error.issues.join(' '), /normaliza/i);
+    return true;
+  });
+  const expanded = parseExpandedSearchInput({ categoria: 'Tractores', modelo: '6145J', marca: ' ', anio: '' });
+  assert.equal(expanded.marca, null);
+  assert.equal(expanded.anio, null);
+  assert.equal(expanded.page, 1);
+  assert.equal(expanded.pageSize, 25);
+  for (const body of [null, [], 'maquinaria']) {
+    assert.throws(() => parseDirectReferenceInput(body), (error) => {
+      assert.equal(error.fields[0].field, 'body');
+      assert.equal(error.fields[0].code, 'invalid_type');
+      return true;
+    });
+  }
 }
 
 function testMachineIdentity() {

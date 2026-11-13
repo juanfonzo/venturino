@@ -25,6 +25,7 @@ import type {
   DirectReferenceInput,
   ExpandedSearchInput,
   MarketReferenceMode,
+  MarketReferenceErrorPayload,
 } from "@/lib/market-reference/types";
 import {
   MarketReferenceValidationError,
@@ -40,6 +41,7 @@ const RESPONSE_HEADERS = {
 };
 
 type ParsedQuery = DirectReferenceInput | ExpandedSearchInput;
+type MappedError = MarketReferenceErrorPayload & { status: number; retryAfter?: number };
 
 class MarketReferenceHandlerError extends Error {
   readonly status: number;
@@ -60,28 +62,30 @@ export async function handleMarketReferenceRequest(
   const startedAt = Date.now();
   let auditId: number | null = null;
   let requestIdForLog = "unknown";
+  let clientIdForLog: string | null = null;
   let failureStage = "request";
   let parsedQuery: ParsedQuery | null = null;
 
   try {
     const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
     if (!contentType.startsWith("application/json")) {
-      return apiError(415, "UNSUPPORTED_MEDIA_TYPE", "Content-Type debe ser application/json.");
+      return apiError(415, { code: "UNSUPPORTED_MEDIA_TYPE", message: "No pudimos leer la consulta. Revisá el formato de los datos enviados." });
     }
 
     const contentLength = Number(request.headers.get("content-length") ?? 0);
     if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-      return apiError(413, "PAYLOAD_TOO_LARGE", "El cuerpo supera el límite permitido.");
+      return apiError(413, { code: "PAYLOAD_TOO_LARGE", message: "La consulta contiene demasiada información. Reducí los datos enviados y volvé a intentarlo." });
     }
 
     const rawBody = await request.text();
     if (Buffer.byteLength(rawBody, "utf8") > MAX_BODY_BYTES) {
-      return apiError(413, "PAYLOAD_TOO_LARGE", "El cuerpo supera el límite permitido.");
+      return apiError(413, { code: "PAYLOAD_TOO_LARGE", message: "La consulta contiene demasiada información. Reducí los datos enviados y volvé a intentarlo." });
     }
 
     failureStage = "authentication";
     const auth = verifyPadawanwayRequest(request.headers, rawBody);
     requestIdForLog = auth.requestId;
+    clientIdForLog = auth.clientId;
 
     failureStage = "audit_start";
     const audit = await startMarketReferenceAudit({
@@ -100,7 +104,7 @@ export async function handleMarketReferenceRequest(
     try {
       parsedBody = JSON.parse(rawBody);
     } catch {
-      throw new MarketReferenceHandlerError(400, "INVALID_JSON", "El cuerpo debe ser JSON válido.");
+      throw new MarketReferenceHandlerError(400, "INVALID_JSON", "No pudimos leer los datos de la consulta. Revisalos y volvé a intentarlo.");
     }
 
     failureStage = "validation";
@@ -128,31 +132,40 @@ export async function handleMarketReferenceRequest(
 
     return NextResponse.json(result.response, { status: 200, headers: RESPONSE_HEADERS });
   } catch (error) {
-    const mapped = mapError(error);
+    const { status, retryAfter, ...responseError } = mapError(error);
+    const isInvalidInput = responseError.code === "INVALID_INPUT";
     if (auditId !== null) {
       await failMarketReferenceAudit({
         id: auditId,
-        errorCode: mapped.code,
-        httpStatus: mapped.status,
+        errorCode: responseError.code,
+        httpStatus: status,
         failureStage,
         durationMs: Date.now() - startedAt,
+        error: responseError,
       });
     }
 
-    if (shouldAlert(mapped.status)) {
+    if (status >= 500 || status === 429 || (isInvalidInput && auditId !== null)) {
       try {
         const alert = notifyOperationalAlert({
-          code: mapped.code,
-          message: mapped.message,
-          severity: mapped.status >= 500 ? "P1" : "P2",
-          policy: mapped.status === 429 ? "rate_limit" : "immediate",
+          code: responseError.code,
+          message: isInvalidInput
+            ? "Se repiten consultas de maquinaria con datos incompletos o incorrectos."
+            : responseError.message,
+          severity: status >= 500 ? "P1" : "P2",
+          policy: isInvalidInput ? "invalid_input" : status === 429 ? "rate_limit" : "immediate",
+          fingerprint: isInvalidInput
+            ? `market-reference|${clientIdForLog}|${mode}|INVALID_INPUT`
+            : undefined,
           context: {
             component: "market-reference-api",
             operation: "search",
             requestId: requestIdForLog,
             mode,
-            httpStatus: mapped.status,
-            errorCode: mapped.code,
+            httpStatus: status,
+            errorCode: responseError.code,
+            details: responseError.details,
+            fields: responseError.fields,
             failureStage,
             categoria: parsedQuery?.categoria,
             marca: parsedQuery?.marca,
@@ -160,13 +173,17 @@ export async function handleMarketReferenceRequest(
             anio: parsedQuery?.anio,
             durationMs: Date.now() - startedAt,
           },
-          impact: mapped.status >= 500
+          impact: isInvalidInput
+            ? "Varias consultas no pudieron completarse porque faltan datos de la maquinaria o hay información incorrecta."
+            : status >= 500
             ? "La API no pudo completar una consulta de referencias de mercado."
             : "La integración alcanzó el límite configurado de solicitudes.",
-          action: mapped.status >= 500
+          action: isInvalidInput
+            ? "Revisar los motivos en Administración y corregir los datos que envía el CRM antes de volver a consultar."
+            : status >= 500
             ? "Revisar el request-id y la etapa informada en el superadmin."
             : "Revisar el volumen de requests de Padawanway y la configuración del límite.",
-          error,
+          error: isInvalidInput ? undefined : error,
         });
         if (alert.queued && auditId !== null) await markMarketReferenceAlertQueued(auditId);
       } catch (alertError) {
@@ -174,14 +191,14 @@ export async function handleMarketReferenceRequest(
       }
     }
 
-    if (mapped.status >= 500) {
+    if (status >= 500) {
       console.error(`[market-reference] requestId=${requestIdForLog} stage=${failureStage}`, error);
     }
-    return apiError(mapped.status, mapped.code, mapped.message, mapped.details, mapped.retryAfter);
+    return apiError(status, responseError, retryAfter);
   }
 }
 
-function mapError(error: unknown) {
+function mapError(error: unknown): MappedError {
   if (error instanceof MarketReferenceHandlerError) {
     return { status: error.status, code: error.code, message: error.message };
   }
@@ -202,6 +219,7 @@ function mapError(error: unknown) {
       code: "INVALID_INPUT",
       message: error.message,
       details: error.issues,
+      fields: error.fields,
     };
   }
   if (error instanceof DuplicateMarketReferenceRequestError) {
@@ -217,19 +235,13 @@ function mapError(error: unknown) {
   };
 }
 
-function shouldAlert(status: number) {
-  return status >= 500 || status === 429;
-}
-
 function apiError(
   status: number,
-  code: string,
-  message: string,
-  details?: string[],
+  error: MarketReferenceErrorPayload,
   retryAfter?: number,
 ) {
   return NextResponse.json(
-    { error: { code, message, ...(details ? { details } : {}) } },
+    { error },
     {
       status,
       headers: {

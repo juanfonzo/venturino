@@ -1,6 +1,6 @@
 # Backend
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-11-13.
 
 ## Stack Real
 
@@ -128,6 +128,14 @@ El registro de casos confirmados, guardrails y procedimiento de extensión está
 - No hay capa central de schemas tipo Zod.
 - El análisis postventa de ejecución directa valida host `localhost`/`127.0.0.1`; los endpoints de lectura postventa usan la sesión protegida por `proxy.ts`.
 - Los procesos manuales y las revisiones de referencias validan `SUPERADMIN` server-side.
+
+### Errores de datos de la API CRM (2026-11-13)
+
+- Se conserva HTTP 400 / `INVALID_INPUT` y `error.details: string[]`. `error.message` y los motivos usan español comprensible, con «año» y sin términos de procesamiento interno.
+- `error.fields` agrega campo, código de validación y mensaje para asociar el rechazo al formulario del CRM. Las claves `anio`, `marca`, etc. no cambian.
+- `resultSummary.error` conserva la respuesta segura del rechazo en PostgreSQL; no requiere cambio de schema. La auditoría inicia con la versión real del algoritmo aunque el request falle antes del matching.
+- Administración muestra los motivos y permite abrir los datos técnicos de forma secundaria. En teléfonos, los errores recientes se muestran como lista para mantener el motivo visible.
+- Los rechazos `INVALID_INPUT` autenticados agrupan alertas por cliente/operación: cinco en cinco minutos, con cooldown existente. Las pruebas SMTP sustituyen únicamente el transporte externo.
 
 ## Performance
 

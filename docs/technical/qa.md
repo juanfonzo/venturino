@@ -1,6 +1,6 @@
 # QA y verificación
 
-Última revisión: 2026-09-03.
+Última revisión: 2026-11-13.
 
 ## Estrategia vigente
 
@@ -47,3 +47,11 @@ La base local puede alinearse con producción mediante el snapshot documentado e
 - El snapshot local es una copia puntual: actualizarlo antes de concluir análisis sobre cobertura o resultados recientes.
 - Los pipelines de Mongo modifican PostgreSQL; primero ejecutar siempre el dry-run y revisar el perfil de origen.
 - No existe MCP operativo; sus contratos candidatos se validarán junto con el futuro servicio Python/FastAPI.
+
+## Verificación 2026-11-13 — Errores de parámetros CRM
+
+- `test:market-reference`: 8/8 grupos, incluidos datos ausentes/nulos/vacíos, año inválido, ausencia de mensajes derivados, texto con ñ y claves compatibles.
+- `test:superadmin`: 8/8 grupos; motivos nuevos e históricos, identidad parcial recibida, umbral/ventana/cooldown y cola de alertas con transporte SMTP sustituido. No se envían correos reales.
+- HTTP firmado + PostgreSQL local: validación de los cuatro obligatorios, cuerpo vacío, año decimal, firma inválida sin auditoría, búsqueda ampliada sin marca/año y búsqueda directa correcta; snapshot de error igual a la respuesta. Replay 409 y permisos 401/403 también comprobados.
+- Navegación: login Superadmin, resumen, detalle de error, información para soporte, listado y filtros sin resultados; revisión desktop y móvil. Navegador nativo no disponible (host/pipe ausentes); se usó Playwright CLI como alternativa.
+- Build y TypeScript correctos; lint sin errores y con tres advertencias previas ajenas a este cambio. Los registros temporales locales se retiran al cerrar la verificación.

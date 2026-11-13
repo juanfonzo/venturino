@@ -1,10 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { sanitizeRequestBody } from "@/lib/operational-alerts/sanitize";
+import { sanitizeAlertContext, sanitizeRequestBody } from "@/lib/operational-alerts/sanitize";
+import { MARKET_REFERENCE_ALGORITHM_VERSION } from "@/lib/market-reference/types";
 import type {
   DirectReferenceInput,
   ExpandedSearchInput,
   MarketReferenceMode,
+  MarketReferenceErrorPayload,
 } from "@/lib/market-reference/types";
 
 type AuditInput = DirectReferenceInput | ExpandedSearchInput;
@@ -28,6 +30,7 @@ export async function startMarketReferenceAudit(input: {
         clientId: input.clientId,
         requestId: input.requestId,
         mode: input.mode,
+        algorithmVersion: MARKET_REFERENCE_ALGORITHM_VERSION,
         requestPayload: sanitizeRequestBody(input.rawBody) as Prisma.InputJsonValue,
       },
       select: { id: true },
@@ -91,6 +94,7 @@ export async function failMarketReferenceAudit(input: {
   httpStatus: number;
   failureStage: string;
   durationMs: number;
+  error: MarketReferenceErrorPayload;
 }) {
   try {
     await prisma.marketReferenceQuery.update({
@@ -100,6 +104,7 @@ export async function failMarketReferenceAudit(input: {
         errorCode: input.errorCode,
         httpStatus: input.httpStatus,
         failureStage: input.failureStage,
+        resultSummary: sanitizeAlertContext({ error: input.error }) as Prisma.InputJsonValue,
         durationMs: input.durationMs,
         completedAt: new Date(),
       },

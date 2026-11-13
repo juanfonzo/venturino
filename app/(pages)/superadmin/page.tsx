@@ -6,6 +6,7 @@ import { AlertTestButton } from "@/components/superadmin/AlertTestButton";
 import { requireSuperadminPage } from "@/lib/auth/session";
 import { getOperationalAlertStatus } from "@/lib/operational-alerts/notify";
 import { getMarketReferenceOverview } from "@/lib/superadmin/market-reference";
+import { describeMarketReferenceError, getMarketReferenceMachine } from "@/lib/superadmin/query-display";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,33 +76,56 @@ export default async function SuperadminPage({
           </div>
           <div className="overflow-auto">
             {overview.recentErrors.length > 0 ? (
-              <table className="table-base min-w-[720px]">
+              <>
+              <ul className="divide-y divide-jd-black/10 sm:hidden">
+                {overview.recentErrors.map((row) => (
+                  <li key={row.id} className="px-4 py-4">
+                    <Link href={`/superadmin/requests/${row.id}`} className="text-sm font-semibold hover:text-jd-green">
+                      {getMarketReferenceMachine(row).label}
+                    </Link>
+                    <p className="mt-1 text-xs text-jd-black/50">{formatDate(row.createdAt)}</p>
+                    <p className="mt-2 text-sm text-jd-black/70">{describeMarketReferenceError(row).explanation}</p>
+                    <Link href={`/superadmin/requests/${row.id}`} className="mt-1 inline-flex min-h-9 items-center text-xs font-semibold text-jd-green hover:underline">
+                      Ver detalle<span className="sr-only"> de la consulta {row.id}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <table className="table-base hidden sm:table">
                 <thead>
                   <tr>
                     <th>Fecha</th>
                     <th>Consulta</th>
-                    <th>Error</th>
-                    <th>Etapa</th>
+                    <th>Motivo</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {overview.recentErrors.map((row) => (
+                  {overview.recentErrors.map((row) => {
+                    const error = describeMarketReferenceError(row);
+                    const machine = getMarketReferenceMachine(row);
+                    return (
                     <tr key={row.id}>
                       <td className="whitespace-nowrap text-xs text-jd-black/60">
                         {formatDate(row.createdAt)}
                       </td>
                       <td>
                         <Link href={`/superadmin/requests/${row.id}`} className="font-semibold hover:text-jd-green">
-                          {row.marca || "—"} {row.modelo || ""}
+                          {machine.label}
                         </Link>
-                        <p className="mt-1 max-w-56 truncate text-xs text-jd-black/50">{row.requestId}</p>
+                        <p className="mt-1 max-w-40 truncate text-xs text-jd-black/50">{row.requestId}</p>
                       </td>
-                      <td><Badge variant="red">{row.errorCode || `HTTP ${row.httpStatus || 500}`}</Badge></td>
-                      <td className="text-xs text-jd-black/60">{row.failureStage || "—"}</td>
+                      <td className="max-w-72 text-xs text-jd-black/70">
+                        <p>{error.explanation}</p>
+                        <Link href={`/superadmin/requests/${row.id}`} className="mt-1 inline-flex min-h-9 items-center font-semibold text-jd-green hover:underline">
+                          Ver detalle<span className="sr-only"> de la consulta {row.id}</span>
+                        </Link>
+                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
+              </>
             ) : (
               <p className="px-5 py-8 text-sm text-jd-black/50">No hay errores registrados.</p>
             )}

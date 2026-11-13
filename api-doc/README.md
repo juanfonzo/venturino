@@ -2,7 +2,7 @@
 
 Versión del contrato: `v1`  
 Estado: operativo en producción; matching `market-reference-v1.2`
-Última revisión: 2026-09-03
+Última revisión: 2026-11-13
 
 ## Propósito
 
@@ -81,6 +81,7 @@ La URL base no debe incluir `/api/v1` ni terminar con `/`. Las rutas versionadas
 
 ## Estado de validación
 
+- Mejora compatible de errores de datos (2026-11-13): mensajes claros con ñ, motivos por campo, auditoría detallada y alertas agrupadas. El CRM puede usar `error.fields` o conservar `error.details`; la clave `anio` no cambia.
 - Firma válida: `200`.
 - Firma inválida: `401 UNAUTHORIZED`.
 - Request-id reutilizado: `409 DUPLICATE_REQUEST`.
